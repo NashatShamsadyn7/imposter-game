@@ -1,0 +1,288 @@
+import { useState } from 'react'
+import {
+  Users,
+  Copy,
+  Check,
+  LogOut,
+  Play,
+  Skull,
+  Clock,
+  X as XIcon,
+  ChevronUp,
+  ChevronDown,
+  Crown,
+  Sparkles,
+  Tag,
+} from 'lucide-react'
+import { useAuth } from '../state/AuthContext'
+import { useRoom } from '../state/RoomContext'
+import { CATEGORIES, RANDOM_CATEGORY } from '../data/words'
+import { Button, Panel } from '../components/ui'
+import Avatar from '../components/Avatar'
+import { sfx } from '../lib/sound'
+
+export default function RoomLobby() {
+  const { user } = useAuth()
+  const {
+    room,
+    players,
+    isHost,
+    leaveRoom,
+    setSettings,
+    reorderPlayers,
+    kickPlayer,
+    startGame,
+  } = useRoom()
+  const [copied, setCopied] = useState(false)
+
+  const ordered = [...players].sort((a, b) => a.order_index - b.order_index)
+  const maxImpostors = Math.max(1, Math.floor((players.length - 1) / 2))
+  const canStart = players.length >= 3 && room.impostor_count < players.length
+
+  const copyCode = () => {
+    navigator.clipboard?.writeText(room.code)
+    sfx.click()
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  const move = (idx, dir) => {
+    const arr = [...ordered]
+    const j = idx + dir
+    if (j < 0 || j >= arr.length) return
+    ;[arr[idx], arr[j]] = [arr[j], arr[idx]]
+    reorderPlayers(arr.map((p) => p.user_id))
+    sfx.tap()
+  }
+
+  const category = CATEGORIES.find((c) => c.id === room.category_id)
+
+  return (
+    <div className="mx-auto max-w-md px-4 py-6 pb-24">
+      {/* سەرپەڕە */}
+      <header className="mb-5 flex items-center justify-between animate-fade-in">
+        <button
+          onClick={() => leaveRoom()}
+          className="btn-press flex items-center gap-1 rounded-xl bg-ink/5 px-3 py-2 text-sm text-ink/70 hover:bg-ink/10"
+        >
+          <LogOut className="h-4 w-4" />
+          دەرچوون
+        </button>
+        <button
+          onClick={copyCode}
+          className="btn-press flex items-center gap-2 rounded-xl border border-crew/40 bg-crew/10 px-4 py-2"
+        >
+          <span className="text-xs text-ink/60">کۆد</span>
+          <span className="text-lg font-black tracking-widest text-crew">{room.code}</span>
+          {copied ? (
+            <Check className="h-4 w-4 text-crew" />
+          ) : (
+            <Copy className="h-4 w-4 text-ink/50" />
+          )}
+        </button>
+      </header>
+
+      {/* یاریزانان */}
+      <Panel className="mb-5">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-crew" />
+            <h2 className="font-bold text-ink">یاریزانان</h2>
+          </div>
+          <span className="text-sm text-ink/50">{players.length}</span>
+        </div>
+
+        <div className="space-y-2">
+          {ordered.map((p, i) => (
+            <div key={p.user_id} className="flex items-center gap-2 rounded-xl bg-ink/5 px-3 py-2">
+              <span className="w-5 text-center text-sm font-bold text-ink/40">{i + 1}</span>
+              <Avatar url={p.avatar_url} name={p.display_name} size={36} />
+              <span className="flex-1 truncate font-medium text-ink">
+                {p.display_name}
+                {p.user_id === user.id && <span className="text-xs text-crew"> (تۆ)</span>}
+              </span>
+              {p.is_host && <Crown className="h-4 w-4 text-amber-500" title="خانەخوێ" />}
+
+              {isHost && p.user_id !== user.id && (
+                <div className="flex items-center gap-0.5">
+                  <button
+                    onClick={() => move(i, -1)}
+                    className="btn-press rounded p-1 text-ink/40 hover:text-crew"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => move(i, 1)}
+                    className="btn-press rounded p-1 text-ink/40 hover:text-crew"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => kickPlayer(p.user_id)}
+                    className="btn-press rounded p-1 text-ink/40 hover:text-impostor"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        {players.length < 3 && (
+          <p className="mt-3 text-center text-sm text-ink/40">
+            چاوەڕێی یاریزانی زیاتر… (لانیکەم ٣)
+          </p>
+        )}
+      </Panel>
+
+      {/* ڕێکخستنەکان */}
+      <Panel className="mb-6 space-y-5">
+        <h2 className="font-bold text-ink">ڕێکخستنەکان {!isHost && '(تەنها خانەخوێ دەیگۆڕێت)'}</h2>
+
+        {/* هاوپۆل */}
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <Tag className="h-4 w-4 text-crew" />
+            <span className="text-sm font-bold text-ink">هاوپۆلی وشە</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[RANDOM_CATEGORY, ...CATEGORIES].map((c) => {
+              const active = room.category_id === c.id
+              return (
+                <button
+                  key={c.id}
+                  disabled={!isHost}
+                  onClick={() => {
+                    sfx.tap()
+                    setSettings({ categoryId: c.id })
+                  }}
+                  className={`btn-press rounded-xl border px-2 py-2 text-xs font-medium disabled:opacity-60 ${
+                    active
+                      ? c.id === 'random'
+                        ? 'border-impostor bg-impostor/15 text-impostor'
+                        : 'border-crew bg-crew/15 text-crew'
+                      : 'border-ink/10 bg-ink/5 text-ink/70'
+                  }`}
+                >
+                  <span className="mr-1">{c.icon}</span>
+                  {c.name}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ژمارەی ساختەکار */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Skull className="h-4 w-4 text-impostor" />
+              <span className="text-sm font-bold text-ink">ژمارەی ساختەکار</span>
+            </div>
+            <span className="font-black text-impostor">{room.impostor_count}</span>
+          </div>
+          <div className="flex gap-2">
+            {Array.from({ length: maxImpostors }).map((_, i) => {
+              const val = i + 1
+              return (
+                <button
+                  key={val}
+                  disabled={!isHost}
+                  onClick={() => {
+                    sfx.tap()
+                    setSettings({ impostorCount: val })
+                  }}
+                  className={`btn-press flex-1 rounded-xl border py-2 font-bold disabled:opacity-60 ${
+                    room.impostor_count === val
+                      ? 'border-impostor bg-impostor/20 text-impostor'
+                      : 'border-ink/10 bg-ink/5 text-ink/60'
+                  }`}
+                >
+                  {val}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* کاتی گفتوگۆ */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-crew" />
+              <span className="text-sm font-bold text-ink">کاتی گفتوگۆ</span>
+            </div>
+            <span className="font-bold text-crew">
+              {Math.floor(room.discussion_seconds / 60)}:
+              {String(room.discussion_seconds % 60).padStart(2, '0')}
+            </span>
+          </div>
+          <input
+            type="range"
+            min="30"
+            max="300"
+            step="15"
+            disabled={!isHost}
+            value={room.discussion_seconds}
+            onChange={(e) => setSettings({ discussionSeconds: Number(e.target.value) })}
+            className="w-full accent-crew disabled:opacity-60"
+          />
+        </div>
+
+        {/* Multiplier */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-crew" />
+              <span className="text-sm font-bold text-ink">قەبارەی خاڵ (Multiplier)</span>
+            </div>
+            <span className="font-black text-crew">×{room.multiplier}</span>
+          </div>
+          <div className="flex gap-2">
+            {[1, 2, 3].map((val) => (
+              <button
+                key={val}
+                disabled={!isHost}
+                onClick={() => {
+                  sfx.tap()
+                  setSettings({ multiplier: val })
+                }}
+                className={`btn-press flex-1 rounded-xl border py-2 font-bold disabled:opacity-60 ${
+                  room.multiplier === val
+                    ? 'border-crew bg-crew/15 text-crew'
+                    : 'border-ink/10 bg-ink/5 text-ink/60'
+                }`}
+              >
+                ×{val}
+              </button>
+            ))}
+          </div>
+        </div>
+      </Panel>
+
+      {/* دەستپێکردن */}
+      {isHost ? (
+        <>
+          <Button
+            onClick={startGame}
+            disabled={!canStart}
+            variant="danger"
+            className="w-full !py-4 !text-lg"
+          >
+            <Play className="h-6 w-6" />
+            دەستپێکردنی یاری
+          </Button>
+          {!canStart && (
+            <p className="mt-3 text-center text-sm text-ink/40">
+              پێویستە بەلایەنی کەم ٣ یاریزان هەبن
+            </p>
+          )}
+        </>
+      ) : (
+        <p className="rounded-2xl border border-ink/10 bg-ink/5 py-4 text-center text-ink/60">
+          چاوەڕێی خانەخوێ بکە بۆ دەستپێکردن…
+        </p>
+      )}
+    </div>
+  )
+}

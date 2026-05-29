@@ -1,0 +1,146 @@
+import { useState, useEffect, useRef } from 'react'
+import { Eye, Skull, ShieldCheck, EyeOff, MessageSquare, Users, Loader2 } from 'lucide-react'
+import { useAuth } from '../state/AuthContext'
+import { useRoom } from '../state/RoomContext'
+import { CATEGORIES, findWord } from '../data/words'
+import { Button, Panel } from '../components/ui'
+import Avatar from '../components/Avatar'
+import WordImage from '../components/WordImage'
+import { sfx } from '../lib/sound'
+
+const REVEAL_SECONDS = 10
+
+export default function Reveal() {
+  const { user } = useAuth()
+  const { room, players, me, isHost, beginDiscussion } = useRoom()
+  const [flipped, setFlipped] = useState(false)
+  const [countdown, setCountdown] = useState(REVEAL_SECONDS)
+  const timerRef = useRef(null)
+
+  const isImpostor = me?.role === 'impostor'
+  const category = CATEGORIES.find((c) => c.id === room.category_id)
+  const allies = players.filter((p) => p.role === 'impostor' && p.user_id !== user.id)
+
+  // شاردنەوەی خۆکاری کارت بۆ دەستەی کەشتی دوای ١٠ چرکە
+  useEffect(() => {
+    if (!flipped || isImpostor) return
+    setCountdown(REVEAL_SECONDS)
+    timerRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(timerRef.current)
+          setFlipped(false)
+          return 0
+        }
+        return c - 1
+      })
+    }, 1000)
+    return () => clearInterval(timerRef.current)
+  }, [flipped, isImpostor])
+
+  const handleFlip = () => {
+    setFlipped(true)
+    if (isImpostor) sfx.impostor()
+    else sfx.reveal()
+  }
+
+  if (!me) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-crew">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 py-8">
+      {/* پێش کلیک */}
+      {!flipped ? (
+        <div className="animate-fade-in text-center">
+          <p className="mb-2 text-ink/60">کارتەکەت ئامادەیە</p>
+          <h1 className="mb-1 text-2xl font-black text-ink">{me.display_name}</h1>
+          <p className="mb-10 text-sm text-ink/40">کلیک بکە بۆ بینینی ڕۆڵەکەت</p>
+
+          <button
+            onClick={handleFlip}
+            className="btn-press animate-pulse-glow group mx-auto flex h-52 w-52 flex-col items-center justify-center gap-3 rounded-3xl border-2 border-crew/40 bg-surface/60"
+          >
+            <Eye className="h-14 w-14 text-crew transition group-hover:scale-110" />
+            <span className="font-bold text-crew">بینینی ڕۆڵ</span>
+          </button>
+        </div>
+      ) : isImpostor ? (
+        // ───── ساختەکار ─────
+        <div className="animate-scale-in w-full text-center">
+          <div className="animate-pulse-glow-red mb-4 inline-flex rounded-full border-2 border-impostor bg-impostor/15 p-5">
+            <Skull className="h-14 w-14 text-impostor" />
+          </div>
+          <h1 className="mb-1 text-3xl font-black text-impostor">ساختەکار</h1>
+          <p className="mb-6 text-lg font-bold text-ink">تۆ وشەکە نازانیت!</p>
+
+          <Panel className="mb-6 border-impostor/30">
+            {allies.length > 0 ? (
+              <>
+                <p className="mb-3 flex items-center justify-center gap-2 text-sm text-ink/60">
+                  <Users className="h-4 w-4" />
+                  هاوەڵە ساختەکارەکانت
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {allies.map((a) => (
+                    <div key={a.user_id} className="flex flex-col items-center gap-1">
+                      <Avatar url={a.avatar_url} name={a.display_name} size={48} ring ringColor="impostor" />
+                      <span className="text-sm font-medium text-ink">{a.display_name}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-ink/60">تۆ تاکە ساختەکاریت. بەختت یارت بێت!</p>
+            )}
+          </Panel>
+
+          <p className="text-sm text-ink/50">
+            گوێ بگرە لە ئاماژەکان و خۆت وەک دەستەی کەشتی دەربخە.
+          </p>
+        </div>
+      ) : (
+        // ───── دەستەی کەشتی ─────
+        <div className="animate-scale-in w-full text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-crew/40 bg-crew/10 px-3 py-1 text-crew">
+            <ShieldCheck className="h-4 w-4" />
+            <span className="text-sm font-bold">دەستەی کەشتی</span>
+          </div>
+          <p className="mb-1 text-xs text-ink/50">هاوپۆل: {category?.name}</p>
+          <h1 className="mb-4 text-4xl font-black text-ink">{room.secret_word_ku}</h1>
+
+          <div className="mb-4 flex justify-center">
+            <WordImage englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={220} />
+          </div>
+
+          <p className="mb-5 text-sm text-ink/60">
+            ئەمە وشە نهێنیەکەتە. بیری لێ بکەرەوە چۆن بەبێ ئاشکراکردن وەسفی بکەیت.
+          </p>
+
+          <div className="inline-flex items-center gap-2 rounded-full bg-impostor/15 px-4 py-2 text-impostor">
+            <EyeOff className="h-4 w-4" />
+            <span className="text-sm font-bold">دەشاردرێتەوە لە {countdown} چرکە</span>
+          </div>
+        </div>
+      )}
+
+      {/* کۆنترۆڵی خانەخوێ */}
+      <div className="mt-10 w-full">
+        {isHost ? (
+          <Button onClick={beginDiscussion} className="w-full !py-4">
+            <MessageSquare className="h-5 w-5" />
+            دەستپێکردنی گفتوگۆ
+          </Button>
+        ) : (
+          <p className="text-center text-sm text-ink/40">
+            چاوەڕێی خانەخوێ بکە بۆ دەستپێکردنی گفتوگۆ…
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}

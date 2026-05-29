@@ -1,0 +1,128 @@
+// ═══════════════════════════════════════════════════════════
+//  بەڕێوەبردنی دەنگ — کرتە (SFX) + مۆسیقای پاشبنە (ئەمبیێنتی فەزایی)
+//  بەبێ فایلی دەرەکی، هەمووی بە Web Audio API دروست دەکرێت.
+// ═══════════════════════════════════════════════════════════
+
+let ctx = null
+let musicNodes = null
+let sfxEnabled = true
+let musicEnabled = true
+let musicGain = null
+
+function getCtx() {
+  if (typeof window === 'undefined') return null
+  if (!ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext
+    if (!AC) return null
+    ctx = new AC()
+  }
+  if (ctx.state === 'suspended') ctx.resume()
+  return ctx
+}
+
+export function setSfxEnabled(v) {
+  sfxEnabled = v
+}
+export function setMusicEnabled(v) {
+  musicEnabled = v
+  if (v) startMusic()
+  else stopMusic()
+}
+
+// ───── کرتەکان ─────
+function blip(freq, duration = 0.12, type = 'sine', vol = 0.18) {
+  if (!sfxEnabled) return
+  const c = getCtx()
+  if (!c) return
+  const osc = c.createOscillator()
+  const gain = c.createGain()
+  osc.type = type
+  osc.frequency.value = freq
+  gain.gain.setValueAtTime(0, c.currentTime)
+  gain.gain.linearRampToValueAtTime(vol, c.currentTime + 0.01)
+  gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + duration)
+  osc.connect(gain).connect(c.destination)
+  osc.start()
+  osc.stop(c.currentTime + duration)
+}
+
+export const sfx = {
+  click: () => blip(520, 0.08, 'triangle', 0.14),
+  tap: () => blip(380, 0.06, 'sine', 0.1),
+  reveal: () => {
+    blip(440, 0.12, 'sine')
+    setTimeout(() => blip(660, 0.16, 'sine'), 90)
+  },
+  impostor: () => {
+    blip(180, 0.3, 'sawtooth', 0.16)
+    setTimeout(() => blip(120, 0.4, 'sawtooth', 0.16), 120)
+  },
+  vote: () => blip(600, 0.1, 'square', 0.12),
+  eliminate: () => {
+    blip(300, 0.2, 'sawtooth', 0.14)
+    setTimeout(() => blip(200, 0.3, 'sawtooth', 0.14), 150)
+  },
+  win: () => {
+    ;[523, 659, 784, 1047].forEach((f, i) =>
+      setTimeout(() => blip(f, 0.25, 'triangle', 0.16), i * 130)
+    )
+  },
+  lose: () => {
+    ;[392, 330, 262].forEach((f, i) =>
+      setTimeout(() => blip(f, 0.3, 'sawtooth', 0.16), i * 160)
+    )
+  },
+  tick: () => blip(880, 0.04, 'sine', 0.08),
+}
+
+// ───── مۆسیقای پاشبنە (دڕۆنی ئەمبیێنتی فەزایی) ─────
+export function startMusic() {
+  if (!musicEnabled) return
+  const c = getCtx()
+  if (!c || musicNodes) return
+
+  musicGain = c.createGain()
+  musicGain.gain.value = 0.05
+  musicGain.connect(c.destination)
+
+  const freqs = [55, 82.4, 110, 164.8]
+  const oscs = freqs.map((f, i) => {
+    const osc = c.createOscillator()
+    osc.type = i % 2 === 0 ? 'sine' : 'triangle'
+    osc.frequency.value = f
+
+    const lfo = c.createOscillator()
+    const lfoGain = c.createGain()
+    lfo.frequency.value = 0.05 + i * 0.03
+    lfoGain.gain.value = 1.5
+    lfo.connect(lfoGain).connect(osc.frequency)
+
+    const g = c.createGain()
+    g.gain.value = 0.25
+    osc.connect(g).connect(musicGain)
+    osc.start()
+    lfo.start()
+    return { osc, lfo }
+  })
+  musicNodes = oscs
+}
+
+export function stopMusic() {
+  if (!musicNodes) return
+  const c = getCtx()
+  musicNodes.forEach(({ osc, lfo }) => {
+    try {
+      osc.stop()
+      lfo.stop()
+    } catch (e) {
+      /* ئاسایی */
+    }
+  })
+  musicNodes = null
+  if (musicGain && c) musicGain.disconnect()
+}
+
+// چالاککردنی ئۆدیۆ لەدوای یەکەم کرتەی بەکارهێنەر
+export function unlockAudio() {
+  getCtx()
+}

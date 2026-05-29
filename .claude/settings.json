@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(rm -rf node_modules/.vite)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:5173/)",
+      "Bash(curl -s \"http://localhost:5173/src/index.css\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://fonts.cdnfonts.com/css/nrt\")",
+      "Bash(git --version)",
+      "Bash(echo \"git: $\\(git --version || echo NO\\)\")",
+      "Bash(echo \"gh: $\\(gh --version)",
+      "Bash(gh auth *)",
+      "Bash(git init *)",
+      "Bash(git -c user.name=NashatShamsadyn7 -c user.email=nashatgameryt7@gmail.com commit -q -m 'Imposter game: online + local modes, Supabase realtime, dark/light themes *)"
+    ]
+  }
+}

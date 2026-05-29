@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* فۆنتی NRT بە شێوەی ناوخۆیی — فایلەکان دابنێ لە public/fonts/
+   ئەگەر فایلەکان نەبوون، خۆکار دەگەڕێتەوە بۆ Vazirmatn */
+@font-face {
+  font-family: 'NRT';
+  src: url('/fonts/NRT-Regular.woff2') format('woff2'),
+       url('/fonts/NRT-Regular.ttf') format('truetype');
+  font-weight: 400 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NRT';
+  src: url('/fonts/NRT-Bold.woff2') format('woff2'),
+       url('/fonts/NRT-Bold.ttf') format('truetype');
+  font-weight: 700 900;
+  font-display: swap;
+}
+
+/* ───── دۆخی تاریک (بنەڕەت) ───── */
+:root,
+[data-theme='dark'] {
+  --c-space: 11 15 28;
+  --c-surface: 22 28 46;
+  --c-surface2: 31 39 62;
+  --c-ink: 230 235 246;
+  --c-muted: 150 160 182;
+  --c-line: 44 53 78;
+  --c-crew: 45 212 191;
+  --c-impostor: 240 113 109;
+  --aurora-1: 45 212 191;
+  --aurora-2: 240 113 109;
+  --aurora-3: 120 150 240;
+  --shadow: rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+/* ───── دۆخی ڕووناک ───── */
+[data-theme='light'] {
+  --c-space: 238 242 249;
+  --c-surface: 255 255 255;
+  --c-surface2: 244 246 251;
+  --c-ink: 42 51 70;
+  --c-muted: 107 116 136;
+  --c-line: 229 233 242;
+  --c-crew: 14 156 142;
+  --c-impostor: 225 91 87;
+  --aurora-1: 14 156 142;
+  --aurora-2: 225 91 87;
+  --aurora-3: 99 132 220;
+  --shadow: rgba(42, 51, 70, 0.08);
+  color-scheme: light;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background-color: rgb(var(--c-space));
+  color: rgb(var(--c-ink));
+  font-family: 'NRT', 'Vazirmatn', Tahoma, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* پاشبنەی نەرم */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 50% at 15% 10%, rgb(var(--aurora-1) / 0.12), transparent 70%),
+    radial-gradient(55% 45% at 90% 20%, rgb(var(--aurora-2) / 0.10), transparent 70%),
+    radial-gradient(60% 55% at 50% 100%, rgb(var(--aurora-3) / 0.10), transparent 70%);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+}
+
+/* کارت */
+.panel {
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-line));
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px var(--shadow);
+}
+
+.btn-press {
+  transition: transform 0.12s ease, box-shadow 0.2s ease, background-color 0.2s ease,
+    filter 0.2s ease, border-color 0.2s ease;
+}
+.btn-press:active {
+  transform: scale(0.96);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-ink) / 0.2);
+  border-radius: 4px;
+}
+
+input,
+button,
+select {
+  font-family: inherit;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
