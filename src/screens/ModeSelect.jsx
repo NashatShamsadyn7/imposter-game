@@ -1,9 +1,11 @@
 import { Rocket, Wifi, Smartphone, ChevronLeft } from 'lucide-react'
 import { Panel } from '../components/ui'
+import { useT } from '../lib/i18n'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // شاشەی هەڵبژاردنی شێوازی یاری
 export default function ModeSelect({ onSelect }) {
+  const t = useT()
   const pick = (mode) => {
     unlockAudio()
     sfx.click()
@@ -17,8 +19,8 @@ export default function ModeSelect({ onSelect }) {
           <div className="mb-3 grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-impostor to-crew shadow-soft">
             <Rocket className="h-10 w-10 text-white" />
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-ink">ساختەکار</h1>
-          <p className="mt-1 text-sm text-muted">شێوازی یاری هەڵبژێرە</p>
+          <h1 className="text-4xl font-black tracking-tight text-ink">{t('ساختەکار')}</h1>
+          <p className="mt-1 text-sm text-muted">{t('شێوازی یاری هەڵبژێرە')}</p>
         </div>
 
         {/* ئۆنلاین */}
@@ -28,8 +30,8 @@ export default function ModeSelect({ onSelect }) {
               <Wifi className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="text-lg font-black text-ink">یاریکردنی ئۆنلاین</p>
-              <p className="text-sm text-muted">هەر کەس لە ئامێری خۆی + چات + خاڵی کلاود</p>
+              <p className="text-lg font-black text-ink">{t('یاریکردنی ئۆنلاین')}</p>
+              <p className="text-sm text-muted">{t('هەر کەس لە ئامێری خۆی + چات + خاڵی کلاود')}</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
           </Panel>
@@ -42,8 +44,8 @@ export default function ModeSelect({ onSelect }) {
               <Smartphone className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="text-lg font-black text-ink">یاریکردنی ناوخۆیی</p>
-              <p className="text-sm text-muted">یەک ئامێر — بەبێ ئینتەرنێت و چوونەژوورەوە</p>
+              <p className="text-lg font-black text-ink">{t('یاریکردنی ناوخۆیی')}</p>
+              <p className="text-sm text-muted">{t('یەک ئامێر — بەبێ ئینتەرنێت و چوونەژوورەوە')}</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
           </Panel>

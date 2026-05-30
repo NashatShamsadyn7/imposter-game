@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Hand, Vote, Check, EyeOff } from 'lucide-react'
 import { useLocal } from '../../state/LocalContext'
 import { Button } from '../../components/ui'
+import { useT } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
 
 export default function LocalVoting() {
   const { game, settings, finishGame } = useLocal()
+  const t = useT()
   const need = settings.impostorCount
   const voters = game.players
 
@@ -46,18 +48,18 @@ export default function LocalVoting() {
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 py-8 text-center">
         <div className="animate-fade-in">
           <div className="mb-3 flex items-center justify-center gap-2 text-impostor">
-            <EyeOff className="h-5 w-5" /><span className="font-bold">دەنگدانی نهێنی</span>
+            <EyeOff className="h-5 w-5" /><span className="font-bold">{t('دەنگدانی نهێنی')}</span>
           </div>
           <Hand className="mx-auto mb-4 h-14 w-14 text-crew" />
-          <p className="mb-2 text-muted">ئامێرەکە بدە بە</p>
+          <p className="mb-2 text-muted">{t('ئامێرەکە بدە بە')}</p>
           <h1 className="mb-1 text-4xl font-black text-ink">{voter.name}</h1>
-          <p className="mb-10 text-sm text-muted">دەنگدەر {voterIndex + 1} لە {voters.length}</p>
+          <p className="mb-10 text-sm text-muted">{t('دەنگدەر')} {voterIndex + 1} {t('لە')} {voters.length}</p>
           <button
             onClick={() => { sfx.click(); setHanded(true) }}
             className="btn-press animate-pulse-glow mx-auto flex h-44 w-44 flex-col items-center justify-center gap-3 rounded-full border-2 border-crew/40 bg-surface shadow-soft"
           >
             <Vote className="h-12 w-12 text-crew" />
-            <span className="font-bold text-crew">دەنگدان</span>
+            <span className="font-bold text-crew">{t('دەنگدان')}</span>
           </button>
         </div>
       </div>
@@ -68,9 +70,9 @@ export default function LocalVoting() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-4 py-6">
       <div className="mb-5 text-center animate-fade-in">
-        <h1 className="text-xl font-black text-ink"><span className="text-crew">{voter.name}</span> — کێ ساختەکارە؟</h1>
+        <h1 className="text-xl font-black text-ink"><span className="text-crew">{voter.name}</span> — {t('کێ ساختەکارە؟')}</h1>
         <p className="mt-1 text-sm text-muted">
-          {need === 1 ? 'یەک کەس هەڵبژێرە' : `${need} کەس هەڵبژێرە`} · {picked.length}/{need}
+          {need === 1 ? t('یەک کەس هەڵبژێرە') : `${need} ${t('کەس هەڵبژێرە')}`} · {picked.length}/{need}
         </p>
       </div>
 
@@ -93,7 +95,7 @@ export default function LocalVoting() {
       </div>
 
       <Button onClick={submit} disabled={picked.length !== need} variant="danger" className="mt-4 w-full !py-4">
-        {isLast ? 'تەواوکردنی دەنگدان' : 'پشتڕاستکردنەوە و یاریزانی دواتر'}
+        {isLast ? t('تەواوکردنی دەنگدان') : t('پشتڕاستکردنەوە و یاریزانی دواتر')}
       </Button>
     </div>
   )

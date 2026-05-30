@@ -21,7 +21,7 @@ import {
   sendMessage as apiSendMessage,
   castVotes as apiCastVotes,
   clearVotes,
-  addPoints,
+  recordResult,
   subscribeRoom,
 } from '../lib/supabase'
 
@@ -193,7 +193,9 @@ export function RoomProvider({ children }) {
     const category = resolveCategory(room.category_id)
     const word = pickRandomWord(category, room.secret_word_ku)
 
-    const ids = players.map((p) => p.user_id)
+    // بینەرەکان لە دابەشکردنی ڕۆڵ و یاری بەدەر دەکرێن
+    const playable = players.filter((p) => !p.is_spectator)
+    const ids = playable.map((p) => p.user_id)
     const shuffled = [...ids].sort(() => Math.random() - 0.5)
     const impostorIds = new Set(shuffled.slice(0, room.impostor_count))
 
@@ -201,7 +203,7 @@ export function RoomProvider({ children }) {
     await Promise.all(
       players.map((p) =>
         updatePlayer(roomId, p.user_id, {
-          role: impostorIds.has(p.user_id) ? 'impostor' : 'crew',
+          role: p.is_spectator ? null : impostorIds.has(p.user_id) ? 'impostor' : 'crew',
           ejected: false,
           points_this_game: 0,
         })
@@ -220,7 +222,9 @@ export function RoomProvider({ children }) {
   // دەستپێکردنی گفتوگۆ
   const beginDiscussion = useCallback(async () => {
     if (!isHost) return
-    const ordered = [...players].sort((a, b) => a.order_index - b.order_index)
+    const ordered = players
+      .filter((p) => !p.is_spectator)
+      .sort((a, b) => a.order_index - b.order_index)
     const endsAt = new Date(Date.now() + room.discussion_seconds * 1000).toISOString()
     await updateRoom(roomId, {
       status: 'discussion',
@@ -232,7 +236,9 @@ export function RoomProvider({ children }) {
   // نۆرەی دواتر بۆ وەسفکردن
   const nextTurn = useCallback(async () => {
     if (!isHost) return
-    const ordered = [...players].sort((a, b) => a.order_index - b.order_index)
+    const ordered = players
+      .filter((p) => !p.is_spectator)
+      .sort((a, b) => a.order_index - b.order_index)
     const idx = ordered.findIndex((p) => p.user_id === room.turn_player_id)
     const next = ordered[idx + 1]
     await updateRoom(roomId, { turn_player_id: next?.user_id || null })
@@ -260,8 +266,10 @@ export function RoomProvider({ children }) {
     resultsRef.current = true
     const freshVotes = await fetchVotes(roomId)
     const freshPlayers = await fetchPlayers(roomId)
+    // بینەرەکان لە لێکدانەوەی ئەنجام بەدەر دەکرێن
+    const active = freshPlayers.filter((p) => !p.is_spectator)
     const { results, winner } = resolveGame(
-      freshPlayers,
+      active,
       freshVotes,
       room.impostor_count,
       room.multiplier
@@ -275,11 +283,11 @@ export function RoomProvider({ children }) {
         })
       )
     )
-    // زیادکردنی خاڵ بۆ پرۆفایلی هەموان
+    // تۆمارکردنی ئەنجام + زیادکردنی خاڵ بۆ هەموان (مێژووش تۆمار دەکرێت)
     await Promise.all(
       results.map((r) => {
         const won = winner === r.role
-        return addPoints(r.user_id, r.points, won)
+        return recordResult(r.user_id, r.points, won, r.role, room.category_id, room.secret_word_ku)
       })
     )
     await updateRoom(roomId, { status: 'results', winner_side: winner })
@@ -289,9 +297,15 @@ export function RoomProvider({ children }) {
   const playAgain = useCallback(async () => {
     if (!isHost) return
     await clearVotes(roomId)
+    // بینەرەکانیش دەبنەوە یاریزان بۆ یاری داهاتوو
     await Promise.all(
       players.map((p) =>
-        updatePlayer(roomId, p.user_id, { role: null, ejected: false, points_this_game: 0 })
+        updatePlayer(roomId, p.user_id, {
+          role: null,
+          ejected: false,
+          points_this_game: 0,
+          is_spectator: false,
+        })
       )
     )
     resultsRef.current = false

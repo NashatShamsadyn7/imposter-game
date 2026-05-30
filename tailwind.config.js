@@ -42,6 +42,11 @@ export default {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-18px)' },
         },
+        'float-up': {
+          '0%': { opacity: '0', transform: 'translateY(0) scale(0.6)' },
+          '15%': { opacity: '1', transform: 'translateY(-10px) scale(1.1)' },
+          '100%': { opacity: '0', transform: 'translateY(-180px) scale(1)' },
+        },
       },
       animation: {
         'pulse-glow': 'pulse-glow 2.4s ease-in-out infinite',
@@ -49,6 +54,7 @@ export default {
         'fade-in': 'fade-in 0.4s ease-out',
         'scale-in': 'scale-in 0.3s ease-out',
         float: 'float 9s ease-in-out infinite',
+        'float-up': 'float-up 2.5s ease-out forwards',
       },
     },
   },

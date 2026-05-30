@@ -18,6 +18,7 @@ import {
   deleteGroup,
 } from '../lib/supabase'
 import { isOnline } from '../lib/presence'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 const QUICK_EMOJIS = ['😂', '😮', '🤔', '👍', '🔥', '❤️', '🎮', '🕵️', '👏', '🥳']
@@ -26,6 +27,7 @@ const EMOJI_ONLY = /^[\p{Extended_Pictographic}‍️\s]+$/u
 export default function GroupChat({ group, onBack, onLeft }) {
   const { user, profile } = useAuth()
   const { openProfile } = useProfileViewer() || {}
+  const t = useT()
   const [messages, setMessages] = useState([])
   const [members, setMembers] = useState([])
   const [text, setText] = useState('')
@@ -89,10 +91,10 @@ export default function GroupChat({ group, onBack, onLeft }) {
 
   const handleLeave = async () => {
     if (isOwner) {
-      if (!confirm('تۆ خاوەنی گرووپیت — سڕینەوەی گرووپ بۆ هەمووان؟')) return
+      if (!confirm(t('تۆ خاوەنی گرووپیت — سڕینەوەی گرووپ بۆ هەمووان؟'))) return
       await deleteGroup(group.id)
     } else {
-      if (!confirm('دەرچوون لە گرووپ؟')) return
+      if (!confirm(t('دەرچوون لە گرووپ؟'))) return
       await leaveGroup(group.id, user.id)
     }
     onLeft?.()
@@ -112,13 +114,13 @@ export default function GroupChat({ group, onBack, onLeft }) {
         <button onClick={() => setShowMembers((s) => !s)} className="min-w-0 flex-1 text-right leading-tight">
           <p className="truncate font-bold text-ink">{group.name}</p>
           <p className="flex items-center justify-end gap-1 text-xs text-muted">
-            <Users className="h-3 w-3" /> {members.length} ئەندام
+            <Users className="h-3 w-3" /> {members.length} {t('ئەندام')}
           </p>
         </button>
         <button
           onClick={copyCode}
           className="btn-press flex items-center gap-1 rounded-xl border border-crew/40 bg-crew/10 px-2.5 py-1.5"
-          title="کۆدی گرووپ"
+          title={t('کۆدی گرووپ')}
         >
           <span className="font-mono text-sm font-black tracking-wider text-crew">{group.code}</span>
           {copied ? <Check className="h-3.5 w-3.5 text-crew" /> : <Copy className="h-3.5 w-3.5 text-ink/50" />}
@@ -129,9 +131,9 @@ export default function GroupChat({ group, onBack, onLeft }) {
       {showMembers && (
         <div className="mb-3 max-h-48 overflow-y-auto rounded-2xl border border-line bg-surface p-3 shadow-card animate-fade-in">
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-bold text-muted">ئەندامان ({members.length})</p>
+            <p className="text-xs font-bold text-muted">{t('ئەندامان')} ({members.length})</p>
             <button onClick={handleLeave} className="flex items-center gap-1 text-xs font-bold text-impostor">
-              <LogOut className="h-3.5 w-3.5" /> {isOwner ? 'سڕینەوەی گرووپ' : 'دەرچوون'}
+              <LogOut className="h-3.5 w-3.5" /> {isOwner ? t('سڕینەوەی گرووپ') : t('دەرچوون')}
             </button>
           </div>
           <div className="space-y-1.5">
@@ -148,8 +150,8 @@ export default function GroupChat({ group, onBack, onLeft }) {
                   )}
                 </div>
                 <span className="flex-1 truncate text-sm text-ink">
-                  {m.profile?.display_name || 'یاریزان'}
-                  {m.user_id === user.id && <span className="text-xs text-crew"> (تۆ)</span>}
+                  {m.profile?.display_name || t('یاریزان')}
+                  {m.user_id === user.id && <span className="text-xs text-crew"> ({t('تۆ')})</span>}
                 </span>
                 {(m.role === 'owner' || m.role === 'admin') && (
                   <Crown className="h-3.5 w-3.5 text-amber-500" />
@@ -169,7 +171,7 @@ export default function GroupChat({ group, onBack, onLeft }) {
       {/* نامەکان */}
       <div className="flex-1 space-y-2 overflow-y-auto rounded-2xl border border-ink/10 bg-surface/40 p-3">
         {messages.length === 0 && (
-          <p className="py-8 text-center text-sm text-ink/30">یەکەم نامە بنێرە! 👋</p>
+          <p className="py-8 text-center text-sm text-ink/30">{t('یەکەم نامە بنێرە! 👋')}</p>
         )}
         {messages.map((m) => {
           const mine = m.sender_id === user.id
@@ -265,7 +267,7 @@ export default function GroupChat({ group, onBack, onLeft }) {
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="نامەیەک بنووسە…"
+          placeholder={t('نامەیەک بنووسە…')}
           maxLength={500}
           className="min-w-0 flex-1 rounded-2xl border border-ink/10 bg-ink/5 px-4 py-3 text-ink placeholder:text-ink/30 outline-none focus:border-crew/60"
         />

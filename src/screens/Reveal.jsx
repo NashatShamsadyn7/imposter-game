@@ -6,6 +6,7 @@ import { CATEGORIES, findWord } from '../data/words'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import WordImage from '../components/WordImage'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 const REVEAL_SECONDS = 10
@@ -13,6 +14,7 @@ const REVEAL_SECONDS = 10
 export default function Reveal() {
   const { user } = useAuth()
   const { room, players, me, isHost, beginDiscussion } = useRoom()
+  const t = useT()
   const [flipped, setFlipped] = useState(false)
   const [countdown, setCountdown] = useState(REVEAL_SECONDS)
   const timerRef = useRef(null)
@@ -52,21 +54,37 @@ export default function Reveal() {
     )
   }
 
+  // ───── بینەر (spectator) ─────
+  if (me.is_spectator) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 py-8 text-center">
+        <div className="animate-scale-in">
+          <div className="mb-4 inline-flex rounded-full border-2 border-ink/20 bg-ink/5 p-5">
+            <Eye className="h-14 w-14 text-ink/40" />
+          </div>
+          <h1 className="mb-1 text-3xl font-black text-ink">{t('بینەر')}</h1>
+          <p className="mb-6 text-ink/60">{t('یاری دەستی پێکردووە — تۆ سەیری دەکەیت. لە یاری داهاتوودا بەشدار دەبیت.')}</p>
+          <p className="text-sm text-ink/40">{t('چاوەڕێی قۆناغی گفتوگۆ بکە…')}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 py-8">
       {/* پێش کلیک */}
       {!flipped ? (
         <div className="animate-fade-in text-center">
-          <p className="mb-2 text-ink/60">کارتەکەت ئامادەیە</p>
+          <p className="mb-2 text-ink/60">{t('کارتەکەت ئامادەیە')}</p>
           <h1 className="mb-1 text-2xl font-black text-ink">{me.display_name}</h1>
-          <p className="mb-10 text-sm text-ink/40">کلیک بکە بۆ بینینی ڕۆڵەکەت</p>
+          <p className="mb-10 text-sm text-ink/40">{t('کلیک بکە بۆ بینینی ڕۆڵەکەت')}</p>
 
           <button
             onClick={handleFlip}
             className="btn-press animate-pulse-glow group mx-auto flex h-52 w-52 flex-col items-center justify-center gap-3 rounded-3xl border-2 border-crew/40 bg-surface/60"
           >
             <Eye className="h-14 w-14 text-crew transition group-hover:scale-110" />
-            <span className="font-bold text-crew">بینینی ڕۆڵ</span>
+            <span className="font-bold text-crew">{t('بینینی ڕۆڵ')}</span>
           </button>
         </div>
       ) : isImpostor ? (
@@ -75,15 +93,15 @@ export default function Reveal() {
           <div className="animate-pulse-glow-red mb-4 inline-flex rounded-full border-2 border-impostor bg-impostor/15 p-5">
             <Skull className="h-14 w-14 text-impostor" />
           </div>
-          <h1 className="mb-1 text-3xl font-black text-impostor">ساختەکار</h1>
-          <p className="mb-6 text-lg font-bold text-ink">تۆ وشەکە نازانیت!</p>
+          <h1 className="mb-1 text-3xl font-black text-impostor">{t('ساختەکار')}</h1>
+          <p className="mb-6 text-lg font-bold text-ink">{t('تۆ وشەکە نازانیت!')}</p>
 
           <Panel className="mb-6 border-impostor/30">
             {allies.length > 0 ? (
               <>
                 <p className="mb-3 flex items-center justify-center gap-2 text-sm text-ink/60">
                   <Users className="h-4 w-4" />
-                  هاوەڵە ساختەکارەکانت
+                  {t('هاوەڵە ساختەکارەکانت')}
                 </p>
                 <div className="flex flex-wrap justify-center gap-3">
                   {allies.map((a) => (
@@ -95,12 +113,12 @@ export default function Reveal() {
                 </div>
               </>
             ) : (
-              <p className="text-sm text-ink/60">تۆ تاکە ساختەکاریت. بەختت یارت بێت!</p>
+              <p className="text-sm text-ink/60">{t('تۆ تاکە ساختەکاریت. بەختت یارت بێت!')}</p>
             )}
           </Panel>
 
           <p className="text-sm text-ink/50">
-            گوێ بگرە لە ئاماژەکان و خۆت وەک دەستەی کەشتی دەربخە.
+            {t('گوێ بگرە لە ئاماژەکان و خۆت وەک دەستەی کەشتی دەربخە.')}
           </p>
         </div>
       ) : (
@@ -108,7 +126,7 @@ export default function Reveal() {
         <div className="animate-scale-in w-full text-center">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-crew/40 bg-crew/10 px-3 py-1 text-crew">
             <ShieldCheck className="h-4 w-4" />
-            <span className="text-sm font-bold">دەستەی کەشتی</span>
+            <span className="text-sm font-bold">{t('دەستەی کەشتی')}</span>
           </div>
           <p className="mb-1 text-xs text-ink/50">هاوپۆل: {category?.name}</p>
           <h1 className="mb-4 text-4xl font-black text-ink">{room.secret_word_ku}</h1>
@@ -118,7 +136,7 @@ export default function Reveal() {
           </div>
 
           <p className="mb-5 text-sm text-ink/60">
-            ئەمە وشە نهێنیەکەتە. بیری لێ بکەرەوە چۆن بەبێ ئاشکراکردن وەسفی بکەیت.
+            {t('ئەمە وشە نهێنیەکەتە. بیری لێ بکەرەوە چۆن بەبێ ئاشکراکردن وەسفی بکەیت.')}
           </p>
 
           <div className="inline-flex items-center gap-2 rounded-full bg-impostor/15 px-4 py-2 text-impostor">
@@ -133,11 +151,11 @@ export default function Reveal() {
         {isHost ? (
           <Button onClick={beginDiscussion} className="w-full !py-4">
             <MessageSquare className="h-5 w-5" />
-            دەستپێکردنی گفتوگۆ
+            {t('دەستپێکردنی گفتوگۆ')}
           </Button>
         ) : (
           <p className="text-center text-sm text-ink/40">
-            چاوەڕێی خانەخوێ بکە بۆ دەستپێکردنی گفتوگۆ…
+            {t('چاوەڕێی خانەخوێ بکە بۆ دەستپێکردنی گفتوگۆ…')}
           </p>
         )}
       </div>

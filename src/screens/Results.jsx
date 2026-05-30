@@ -7,12 +7,14 @@ import { CATEGORIES, findWord } from '../data/words'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import WordImage from '../components/WordImage'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 export default function Results() {
   const { room, players, isHost, playAgain, leaveRoom } = useRoom()
   const { refreshProfile } = useAuth()
   const { openProfile } = useProfileViewer() || {}
+  const t = useT()
   const impostorWin = room.winner_side === 'impostor'
   const category = CATEGORIES.find((c) => c.id === room.category_id)
 
@@ -27,8 +29,10 @@ export default function Results() {
     return () => clearTimeout(t)
   }, [])
 
-  // ڕیزکردن بەپێی خاڵ
-  const ranked = [...players].sort((a, b) => b.points_this_game - a.points_this_game)
+  // ڕیزکردن بەپێی خاڵ (بینەرەکان نیشان نادرێن)
+  const ranked = [...players]
+    .filter((p) => !p.is_spectator)
+    .sort((a, b) => b.points_this_game - a.points_this_game)
 
   return (
     <div className="mx-auto max-w-md px-4 py-6 pb-24">
@@ -47,13 +51,13 @@ export default function Results() {
           )}
         </div>
         <h1 className={`mb-4 text-3xl font-black ${impostorWin ? 'text-impostor' : 'text-crew'}`}>
-          {impostorWin ? 'ساختەکارەکان سەرکەوتن!' : 'دەستەی کەشتی سەرکەوتن!'}
+          {impostorWin ? t('ساختەکارەکان سەرکەوتن!') : t('دەستەی کەشتی سەرکەوتن!')}
         </h1>
       </div>
 
       {/* وشەی نهێنی */}
       <Panel className="mb-5 text-center">
-        <p className="mb-1 text-xs text-ink/50">وشەی نهێنی ({category?.name})</p>
+        <p className="mb-1 text-xs text-ink/50">{t('وشەی نهێنی')} ({category?.name})</p>
         <p className="mb-4 text-2xl font-black text-ink">{room.secret_word_ku}</p>
         <div className="flex justify-center">
           <WordImage englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={200} />
@@ -62,7 +66,7 @@ export default function Results() {
 
       {/* ئەنجامەکان */}
       <Panel className="mb-6">
-        <h2 className="mb-3 text-center font-bold text-ink">ئەنجام و خاڵەکان</h2>
+        <h2 className="mb-3 text-center font-bold text-ink">{t('ئەنجام و خاڵەکان')}</h2>
         <div className="space-y-2">
           {ranked.map((p) => (
             <button
@@ -85,12 +89,12 @@ export default function Results() {
                   {p.display_name}
                   {p.ejected && (
                     <span className="flex items-center gap-0.5 text-xs text-ink/40">
-                      <UserX className="h-3 w-3" /> دەرکرا
+                      <UserX className="h-3 w-3" /> {t('دەرکرا')}
                     </span>
                   )}
                 </p>
                 <p className="text-xs text-ink/50">
-                  {p.role === 'impostor' ? 'ساختەکار' : 'دەستەی کەشتی'} · {p.votes || 0} دەنگ
+                  {p.role === 'impostor' ? t('ساختەکار') : t('دەستەی کەشتی')} · {p.votes || 0} {t('دەنگ')}
                 </p>
               </div>
               <span className="flex items-center gap-1 font-black text-crew">
@@ -105,11 +109,11 @@ export default function Results() {
       {isHost ? (
         <Button onClick={playAgain} className="w-full !py-4 !text-lg">
           <RotateCcw className="h-6 w-6" />
-          یاری دووبارە
+          {t('یاری دووبارە')}
         </Button>
       ) : (
         <p className="mb-3 rounded-2xl border border-ink/10 bg-ink/5 py-4 text-center text-ink/60">
-          چاوەڕێی خانەخوێ بکە بۆ یاری دووبارە…
+          {t('چاوەڕێی خانەخوێ بکە بۆ یاری دووبارە…')}
         </p>
       )}
 
@@ -118,7 +122,7 @@ export default function Results() {
         className="btn-press mx-auto mt-4 flex items-center gap-2 text-sm text-ink/50 hover:text-ink"
       >
         <LogOut className="h-4 w-4" />
-        دەرچوون لە ژوور
+        {t('دەرچوون لە ژوور')}
       </button>
     </div>
   )

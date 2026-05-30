@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { Clock, Play, Pause, Vote, RotateCcw, Megaphone, SkipForward } from 'lucide-react'
 import { useLocal } from '../../state/LocalContext'
 import { Button, Panel } from '../../components/ui'
+import { useT } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
 
 export default function LocalDiscussion() {
   const { game, settings, goToVoting } = useLocal()
+  const t = useT()
   const [remaining, setRemaining] = useState(settings.discussionSeconds)
   const [running, setRunning] = useState(true)
   const [turn, setTurn] = useState(0)
@@ -34,21 +36,21 @@ export default function LocalDiscussion() {
       <Panel className="mb-4 flex items-center gap-3 !p-4 animate-fade-in">
         <Megaphone className="h-6 w-6 shrink-0 text-crew" />
         <div className="flex-1">
-          <p className="text-xs text-muted">نۆرەی وەسفکردن</p>
+          <p className="text-xs text-muted">{t('نۆرەی وەسفکردن')}</p>
           <p className="text-lg font-black text-ink">{game.players[turn]?.name}</p>
         </div>
         <Button
           variant="ghost"
-          onClick={() => { sfx.tap(); setTurn((t) => (t + 1) % game.players.length) }}
+          onClick={() => { sfx.tap(); setTurn((idx) => (idx + 1) % game.players.length) }}
           className="!px-3 !py-2 !text-sm"
         >
-          <SkipForward className="h-4 w-4" /> دواتر
+          <SkipForward className="h-4 w-4" /> {t('دواتر')}
         </Button>
       </Panel>
 
       <div className="flex flex-1 flex-col items-center justify-center">
         <div className="mb-3 flex items-center gap-2 text-muted">
-          <Clock className="h-5 w-5" /><span>کاتی گفتوگۆ</span>
+          <Clock className="h-5 w-5" /><span>{t('کاتی گفتوگۆ')}</span>
         </div>
         <div className="relative mb-6 flex h-56 w-56 items-center justify-center">
           <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
@@ -65,7 +67,7 @@ export default function LocalDiscussion() {
           </p>
         </div>
         <p className="max-w-xs text-center text-sm text-muted">
-          هەر یاریزانێک بە یەک وشە وەسفی بکات — بەبێ ئەوەی ڕاستەوخۆ بیڵێت.
+          {t('هەر یاریزانێک بە یەک وشە وەسفی بکات — بەبێ ئەوەی ڕاستەوخۆ بیڵێت.')}
         </p>
       </div>
 
@@ -73,14 +75,14 @@ export default function LocalDiscussion() {
         <div className="flex gap-3">
           <Button variant="ghost" onClick={() => setRunning((r) => !r)} className="flex-1">
             {running ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-            {running ? 'وەستان' : 'بەردەوامبوون'}
+            {running ? t('وەستان') : t('بەردەوامبوون')}
           </Button>
           <Button variant="ghost" onClick={() => { setRemaining(settings.discussionSeconds); setRunning(true) }} className="!px-4">
             <RotateCcw className="h-5 w-5" />
           </Button>
         </div>
         <Button onClick={goToVoting} variant="danger" className="w-full !py-4 !text-lg">
-          <Vote className="h-6 w-6" /> چوون بەرەو دەنگدان
+          <Vote className="h-6 w-6" /> {t('چوون بەرەو دەنگدان')}
         </Button>
       </div>
     </div>

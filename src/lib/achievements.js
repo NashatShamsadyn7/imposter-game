@@ -45,8 +45,23 @@ export function winRate(stats) {
   return g ? (stats.wins || 0) / g : 0
 }
 
+// ───── چوارچێوەی ئەڤاتار بەپێی ئاست ─────
+// تیشکێکی ڕەنگاوڕەنگ کە بەپێی ئاست گەشاوەتر دەبێت — پاداشتی بینراو
+// دەگەڕێنێتەوە: { ring, glow } بە پۆلە CSSـەکانی Tailwind، یان null بۆ ئاستە سەرەتاییەکان
+export function levelFrame(level = 1) {
+  if (level >= 25) return { ring: 'from-fuchsia-500 via-amber-400 to-crew', glow: 'shadow-[0_0_18px_rgba(217,70,239,0.55)]' }
+  if (level >= 20) return { ring: 'from-purple-500 to-fuchsia-500', glow: 'shadow-[0_0_16px_rgba(168,85,247,0.5)]' }
+  if (level >= 15) return { ring: 'from-emerald-400 to-teal-500', glow: 'shadow-[0_0_14px_rgba(16,185,129,0.5)]' }
+  if (level >= 10) return { ring: 'from-amber-400 to-yellow-500', glow: 'shadow-[0_0_14px_rgba(251,191,36,0.5)]' }
+  if (level >= 7) return { ring: 'from-slate-300 to-slate-500', glow: '' }
+  if (level >= 4) return { ring: 'from-orange-400 to-amber-600', glow: '' }
+  return null // ئاستی ١–٣: بێ چوارچێوەی تایبەت
+}
+
 // ───── ناونیشانی ئاست ─────
 export function levelTitle(level) {
+  if (level >= 25) return 'ئەسطوورە'
+  if (level >= 20) return 'گەورەپیاو'
   if (level >= 15) return 'ئەفسانە'
   if (level >= 10) return 'پاڵەوان'
   if (level >= 7) return 'شارەزا'
@@ -141,6 +156,34 @@ export const ACHIEVEMENTS = [
     desc: 'ڕێژەی سەرکەوتن ٧٠٪ (لانیکەم ١٠ یاری)',
     icon: Target,
     check: (s) => (s.games_played || 0) >= 10 && winRate(s) >= 0.7,
+  },
+  {
+    id: 'winner_50',
+    name: 'نەبڕاوە',
+    desc: '٥٠ سەرکەوتن',
+    icon: Crown,
+    check: (s) => (s.wins || 0) >= 50,
+  },
+  {
+    id: 'points_2500',
+    name: 'سامانداری خاڵ',
+    desc: '٢٥٠٠ خاڵ کۆکرایەوە',
+    icon: Gem,
+    check: (s) => (s.total_points || 0) >= 2500,
+  },
+  {
+    id: 'level_15',
+    name: 'گەیشتن بە ئەفسانە',
+    desc: 'گەیشتیت بە ئاستی ١٥',
+    icon: Sparkles,
+    check: (s) => levelInfo(s.total_points).level >= 15,
+  },
+  {
+    id: 'level_25',
+    name: 'ئەسطوورەی زیندوو',
+    desc: 'گەیشتیت بە ئاستی ٢٥',
+    icon: Flame,
+    check: (s) => levelInfo(s.total_points).level >= 25,
   },
 ]
 

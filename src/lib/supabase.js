@@ -94,7 +94,8 @@ export async function uploadAvatar(userId, file) {
     .upload(path, file, { upsert: true, cacheControl: '3600' })
   if (error) throw error
   const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-  return data.publicUrl
+  // ?v= بۆ بەزاندنی کاشی وێنەگر/CDN تاکو وێنە نوێیەکە یەکسەر دەربکەوێت
+  return `${data.publicUrl}?v=${Date.now()}`
 }
 
 // نوێکردنەوەی کاتی دواین بینین (حزووری ئۆنلاین)
@@ -165,7 +166,7 @@ export async function findRoomByCode(code) {
   return data
 }
 
-async function joinRoomRow(roomId, user, profile, isHost) {
+async function joinRoomRow(roomId, user, profile, isHost, isSpectator = false) {
   const { count } = await supabase
     .from('room_players')
     .select('id', { count: 'exact', head: true })
@@ -183,6 +184,7 @@ async function joinRoomRow(roomId, user, profile, isHost) {
       points_this_game: 0,
       can_speak: isHost,        // خانەخوێ ڕاستەوخۆ دەتوانێت قسە بکات
       mic_requested: false,
+      is_spectator: isSpectator, // بینەر: یاری ناکات، تەنها سەیر دەکات
     },
     { onConflict: 'room_id,user_id' }
   )
@@ -191,7 +193,9 @@ async function joinRoomRow(roomId, user, profile, isHost) {
 export async function joinRoom(code, user, profile) {
   const room = await findRoomByCode(code)
   if (!room) throw new Error('ژوور نەدۆزرایەوە')
-  await joinRoomRow(room.id, user, profile, room.host_id === user.id)
+  // ئەگەر یاری دەستی پێکردبێت و ئەم کەسە خانەخوێ نەبێت → وەک بینەر دەچێتە ژوورەوە
+  const isSpectator = room.status !== 'lobby' && room.host_id !== user.id
+  await joinRoomRow(room.id, user, profile, room.host_id === user.id, isSpectator)
   return room
 }
 
@@ -291,6 +295,97 @@ export async function addPoints(userId, points, won) {
   await supabase.rpc('add_points', { uid: userId, pts: points, won })
 }
 
+// تۆمارکردنی ئەنجامی یاری (خاڵ + مێژوو) — جێگرەوەی addPoints
+// ئەگەر record_result نەبوو (migration جێبەجێ نەکراوە)، دەگەڕێتەوە سەر add_points
+export async function recordResult(userId, points, won, role, categoryId, word) {
+  need()
+  const { error } = await supabase.rpc('record_result', {
+    uid: userId,
+    pts: points,
+    won,
+    p_role: role || 'crew',
+    p_category: categoryId || null,
+    p_word: word || null,
+  })
+  if (error) {
+    // یەدەگ: تەنها خاڵ زیاد بکە (بەبێ مێژوو)
+    await supabase.rpc('add_points', { uid: userId, pts: points, won })
+  }
+}
+
+// ═══════════════ مێژوو + مۆسم + پاداشتی ڕۆژانە ═══════════════
+// مێژووی دواین یارییەکانی بەکارهێنەرێک
+export async function fetchMatchHistory(userId, limit = 10) {
+  need()
+  if (!userId) return []
+  const { data } = await supabase
+    .from('game_results')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  return data || []
+}
+
+// ژمارەی یارییەکانی ئەمڕۆ (بۆ مەرجی ڕۆژانە)
+export async function todayGameCount(userId) {
+  need()
+  if (!userId) return 0
+  const start = new Date()
+  start.setUTCHours(0, 0, 0, 0)
+  const { count } = await supabase
+    .from('game_results')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', start.toISOString())
+  return count || 0
+}
+
+// وەرگرتنی پاداشتی چوونەژوورەوەی ڕۆژانە
+export async function claimDaily() {
+  need()
+  const { data, error } = await supabase.rpc('claim_daily')
+  if (error) throw error
+  return data
+}
+
+// وەرگرتنی پاداشتی مەرجی ڕۆژانە
+export async function claimDailyQuest() {
+  need()
+  const { data, error } = await supabase.rpc('claim_daily_quest')
+  if (error) throw error
+  return data
+}
+
+// لیدەربۆردی مۆسم (هەفتانە/مانگانە) — since: ISO string
+export async function getSeasonLeaderboard(since, limit = 20) {
+  if (!supabase) return []
+  const { data } = await supabase.rpc('season_leaderboard', { since, lim: limit })
+  return data || []
+}
+
+// ═══════════════ بلۆککردن ═══════════════
+export async function blockUser(blockerId, blockedId) {
+  need()
+  await supabase.from('blocks').upsert(
+    { blocker_id: blockerId, blocked_id: blockedId },
+    { onConflict: 'blocker_id,blocked_id', ignoreDuplicates: true }
+  )
+}
+
+export async function unblockUser(blockerId, blockedId) {
+  need()
+  await supabase.from('blocks').delete().eq('blocker_id', blockerId).eq('blocked_id', blockedId)
+}
+
+// idـی هەموو ئەو کەسانەی بلۆکم کردوون
+export async function fetchBlockedIds(userId) {
+  need()
+  if (!userId) return []
+  const { data } = await supabase.from('blocks').select('blocked_id').eq('blocker_id', userId)
+  return (data || []).map((b) => b.blocked_id)
+}
+
 // ═══════════════ ڕاستەوخۆ (Realtime) ═══════════════
 // گوێگرتن لە گۆڕانکاری ژوور + یاریزانان + نامە + دەنگ بە یەک کەناڵ
 export function subscribeRoom(roomId, handlers) {
@@ -320,6 +415,27 @@ export function subscribeRoom(roomId, handlers) {
     .subscribe()
 
   return () => supabase.removeChannel(channel)
+}
+
+// ═══════════════ کاردانەوەی خێرا (ئیمۆجی هەڵفڕیو) ═══════════════
+// بەکارهێنانی broadcast ـی ڕاستەوخۆ — ئیمۆجییەکان پاشەکەوت ناکرێن (ephemeral)
+export function joinReactionChannel(roomId, onReaction) {
+  if (!supabase || !roomId) return { send: () => {}, close: () => {} }
+  const channel = supabase.channel(`reactions:${roomId}`, {
+    config: { broadcast: { self: true } },
+  })
+  channel
+    .on('broadcast', { event: 'reaction' }, ({ payload }) => onReaction?.(payload))
+    .subscribe()
+  return {
+    send: (emoji, name) =>
+      channel.send({
+        type: 'broadcast',
+        event: 'reaction',
+        payload: { emoji, name, id: Math.random().toString(36).slice(2) },
+      }),
+    close: () => supabase.removeChannel(channel),
+  }
 }
 
 // ═══════════════ هاوڕێیان ═══════════════

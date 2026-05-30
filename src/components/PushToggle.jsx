@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { Bell, BellOff, Loader2 } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { isPushSupported, getPushState, enablePush, disablePush } from '../lib/push'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 // کلیلی چالاک/ناچالاککردنی ئاگادارکردنەوەی Push
 export default function PushToggle() {
   const { user } = useAuth()
+  const t = useT()
   const [enabled, setEnabled] = useState(false)
   const [busy, setBusy] = useState(false)
   const [supported, setSupported] = useState(true)
@@ -62,9 +64,9 @@ export default function PushToggle() {
           )}
         </div>
         <div className="flex-1 text-right">
-          <p className="font-bold text-ink">ئاگادارکردنەوەی Push</p>
+          <p className="font-bold text-ink">{t('ئاگادارکردنەوەی Push')}</p>
           <p className="text-xs text-muted">
-            وەرگرتنی ئاگادارکردنەوە تەنانەت کاتێک ئەپ داخراوە
+            {t('وەرگرتنی ئاگادارکردنەوە تەنانەت کاتێک ئەپ داخراوە')}
           </p>
         </div>
         <span className={`relative h-7 w-12 rounded-full transition ${enabled ? 'bg-crew' : 'bg-ink/20'}`}>

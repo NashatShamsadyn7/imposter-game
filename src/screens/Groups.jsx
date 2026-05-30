@@ -14,10 +14,12 @@ import {
   joinGroupByCode,
   subscribeMyGroupMemberships,
 } from '../lib/supabase'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 export default function Groups({ onBack }) {
   const { user, profile } = useAuth()
+  const t = useT()
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
   const [active, setActive] = useState(null) // گرووپی کراوە
@@ -102,17 +104,17 @@ export default function Groups({ onBack }) {
           <ChevronRight className="h-5 w-5" />
         </button>
         <h1 className="flex items-center gap-2 text-xl font-black text-ink">
-          <Users className="h-6 w-6 text-crew" /> گرووپەکان
+          <Users className="h-6 w-6 text-crew" /> {t('گرووپەکان')}
         </h1>
       </header>
 
       {/* دوگمەکان */}
       <div className="mb-5 grid grid-cols-2 gap-3">
         <Button onClick={() => { sfx.click(); setModal('create'); setError(null) }} className="!py-3">
-          <Plus className="h-5 w-5" /> گرووپی نوێ
+          <Plus className="h-5 w-5" /> {t('گرووپی نوێ')}
         </Button>
         <Button onClick={() => { sfx.click(); setModal('join'); setError(null) }} variant="outline" className="!py-3">
-          <LogIn className="h-5 w-5" /> بەشداربوون
+          <LogIn className="h-5 w-5" /> {t('بەشداربوون')}
         </Button>
       </div>
 
@@ -124,9 +126,9 @@ export default function Groups({ onBack }) {
       ) : groups.length === 0 ? (
         <Panel className="text-center text-muted">
           <Users className="mx-auto mb-2 h-10 w-10 text-ink/20" />
-          هێشتا هیچ گرووپێکت نییە.
+          {t('هێشتا هیچ گرووپێکت نییە.')}
           <br />
-          گرووپێک دروست بکە یان بە کۆد بەشداربە!
+          {t('گرووپێک دروست بکە یان بە کۆد بەشداربە!')}
         </Panel>
       ) : (
         <div className="space-y-2">
@@ -143,7 +145,7 @@ export default function Groups({ onBack }) {
                     {g.name}
                     {g.myRole === 'owner' && <Crown className="h-3.5 w-3.5 shrink-0 text-amber-500" />}
                   </p>
-                  <p className="font-mono text-xs text-muted">کۆد: {g.code}</p>
+                  <p className="font-mono text-xs text-muted">{t('کۆد:')} {g.code}</p>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted" />
               </Panel>
@@ -164,7 +166,7 @@ export default function Groups({ onBack }) {
           >
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-black text-ink">
-                {modal === 'create' ? 'گرووپی نوێ' : 'بەشداربوون بە کۆد'}
+                {modal === 'create' ? t('گرووپی نوێ') : t('بەشداربوون بە کۆد')}
               </h2>
               <button onClick={() => setModal(null)} className="btn-press rounded-full bg-ink/5 p-1.5 text-muted">
                 <X className="h-5 w-5" />
@@ -175,7 +177,7 @@ export default function Groups({ onBack }) {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="ناوی گرووپ…"
+                placeholder={t('ناوی گرووپ…')}
                 maxLength={40}
                 className="mb-3 w-full rounded-2xl border border-ink/10 bg-ink/5 px-4 py-3 text-ink outline-none focus:border-crew/60"
               />
@@ -183,7 +185,7 @@ export default function Groups({ onBack }) {
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="کۆدی گرووپ (٦ پیت)"
+                placeholder={t('کۆدی گرووپ (٦ پیت)')}
                 maxLength={6}
                 className="mb-3 w-full rounded-2xl border border-ink/10 bg-ink/5 px-4 py-3 text-center font-mono text-lg font-black tracking-widest text-ink outline-none focus:border-crew/60"
               />
@@ -198,7 +200,7 @@ export default function Groups({ onBack }) {
               disabled={busy || (modal === 'create' ? !name.trim() : !code.trim())}
               className="w-full"
             >
-              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : modal === 'create' ? 'دروستکردن' : 'بەشداربوون'}
+              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : modal === 'create' ? t('دروستکردن') : t('بەشداربوون')}
             </Button>
           </div>
         </div>

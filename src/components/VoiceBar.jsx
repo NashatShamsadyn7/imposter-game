@@ -21,12 +21,14 @@ import { useVoice } from '../state/VoiceContext'
 import { useRoom } from '../state/RoomContext'
 import { useNotify } from '../state/NotificationContext'
 import Avatar from './Avatar'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 export default function VoiceBar() {
   const voice = useVoice()
   const { players, me, isHost, requestMic, setSpeak } = useRoom()
   const notify = useNotify()
+  const t = useT()
   const [open, setOpen] = useState(false)
   const wasGranted = useRef(me?.can_speak)
 
@@ -70,7 +72,7 @@ export default function VoiceBar() {
             ? 'bg-crew text-white shadow-[0_6px_18px_-6px_rgba(14,156,142,0.7)]'
             : 'bg-impostor/15 text-impostor'
         }`}
-        title={micOn ? 'مایک داخستن' : 'مایک کردنەوە'}
+        title={micOn ? t('مایک داخستن') : t('مایک کردنەوە')}
       >
         {micOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
       </button>
@@ -79,10 +81,10 @@ export default function VoiceBar() {
     micBtn = (
       <div
         className="flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-amber-500/15 px-3 text-amber-500"
-        title="چاوەڕێی ڕەزامەندیی خانەخوێ"
+        title={t('چاوەڕێی ڕەزامەندیی خانەخوێ')}
       >
         <Clock className="h-4 w-4 animate-pulse" />
-        <span className="text-xs font-bold">چاوەڕێ…</span>
+        <span className="text-xs font-bold">{t('چاوەڕێ…')}</span>
       </div>
     )
   } else {
@@ -91,10 +93,10 @@ export default function VoiceBar() {
         onClick={handleMicBtn}
         disabled={status !== 'connected'}
         className="btn-press flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-crew/15 px-3 text-crew disabled:opacity-40"
-        title="داوای مایک بکە"
+        title={t('داوای مایک بکە')}
       >
         <Hand className="h-4 w-4" />
-        <span className="text-xs font-bold">داوای مایک</span>
+        <span className="text-xs font-bold">{t('داوای مایک')}</span>
       </button>
     )
   }
@@ -109,7 +111,7 @@ export default function VoiceBar() {
             {isHost && pendingReqs.length > 0 && (
               <div className="mb-3">
                 <p className="mb-2 flex items-center gap-1 text-xs font-bold text-amber-500">
-                  <Hand className="h-3.5 w-3.5" /> داوای مایک ({pendingReqs.length})
+                  <Hand className="h-3.5 w-3.5" /> {t('داوای مایک')} ({pendingReqs.length})
                 </p>
                 <div className="space-y-1.5">
                   {pendingReqs.map((p) => (
@@ -126,7 +128,7 @@ export default function VoiceBar() {
                         }}
                         className="btn-press flex items-center gap-1 rounded-lg bg-crew px-2.5 py-1 text-xs font-bold text-white"
                       >
-                        <Check className="h-3.5 w-3.5" /> ڕێگەپێدان
+                        <Check className="h-3.5 w-3.5" /> {t('ڕێگەپێدان')}
                       </button>
                     </div>
                   ))}
@@ -135,7 +137,7 @@ export default function VoiceBar() {
             )}
 
             {/* لیستی ئەوانەی لە دەنگدان */}
-            <p className="mb-2 text-xs font-bold text-muted">لە دەنگدا ({inVoice.length})</p>
+            <p className="mb-2 text-xs font-bold text-muted">{t('لە دەنگدا')} ({inVoice.length})</p>
             <div className="space-y-1.5">
               {inVoice.map((id) => {
                 const p = byId(id)
@@ -152,8 +154,8 @@ export default function VoiceBar() {
                       <Avatar url={p?.avatar_url} name={p?.display_name || '?'} size={28} />
                     </div>
                     <span className="flex-1 truncate text-sm text-ink">
-                      {p?.display_name || 'یاریزان'}
-                      {id === selfIdentity && <span className="text-xs text-crew"> (تۆ)</span>}
+                      {p?.display_name || t('یاریزان')}
+                      {id === selfIdentity && <span className="text-xs text-crew"> ({t('تۆ')})</span>}
                     </span>
                     {talking && <Volume2 className="h-4 w-4 animate-pulse text-crew" />}
                     {allowed ? (
@@ -169,9 +171,9 @@ export default function VoiceBar() {
                           setSpeak(p.user_id, false)
                         }}
                         className="btn-press rounded-lg bg-impostor/15 px-2 py-1 text-xs font-bold text-impostor"
-                        title="سەنینەوەی مایک"
+                        title={t('سەنینەوەی مایک')}
                       >
-                        کتم
+                        {t('کتم')}
                       </button>
                     )}
                   </div>
@@ -206,12 +208,12 @@ export default function VoiceBar() {
             </div>
             <span className="truncate text-sm text-ink/80">
               {status === 'connecting'
-                ? 'پەیوەستبوون…'
+                ? t('پەیوەستبوون…')
                 : speakerList.length === 0
-                ? `دەنگ • ${inVoice.length} یاریزان`
+                ? `${t('دەنگ')} • ${inVoice.length} ${t('یاریزان')}`
                 : speakerList.length === 1
-                ? `${speakerList[0].display_name} قسە دەکات`
-                : `${speakerList.length} کەس قسە دەکەن`}
+                ? `${speakerList[0].display_name} ${t('قسە دەکات')}`
+                : `${speakerList.length} ${t('کەس قسە دەکەن')}`}
             </span>
             {/* بیجی داواکاری بۆ خانەخوێ */}
             {isHost && pendingReqs.length > 0 && (
@@ -227,7 +229,7 @@ export default function VoiceBar() {
           </button>
 
           {isHost && (
-            <ShieldCheck className="h-4 w-4 shrink-0 text-amber-500" title="تۆ خانەخوێیت" />
+            <ShieldCheck className="h-4 w-4 shrink-0 text-amber-500" title={t('تۆ خانەخوێیت')} />
           )}
 
           {micBtn}

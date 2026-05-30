@@ -3,7 +3,9 @@ import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
+import DailyPanel from '../components/DailyPanel'
 import { levelInfo } from '../lib/achievements'
+import { useT } from '../lib/i18n'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // مێنیوی سەرەکی دوای چوونەژوورەوە
@@ -11,6 +13,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
   const { profile, signOut } = useAuth()
   const { totalUnread, incoming } = useFriends()
   const { level } = levelInfo(profile?.total_points)
+  const t = useT()
   const friendBadge = totalUnread + incoming.length
 
   const go = (fn) => {
@@ -26,10 +29,10 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
         <button
           onClick={() => go(onProfile)}
           className="btn-press flex items-center gap-3 rounded-full bg-surface py-1.5 pl-4 pr-1.5 shadow-card transition hover:border-crew"
-          title="پرۆفایلی من"
+          title={t('پرۆفایلی من')}
         >
           <div className="relative">
-            <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} ring />
+            <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} level={level} ring />
             <span className="absolute -bottom-1 -left-1 grid h-5 min-w-5 place-items-center rounded-full bg-crew px-1 text-[10px] font-black text-white">
               {level}
             </span>
@@ -38,7 +41,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
             <p className="text-sm font-bold text-ink">{profile?.display_name}</p>
             <p className="flex items-center gap-1 text-xs text-crew">
               <Star className="h-3 w-3 fill-crew" />
-              {profile?.total_points ?? 0} خاڵ
+              {profile?.total_points ?? 0} {t('خاڵ')}
             </p>
           </div>
         </button>
@@ -46,7 +49,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
           <button
             onClick={() => go(onFriends)}
             className="btn-press relative grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
-            title="هاوڕێیان"
+            title={t('هاوڕێیان')}
           >
             <Users className="h-5 w-5" />
             {friendBadge > 0 && (
@@ -58,21 +61,21 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
           <button
             onClick={() => go(onGroups)}
             className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
-            title="گرووپەکان"
+            title={t('گرووپەکان')}
           >
             <MessagesSquare className="h-5 w-5" />
           </button>
           <button
             onClick={() => go(onAchievements)}
             className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
-            title="دەستکەوت و ئاست"
+            title={t('دەستکەوت و ئاست')}
           >
             <Trophy className="h-5 w-5" />
           </button>
           <button
             onClick={() => signOut()}
             className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-muted shadow-card hover:text-impostor"
-            title="چوونەدەرەوە"
+            title={t('چوونەدەرەوە')}
           >
             <LogOut className="h-5 w-5" />
           </button>
@@ -84,9 +87,12 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
         <div className="mb-3 grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-impostor to-crew shadow-soft">
           <Rocket className="h-10 w-10 text-white" />
         </div>
-        <h1 className="text-4xl font-black tracking-tight text-ink">ساختەکار</h1>
-        <p className="mt-1 text-sm text-muted">شێوازی یاری هەڵبژێرە</p>
+        <h1 className="text-4xl font-black tracking-tight text-ink">{t('ساختەکار')}</h1>
+        <p className="mt-1 text-sm text-muted">{t('شێوازی یاری هەڵبژێرە')}</p>
       </div>
+
+      {/* پاداشتی ڕۆژانە + مەرج */}
+      <DailyPanel />
 
       <div className="flex flex-1 flex-col justify-center gap-4">
         {/* ئۆنلاین */}
@@ -96,8 +102,8 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
               <Wifi className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="text-lg font-black text-ink">یاریکردنی ئۆنلاین</p>
-              <p className="text-sm text-muted">هەر کەس لە ئامێری خۆی + چات</p>
+              <p className="text-lg font-black text-ink">{t('یاریکردنی ئۆنلاین')}</p>
+              <p className="text-sm text-muted">{t('هەر کەس لە ئامێری خۆی + چات')}</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
           </Panel>
@@ -110,8 +116,8 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
               <Smartphone className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="text-lg font-black text-ink">یاریکردنی ناوخۆیی</p>
-              <p className="text-sm text-muted">یەک ئامێر — Pass and Play</p>
+              <p className="text-lg font-black text-ink">{t('یاریکردنی ناوخۆیی')}</p>
+              <p className="text-sm text-muted">{t('یەک ئامێر — Pass and Play')}</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
           </Panel>
@@ -124,8 +130,8 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
               <SettingsIcon className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="text-lg font-black text-ink">ڕێکخستنەکان</p>
-              <p className="text-sm text-muted">دەنگ، مۆسیقا، ڕووکار</p>
+              <p className="text-lg font-black text-ink">{t('ڕێکخستنەکان')}</p>
+              <p className="text-sm text-muted">{t('دەنگ، مۆسیقا، ڕووکار')}</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
           </Panel>

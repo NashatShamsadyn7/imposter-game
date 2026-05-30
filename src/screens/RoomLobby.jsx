@@ -13,6 +13,7 @@ import {
   Crown,
   Sparkles,
   Tag,
+  Share2,
 } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
@@ -21,6 +22,7 @@ import { CATEGORIES, RANDOM_CATEGORY } from '../data/words'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import InviteFriends from '../components/InviteFriends'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 export default function RoomLobby() {
@@ -36,7 +38,28 @@ export default function RoomLobby() {
     startGame,
   } = useRoom()
   const [copied, setCopied] = useState(false)
+  const [shared, setShared] = useState(false)
   const { openProfile } = useProfileViewer() || {}
+  const t = useT()
+
+  // هاوبەشکردنی لینکی بانگهێشت — Web Share یان کۆپی بۆ کلیپبۆرد
+  const shareLink = async () => {
+    const url = `${window.location.origin}/?join=${room.code}`
+    sfx.tap()
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'ساختەکار',
+          text: `بەشداربە لە یارییەکەم! کۆد: ${room.code}`,
+          url,
+        })
+      } catch { /* بەکارهێنەر هەڵیوەشاندەوە */ }
+    } else {
+      navigator.clipboard?.writeText(url)
+      setShared(true)
+      setTimeout(() => setShared(false), 1500)
+    }
+  }
 
   const ordered = [...players].sort((a, b) => a.order_index - b.order_index)
   const maxImpostors = Math.max(1, Math.floor((players.length - 1) / 2))
@@ -70,15 +93,23 @@ export default function RoomLobby() {
             className="btn-press flex items-center gap-1 rounded-xl bg-ink/5 px-3 py-2 text-sm text-ink/70 hover:bg-ink/10"
           >
             <LogOut className="h-4 w-4" />
-            دەرچوون
+            {t('دەرچوون')}
           </button>
           <InviteFriends roomCode={room.code} />
+          <button
+            onClick={shareLink}
+            className="btn-press flex items-center gap-1.5 rounded-xl bg-ink/5 px-3 py-2 text-sm font-bold text-ink/70 hover:bg-ink/10"
+            title={t('هاوبەشکردنی لینک')}
+          >
+            {shared ? <Check className="h-4 w-4 text-crew" /> : <Share2 className="h-4 w-4" />}
+            {shared ? t('کۆپیکرا') : t('لینک')}
+          </button>
         </div>
         <button
           onClick={copyCode}
           className="btn-press flex items-center gap-2 rounded-xl border border-crew/40 bg-crew/10 px-4 py-2"
         >
-          <span className="text-xs text-ink/60">کۆد</span>
+          <span className="text-xs text-ink/60">{t('کۆد')}</span>
           <span className="text-lg font-black tracking-widest text-crew">{room.code}</span>
           {copied ? (
             <Check className="h-4 w-4 text-crew" />
@@ -93,7 +124,7 @@ export default function RoomLobby() {
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-crew" />
-            <h2 className="font-bold text-ink">یاریزانان</h2>
+            <h2 className="font-bold text-ink">{t('یاریزانان')}</h2>
           </div>
           <span className="text-sm text-ink/50">{players.length}</span>
         </div>
@@ -109,10 +140,10 @@ export default function RoomLobby() {
                 <Avatar url={p.avatar_url} name={p.display_name} size={36} />
                 <span className="truncate font-medium text-ink">
                   {p.display_name}
-                  {p.user_id === user.id && <span className="text-xs text-crew"> (تۆ)</span>}
+                  {p.user_id === user.id && <span className="text-xs text-crew"> ({t('تۆ')})</span>}
                 </span>
               </button>
-              {p.is_host && <Crown className="h-4 w-4 text-amber-500" title="خانەخوێ" />}
+              {p.is_host && <Crown className="h-4 w-4 text-amber-500" title={t('خانەخوێ')} />}
 
               {isHost && p.user_id !== user.id && (
                 <div className="flex items-center gap-0.5">
@@ -141,20 +172,20 @@ export default function RoomLobby() {
         </div>
         {players.length < 3 && (
           <p className="mt-3 text-center text-sm text-ink/40">
-            چاوەڕێی یاریزانی زیاتر… (لانیکەم ٣)
+            {t('چاوەڕێی یاریزانی زیاتر… (لانیکەم ٣)')}
           </p>
         )}
       </Panel>
 
       {/* ڕێکخستنەکان */}
       <Panel className="mb-6 space-y-5">
-        <h2 className="font-bold text-ink">ڕێکخستنەکان {!isHost && '(تەنها خانەخوێ دەیگۆڕێت)'}</h2>
+        <h2 className="font-bold text-ink">{t('ڕێکخستنەکان')} {!isHost && t('(تەنها خانەخوێ دەیگۆڕێت)')}</h2>
 
         {/* هاوپۆل */}
         <div>
           <div className="mb-2 flex items-center gap-2">
             <Tag className="h-4 w-4 text-crew" />
-            <span className="text-sm font-bold text-ink">هاوپۆلی وشە</span>
+            <span className="text-sm font-bold text-ink">{t('هاوپۆلی وشە')}</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[RANDOM_CATEGORY, ...CATEGORIES].map((c) => {
@@ -188,7 +219,7 @@ export default function RoomLobby() {
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Skull className="h-4 w-4 text-impostor" />
-              <span className="text-sm font-bold text-ink">ژمارەی ساختەکار</span>
+              <span className="text-sm font-bold text-ink">{t('ژمارەی ساختەکار')}</span>
             </div>
             <span className="font-black text-impostor">{room.impostor_count}</span>
           </div>
@@ -221,7 +252,7 @@ export default function RoomLobby() {
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-crew" />
-              <span className="text-sm font-bold text-ink">کاتی گفتوگۆ</span>
+              <span className="text-sm font-bold text-ink">{t('کاتی گفتوگۆ')}</span>
             </div>
             <span className="font-bold text-crew">
               {Math.floor(room.discussion_seconds / 60)}:
@@ -245,7 +276,7 @@ export default function RoomLobby() {
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-crew" />
-              <span className="text-sm font-bold text-ink">قەبارەی خاڵ (Multiplier)</span>
+              <span className="text-sm font-bold text-ink">{t('قەبارەی خاڵ (Multiplier)')}</span>
             </div>
             <span className="font-black text-crew">×{room.multiplier}</span>
           </div>
@@ -281,17 +312,17 @@ export default function RoomLobby() {
             className="w-full !py-4 !text-lg"
           >
             <Play className="h-6 w-6" />
-            دەستپێکردنی یاری
+            {t('دەستپێکردنی یاری')}
           </Button>
           {!canStart && (
             <p className="mt-3 text-center text-sm text-ink/40">
-              پێویستە بەلایەنی کەم ٣ یاریزان هەبن
+              {t('پێویستە بەلایەنی کەم ٣ یاریزان هەبن')}
             </p>
           )}
         </>
       ) : (
         <p className="rounded-2xl border border-ink/10 bg-ink/5 py-4 text-center text-ink/60">
-          چاوەڕێی خانەخوێ بکە بۆ دەستپێکردن…
+          {t('چاوەڕێی خانەخوێ بکە بۆ دەستپێکردن…')}
         </p>
       )}
     </div>

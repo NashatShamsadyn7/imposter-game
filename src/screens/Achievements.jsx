@@ -3,10 +3,12 @@ import { useAuth } from '../state/AuthContext'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import { ACHIEVEMENTS, levelInfo, levelTitle, unlockedCount } from '../lib/achievements'
+import { useT } from '../lib/i18n'
 
 // شاشەی دەستکەوت و ئاست
 export default function Achievements({ onBack }) {
   const { profile } = useAuth()
+  const t = useT()
   const stats = profile || {}
   const points = stats.total_points || 0
   const { level, intoLevel, needed, progress } = levelInfo(points)
@@ -22,21 +24,21 @@ export default function Achievements({ onBack }) {
         >
           <ChevronRight className="h-5 w-5" />
         </button>
-        <h1 className="text-2xl font-black text-ink">دەستکەوت و ئاست</h1>
+        <h1 className="text-2xl font-black text-ink">{t('دەستکەوت و ئاست')}</h1>
       </header>
 
       {/* کارتی ئاست */}
       <Panel className="mb-5 animate-scale-in">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <Avatar url={stats.avatar_url} name={stats.display_name} size={64} ring />
+            <Avatar url={stats.avatar_url} name={stats.display_name} size={64} level={level} ring />
             <span className="absolute -bottom-1 -left-1 grid h-7 min-w-7 place-items-center rounded-full bg-crew px-1.5 text-xs font-black text-white shadow-card">
               {level}
             </span>
           </div>
           <div className="flex-1">
             <p className="text-lg font-black text-ink">{stats.display_name}</p>
-            <p className="text-sm text-crew">ئاستی {level} · {levelTitle(level)}</p>
+            <p className="text-sm text-crew">{t('ئاستی')} {level} · {levelTitle(level)}</p>
           </div>
         </div>
 
@@ -57,14 +59,14 @@ export default function Achievements({ onBack }) {
 
       {/* ئامارەکان */}
       <div className="mb-5 grid grid-cols-3 gap-3">
-        <StatBox icon={Star} value={points} label="خاڵ" />
-        <StatBox icon={Trophy} value={stats.wins || 0} label="سەرکەوتن" />
-        <StatBox icon={Gamepad2} value={stats.games_played || 0} label="یاری" />
+        <StatBox icon={Star} value={points} label={t('خاڵ')} />
+        <StatBox icon={Trophy} value={stats.wins || 0} label={t('سەرکەوتن')} />
+        <StatBox icon={Gamepad2} value={stats.games_played || 0} label={t('یاری')} />
       </div>
 
       {/* دەستکەوتەکان */}
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-black text-ink">دەستکەوتەکان</h2>
+        <h2 className="font-black text-ink">{t('دەستکەوتەکان')}</h2>
         <span className="text-sm text-muted">{unlocked} / {ACHIEVEMENTS.length}</span>
       </div>
 

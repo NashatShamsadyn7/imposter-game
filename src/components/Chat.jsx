@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Smile, X } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
+import { useFriends } from '../state/FriendsContext'
 import Avatar from './Avatar'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 // ئیمۆجی و دەستەواژەی خێرا بۆ کاردانەوەی خێرا
@@ -16,9 +18,14 @@ const EMOJI_ONLY = /^[\p{Extended_Pictographic}‍️\s]+$/u
 export default function Chat({ disabled = false, className = '' }) {
   const { user } = useAuth()
   const { messages, sendMessage } = useRoom()
+  const { isBlocked } = useFriends() || {}
+  const t = useT()
   const [text, setText] = useState('')
   const [showQuick, setShowQuick] = useState(false)
   const endRef = useRef(null)
+
+  // نامەکانی کەسە بلۆککراوەکان نیشان نادرێن
+  const visibleMessages = messages.filter((m) => !isBlocked?.(m.user_id))
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -43,10 +50,10 @@ export default function Chat({ disabled = false, className = '' }) {
     <div className={`flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-surface/40 ${className}`}>
       {/* نامەکان */}
       <div className="flex-1 space-y-2 overflow-y-auto p-3">
-        {messages.length === 0 && (
-          <p className="py-6 text-center text-sm text-ink/30">هێشتا نامەیەک نییە — دەست بکە!</p>
+        {visibleMessages.length === 0 && (
+          <p className="py-6 text-center text-sm text-ink/30">{t('هێشتا نامەیەک نییە — دەست بکە!')}</p>
         )}
-        {messages.map((m) => {
+        {visibleMessages.map((m) => {
           if (m.kind === 'system') {
             return (
               <p key={m.id} className="text-center text-xs text-ink/40 py-1">
@@ -104,10 +111,10 @@ export default function Chat({ disabled = false, className = '' }) {
             {QUICK_PHRASES.map((p) => (
               <button
                 key={p}
-                onClick={() => quickSend(p)}
+                onClick={() => quickSend(t(p))}
                 className="btn-press rounded-full border border-ink/10 bg-ink/5 px-3 py-1 text-xs text-ink hover:bg-ink/10"
               >
-                {p}
+                {t(p)}
               </button>
             ))}
           </div>
@@ -130,7 +137,7 @@ export default function Chat({ disabled = false, className = '' }) {
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder={disabled ? 'ناتوانیت چات بکەیت' : 'نامەیەک بنووسە…'}
+          placeholder={disabled ? t('ناتوانیت چات بکەیت') : t('نامەیەک بنووسە…')}
           disabled={disabled}
           maxLength={300}
           className="min-w-0 flex-1 rounded-xl border border-ink/10 bg-ink/5 px-3 py-2 text-ink placeholder:text-ink/30 outline-none focus:border-crew/60 disabled:opacity-50"

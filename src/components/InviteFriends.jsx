@@ -5,12 +5,14 @@ import { useFriends } from '../state/FriendsContext'
 import Avatar from './Avatar'
 import { sendDirectMessage } from '../lib/supabase'
 import { isOnline } from '../lib/presence'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 // بانگهێشتی هاوڕێیان بۆ ژوور — نامەی بانگهێشت دەنێرێت بە کۆدی ژوور
 export default function InviteFriends({ roomCode }) {
   const { user } = useAuth()
   const { friends } = useFriends()
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [sent, setSent] = useState({}) // id -> true
 
@@ -32,7 +34,7 @@ export default function InviteFriends({ roomCode }) {
         className="btn-press flex items-center gap-1.5 rounded-xl bg-crew/12 px-3 py-2 text-sm font-bold text-crew hover:bg-crew/20"
       >
         <UserPlus className="h-4 w-4" />
-        بانگهێشت
+        {t('بانگهێشت')}
       </button>
 
       {open && (
@@ -45,7 +47,7 @@ export default function InviteFriends({ roomCode }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-black text-ink">بانگهێشتی هاوڕێیان</h2>
+              <h2 className="text-lg font-black text-ink">{t('بانگهێشتی هاوڕێیان')}</h2>
               <button
                 onClick={() => setOpen(false)}
                 className="btn-press grid h-9 w-9 place-items-center rounded-full bg-ink/5 text-ink"
@@ -56,7 +58,7 @@ export default function InviteFriends({ roomCode }) {
 
             {sorted.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted">
-                هیچ هاوڕێیەکت نییە بۆ بانگهێشتکردن
+                {t('هیچ هاوڕێیەکت نییە بۆ بانگهێشتکردن')}
               </p>
             ) : (
               <div className="max-h-[60vh] space-y-2 overflow-y-auto">
@@ -89,7 +91,7 @@ export default function InviteFriends({ roomCode }) {
                         }`}
                       >
                         {isSent ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
-                        {isSent ? 'نێردرا' : 'بانگهێشت'}
+                        {isSent ? t('نێردرا') : t('بانگهێشت')}
                       </button>
                     </div>
                   )

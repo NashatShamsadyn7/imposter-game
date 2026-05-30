@@ -3,26 +3,36 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useState } from 'react'
-import { X, Loader2, Star, Trophy, Gamepad2, Percent, UserPlus, Check, Clock, UserCheck } from 'lucide-react'
-import { fetchPublicProfile } from '../lib/supabase'
+import { X, Loader2, Star, Trophy, Gamepad2, Percent, UserPlus, Check, Clock, UserCheck, Skull, ShieldCheck, Ban, History } from 'lucide-react'
+import { fetchPublicProfile, fetchMatchHistory } from '../lib/supabase'
 import { levelInfo, levelTitle, winRate } from '../lib/achievements'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import Avatar from './Avatar'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 export default function PlayerProfileModal({ userId, fallbackName, fallbackAvatar, onClose }) {
   const { user } = useAuth()
   const friends = useFriends()
+  const t = useT()
   const [stats, setStats] = useState(null)
+  const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    fetchPublicProfile(userId)
-      .then((p) => !cancelled && setStats(p))
+    Promise.all([
+      fetchPublicProfile(userId),
+      fetchMatchHistory(userId, 6).catch(() => []),
+    ])
+      .then(([p, h]) => {
+        if (cancelled) return
+        setStats(p)
+        setHistory(h)
+      })
       .catch(() => {})
       .finally(() => !cancelled && setLoading(false))
     return () => {
@@ -30,17 +40,24 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
     }
   }, [userId])
 
-  const name = stats?.display_name || fallbackName || 'یاریزان'
+  const name = stats?.display_name || fallbackName || t('یاریزان')
   const avatar = stats?.avatar_url || fallbackAvatar
   const lvl = levelInfo(stats?.total_points || 0)
   const wr = Math.round(winRate(stats || {}) * 100)
   const status = friends?.friendStatusWith?.(userId) || 'self'
   const isSelf = userId === user?.id
+  const blocked = friends?.isBlocked?.(userId)
 
   const handleAdd = async () => {
     sfx.click()
     const res = await friends?.addFriendById?.(userId)
     if (res?.ok) setSent(true)
+  }
+
+  const toggleBlock = async () => {
+    sfx.tap()
+    if (blocked) await friends?.unblock?.(userId)
+    else await friends?.block?.(userId)
   }
 
   return (
@@ -67,13 +84,11 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
           <>
             {/* ئەڤاتار + ناو + ئاست */}
             <div className="flex flex-col items-center text-center">
-              <div className="rounded-full ring-4 ring-crew/30">
-                <Avatar url={avatar} name={name} size={84} />
-              </div>
+              <Avatar url={avatar} name={name} size={84} level={lvl.level} ring />
               <h2 className="mt-3 text-xl font-black text-ink">{name}</h2>
               <div className="mt-1 flex items-center gap-2">
                 <span className="rounded-full bg-crew/15 px-3 py-0.5 text-sm font-bold text-crew">
-                  ئاستی {lvl.level}
+                  {t('ئاستی')} {lvl.level}
                 </span>
                 <span className="text-xs text-muted">{levelTitle(lvl.level)}</span>
               </div>
@@ -97,38 +112,82 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
 
             {/* ئامار */}
             <div className="mt-4 grid grid-cols-3 gap-2">
-              <Stat icon={Gamepad2} label="یاری" value={stats?.games_played || 0} />
-              <Stat icon={Trophy} label="بردنەوە" value={stats?.wins || 0} />
-              <Stat icon={Percent} label="ڕێژە" value={`${wr}%`} />
+              <Stat icon={Gamepad2} label={t('یاری')} value={stats?.games_played || 0} />
+              <Stat icon={Trophy} label={t('بردنەوە')} value={stats?.wins || 0} />
+              <Stat icon={Percent} label={t('ڕێژە')} value={`${wr}%`} />
             </div>
             <div className="mt-2 flex items-center justify-center gap-1.5 rounded-xl bg-amber-500/10 py-2 text-amber-500">
               <Star className="h-4 w-4" />
               <span className="font-black">{stats?.total_points || 0}</span>
-              <span className="text-xs">کۆی خاڵ</span>
+              <span className="text-xs">{t('کۆی خاڵ')}</span>
             </div>
 
-            {/* داوای هاوڕێیەتی */}
-            {!isSelf && (
+            {/* مێژووی دواین یارییەکان */}
+            {history.length > 0 && (
               <div className="mt-4">
-                {status === 'friend' ? (
-                  <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-crew/15 py-3 font-bold text-crew">
-                    <UserCheck className="h-5 w-5" /> هاوڕێن
-                  </div>
-                ) : status === 'outgoing' || sent ? (
-                  <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-ink/5 py-3 font-bold text-muted">
-                    <Clock className="h-5 w-5" /> داواکاری نێردرا
-                  </div>
-                ) : status === 'incoming' ? (
-                  <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-amber-500/15 py-3 text-sm font-bold text-amber-500">
-                    <UserPlus className="h-5 w-5" /> داوای هاوڕێیەتیت بۆ کردووە
-                  </div>
-                ) : (
+                <p className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted">
+                  <History className="h-3.5 w-3.5" /> {t('دواین یارییەکان')}
+                </p>
+                <div className="space-y-1.5">
+                  {history.map((g) => (
+                    <div key={g.id} className="flex items-center gap-2 rounded-xl bg-ink/5 px-2.5 py-1.5 text-sm">
+                      {g.role === 'impostor' ? (
+                        <Skull className="h-4 w-4 shrink-0 text-impostor" />
+                      ) : (
+                        <ShieldCheck className="h-4 w-4 shrink-0 text-crew" />
+                      )}
+                      <span className="min-w-0 flex-1 truncate text-ink">{g.secret_word || '—'}</span>
+                      <span className={`text-xs font-bold ${g.won ? 'text-crew' : 'text-impostor'}`}>
+                        {g.won ? t('بردی') : t('دۆڕاند')}
+                      </span>
+                      <span className="flex items-center gap-0.5 text-xs font-bold text-amber-500">
+                        <Star className="h-3 w-3" />+{g.points}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* داوای هاوڕێیەتی + بلۆک */}
+            {!isSelf && (
+              <div className="mt-4 space-y-2">
+                {blocked ? (
                   <button
-                    onClick={handleAdd}
-                    className="btn-press flex w-full items-center justify-center gap-1.5 rounded-2xl bg-crew py-3 font-bold text-white"
+                    onClick={toggleBlock}
+                    className="btn-press flex w-full items-center justify-center gap-1.5 rounded-2xl bg-impostor/15 py-3 font-bold text-impostor"
                   >
-                    <UserPlus className="h-5 w-5" /> داوای هاوڕێیەتی
+                    <Ban className="h-5 w-5" /> {t('بلۆککراوە — لابردن')}
                   </button>
+                ) : (
+                  <>
+                    {status === 'friend' ? (
+                      <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-crew/15 py-3 font-bold text-crew">
+                        <UserCheck className="h-5 w-5" /> {t('هاوڕێن')}
+                      </div>
+                    ) : status === 'outgoing' || sent ? (
+                      <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-ink/5 py-3 font-bold text-muted">
+                        <Clock className="h-5 w-5" /> {t('داواکاری نێردرا')}
+                      </div>
+                    ) : status === 'incoming' ? (
+                      <div className="flex items-center justify-center gap-1.5 rounded-2xl bg-amber-500/15 py-3 text-sm font-bold text-amber-500">
+                        <UserPlus className="h-5 w-5" /> {t('داوای هاوڕێیەتیت بۆ کردووە')}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleAdd}
+                        className="btn-press flex w-full items-center justify-center gap-1.5 rounded-2xl bg-crew py-3 font-bold text-white"
+                      >
+                        <UserPlus className="h-5 w-5" /> {t('داوای هاوڕێیەتی')}
+                      </button>
+                    )}
+                    <button
+                      onClick={toggleBlock}
+                      className="btn-press flex w-full items-center justify-center gap-1.5 rounded-2xl bg-ink/5 py-2.5 text-sm font-bold text-muted hover:text-impostor"
+                    >
+                      <Ban className="h-4 w-4" /> {t('بلۆککردن')}
+                    </button>
+                  </>
                 )}
               </div>
             )}

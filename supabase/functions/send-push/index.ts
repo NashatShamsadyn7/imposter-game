@@ -25,6 +25,7 @@ webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE)
 const admin = createClient(SUPABASE_URL, SERVICE_ROLE)
 
 // دروستکردنی ناوەڕۆکی ئاگادارکردنەوە بەپێی جۆری ڕیکۆرد
+// دەگەڕێنێتەوە: { targetUserIds: string[], title, body, tag, url }
 async function buildPayload(table: string, record: Record<string, unknown>) {
   if (table === 'direct_messages') {
     const senderId = record.sender_id as string
@@ -36,10 +37,11 @@ async function buildPayload(table: string, record: Record<string, unknown>) {
     const name = sender?.display_name || 'یاریزانێک'
     const isInvite = record.kind === 'invite'
     return {
-      targetUserId: record.recipient_id as string,
+      targetUserIds: [record.recipient_id as string],
       title: isInvite ? 'بانگهێشت بۆ ژوور 🎮' : name,
       body: isInvite ? `${name} بانگهێشتی کردیت — کۆد: ${record.content}` : (record.content as string),
       tag: isInvite ? 'invite' : 'dm',
+      url: isInvite ? `/?join=${record.content}` : '/',
     }
   }
   if (table === 'friendships' && record.status === 'pending') {
@@ -50,10 +52,38 @@ async function buildPayload(table: string, record: Record<string, unknown>) {
       .eq('id', requesterId)
       .maybeSingle()
     return {
-      targetUserId: record.addressee_id as string,
+      targetUserIds: [record.addressee_id as string],
       title: 'داواکاری هاوڕێیەتی 👤',
       body: `${requester?.display_name || 'یاریزانێک'} دەیەوێت ببێتە هاوڕێت`,
       tag: 'friend',
+      url: '/',
+    }
+  }
+  // ژوورێکی نوێ دروستکرا → هەموو هاوڕێ پەسەندکراوەکانی خانەخوێ ئاگادار بکەرەوە
+  if (table === 'rooms') {
+    const hostId = record.host_id as string
+    const code = record.code as string
+    if (!hostId || !code) return null
+    const { data: host } = await admin
+      .from('profiles')
+      .select('display_name')
+      .eq('id', hostId)
+      .maybeSingle()
+    const { data: fs } = await admin
+      .from('friendships')
+      .select('requester_id, addressee_id')
+      .or(`requester_id.eq.${hostId},addressee_id.eq.${hostId}`)
+      .eq('status', 'accepted')
+    const friendIds = (fs || []).map((f) =>
+      f.requester_id === hostId ? f.addressee_id : f.requester_id
+    )
+    if (!friendIds.length) return null
+    return {
+      targetUserIds: friendIds as string[],
+      title: 'هاوڕێیەکت ژوورێکی کردەوە 🎮',
+      body: `${host?.display_name || 'هاوڕێیەکت'} ژوورێکی نوێی دروستکرد — کۆد: ${code}`,
+      tag: 'room-open',
+      url: `/?join=${code}`,
     }
   }
   return null
@@ -65,17 +95,17 @@ Deno.serve(async (req) => {
     const payload = await buildPayload(table, record || {})
     if (!payload) return new Response('skip', { status: 200 })
 
-    // هێنانی هەموو ئەندامبوونەکانی وەرگر
+    // هێنانی هەموو ئەندامبوونەکانی وەرگرەکان
     const { data: subs } = await admin
       .from('push_subscriptions')
       .select('*')
-      .eq('user_id', payload.targetUserId)
+      .in('user_id', payload.targetUserIds)
 
     const notif = JSON.stringify({
       title: payload.title,
       body: payload.body,
       tag: payload.tag,
-      url: '/',
+      url: payload.url || '/',
     })
 
     await Promise.all(

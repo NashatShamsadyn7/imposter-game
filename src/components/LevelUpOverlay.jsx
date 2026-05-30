@@ -6,10 +6,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Sparkles, ChevronUp } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { levelInfo, levelTitle } from '../lib/achievements'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 export default function LevelUpOverlay() {
   const { profile } = useAuth()
+  const t = useT()
   const prevLevel = useRef(null)
   const [show, setShow] = useState(null) // { level, title }
 
@@ -48,10 +50,10 @@ export default function LevelUpOverlay() {
         </div>
         <div className="flex items-center gap-1.5 text-amber-500">
           <Sparkles className="h-5 w-5" />
-          <span className="text-sm font-bold tracking-wide">ئاستت بەرزبووەوە!</span>
+          <span className="text-sm font-bold tracking-wide">{t('ئاستت بەرزبووەوە!')}</span>
           <Sparkles className="h-5 w-5" />
         </div>
-        <p className="mt-1 text-4xl font-black text-ink">ئاستی {show.level}</p>
+        <p className="mt-1 text-4xl font-black text-ink">{t('ئاستی')} {show.level}</p>
         <p className="mt-1 text-sm font-bold text-crew">{show.title}</p>
       </div>
     </div>

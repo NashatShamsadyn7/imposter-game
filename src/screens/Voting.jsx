@@ -4,20 +4,25 @@ import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 export default function Voting() {
   const { user } = useAuth()
-  const { room, players, votes, isHost, submitVote, finishGame } = useRoom()
+  const { room, players, votes, me, isHost, submitVote, finishGame } = useRoom()
+  const t = useT()
   const [picked, setPicked] = useState([])
   const [submitted, setSubmitted] = useState(false)
 
   const need = room.impostor_count
-  const candidates = players.filter((p) => p.user_id !== user.id)
+  // بینەرەکان نە دەنگ دەدەن نە دەنگیان بۆ دەدرێت
+  const activePlayers = players.filter((p) => !p.is_spectator)
+  const candidates = activePlayers.filter((p) => p.user_id !== user.id)
+  const isSpectator = !!me?.is_spectator
 
   // ژمارەی دەنگدەرە جیاوازەکان
   const voterCount = useMemo(() => new Set(votes.map((v) => v.voter_id)).size, [votes])
-  const allVoted = voterCount > 0 && voterCount >= players.length
+  const allVoted = voterCount > 0 && voterCount >= activePlayers.length
 
   // خانەخوێ خۆکار کۆتایی پێدەهێنێت کاتێک هەموان دەنگیان دا
   useEffect(() => {
@@ -41,24 +46,43 @@ export default function Voting() {
     setSubmitted(true)
   }
 
+  // بینەر: ناتوانێت دەنگ بدات
+  if (isSpectator) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center">
+        <div className="animate-scale-in">
+          <Vote className="mx-auto mb-4 h-16 w-16 text-ink/30" />
+          <h1 className="mb-2 text-2xl font-black text-ink">{t('دەنگدان بەردەوامە')}</h1>
+          <p className="mb-6 text-ink/60">{t('تۆ بینەریت — چاوەڕێی ئەنجام بکە…')}</p>
+          <div className="flex items-center justify-center gap-2 text-crew">
+            <Users className="h-5 w-5" />
+            <span className="font-bold">
+              {voterCount} / {activePlayers.length} دەنگیان دا
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // دوای دەنگدان — چاوەڕوانی
   if (submitted) {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center">
         <div className="animate-scale-in">
           <Check className="mx-auto mb-4 h-16 w-16 text-crew" />
-          <h1 className="mb-2 text-2xl font-black text-ink">دەنگەکەت تۆمارکرا</h1>
-          <p className="mb-6 text-ink/60">چاوەڕێی یاریزانانی تر بکە…</p>
+          <h1 className="mb-2 text-2xl font-black text-ink">{t('دەنگەکەت تۆمارکرا')}</h1>
+          <p className="mb-6 text-ink/60">{t('چاوەڕێی یاریزانانی تر بکە…')}</p>
           <div className="flex items-center justify-center gap-2 text-crew">
             <Users className="h-5 w-5" />
             <span className="font-bold">
-              {voterCount} / {players.length} دەنگیان دا
+              {voterCount} / {activePlayers.length} دەنگیان دا
             </span>
           </div>
           {isHost && (
             <Button onClick={finishGame} variant="danger" className="mt-8">
               <Gavel className="h-5 w-5" />
-              کۆتاییهێنان بە دەنگدان ئێستا
+              {t('کۆتاییهێنان بە دەنگدان ئێستا')}
             </Button>
           )}
         </div>
@@ -70,11 +94,11 @@ export default function Voting() {
     <div className="mx-auto max-w-md px-4 py-6">
       <div className="mb-5 text-center animate-fade-in">
         <Vote className="mx-auto mb-2 h-10 w-10 text-impostor" />
-        <h1 className="text-2xl font-black text-ink">دەنگدانی نهێنی</h1>
+        <h1 className="text-2xl font-black text-ink">{t('دەنگدانی نهێنی')}</h1>
         <p className="mt-1 text-sm text-ink/60">
-          {need === 1 ? 'یەک کەس هەڵبژێرە کە گومانی لێ دەکەیت' : `${need} کەس هەڵبژێرە کە گومانیان لێ دەکەیت`}
+          {need === 1 ? t('یەک کەس هەڵبژێرە کە گومانی لێ دەکەیت') : `${need} ${t('کەس هەڵبژێرە کە گومانیان لێ دەکەیت')}`}
         </p>
-        <p className="mt-1 text-xs text-crew">{picked.length} / {need} هەڵبژێردرا</p>
+        <p className="mt-1 text-xs text-crew">{picked.length} / {need} {t('هەڵبژێردرا')}</p>
       </div>
 
       <div className="space-y-2">
@@ -104,7 +128,7 @@ export default function Voting() {
         variant="danger"
         className="mt-6 w-full !py-4 !text-lg"
       >
-        پشتڕاستکردنەوەی دەنگ
+        {t('پشتڕاستکردنەوەی دەنگ')}
       </Button>
     </div>
   )

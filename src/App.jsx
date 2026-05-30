@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 import { AuthProvider, useAuth } from './state/AuthContext'
 import { RoomProvider, useRoom } from './state/RoomContext'
@@ -7,28 +7,30 @@ import { ProfileViewerProvider } from './state/ProfileViewer'
 import { LocalProvider, useLocal } from './state/LocalContext'
 import { FriendsProvider } from './state/FriendsContext'
 import { NotificationProvider } from './state/NotificationContext'
+import { LanguageProvider } from './lib/i18n'
 import Background from './components/Background'
 import ErrorBoundary from './components/ErrorBoundary'
 import VoiceBar from './components/VoiceBar'
 import LevelUpOverlay from './components/LevelUpOverlay'
 import Login from './screens/Login'
 import MainMenu from './screens/MainMenu'
-import SettingsScreen from './screens/Settings'
-import Home from './screens/Home'
-import Achievements from './screens/Achievements'
-import ProfileEdit from './screens/ProfileEdit'
-import Friends from './screens/Friends'
-import Groups from './screens/Groups'
-import RoomLobby from './screens/RoomLobby'
-import Reveal from './screens/Reveal'
-import Discussion from './screens/Discussion'
-import Voting from './screens/Voting'
-import Results from './screens/Results'
-import LocalLobby from './screens/local/LocalLobby'
-import LocalReveal from './screens/local/LocalReveal'
-import LocalDiscussion from './screens/local/LocalDiscussion'
-import LocalVoting from './screens/local/LocalVoting'
-import LocalResults from './screens/local/LocalResults'
+// ───── بارکردنی درەنگ (code-splitting) — هەر شاشە بە پێویست دادەبەزرێت ─────
+const SettingsScreen = lazy(() => import('./screens/Settings'))
+const Home = lazy(() => import('./screens/Home'))
+const Achievements = lazy(() => import('./screens/Achievements'))
+const ProfileEdit = lazy(() => import('./screens/ProfileEdit'))
+const Friends = lazy(() => import('./screens/Friends'))
+const Groups = lazy(() => import('./screens/Groups'))
+const RoomLobby = lazy(() => import('./screens/RoomLobby'))
+const Reveal = lazy(() => import('./screens/Reveal'))
+const Discussion = lazy(() => import('./screens/Discussion'))
+const Voting = lazy(() => import('./screens/Voting'))
+const Results = lazy(() => import('./screens/Results'))
+const LocalLobby = lazy(() => import('./screens/local/LocalLobby'))
+const LocalReveal = lazy(() => import('./screens/local/LocalReveal'))
+const LocalDiscussion = lazy(() => import('./screens/local/LocalDiscussion'))
+const LocalVoting = lazy(() => import('./screens/local/LocalVoting'))
+const LocalResults = lazy(() => import('./screens/local/LocalResults'))
 import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled } from './lib/sound'
 
 function FullLoader() {
@@ -65,6 +67,7 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
   }
 
   // دەنگی ڕاستەوخۆ لە تەواوی ژوور (لۆبی → ئەنجام)
+  // ProfileViewer لە ئاستی Shell دابین کراوە، بۆیە لێرە پێویست نییە
   return (
     <VoiceProvider
       roomId={room.id}
@@ -72,10 +75,8 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
       name={profile?.display_name}
       canSpeak={!!me?.can_speak}
     >
-      <ProfileViewerProvider>
-        {screen}
-        <VoiceBar />
-      </ProfileViewerProvider>
+      {screen}
+      <VoiceBar />
     </VoiceProvider>
   )
 }
@@ -95,8 +96,16 @@ function LocalRouter({ onExit }) {
 // ───── ناوەوەی دوای چوونەژوورەوە ─────
 function Shell({ ui }) {
   const { user, profile, loading, isSupabaseEnabled } = useAuth()
-  const [view, setView] = useState('menu') // menu | online | local | settings | achievements | profile | friends
-  const [pendingJoin, setPendingJoin] = useState(null)
+  // کۆدی بانگهێشت لە لینکی هاوبەشکراو (?join=CODE) — پاکی دەکەینەوە لە URL
+  const [pendingJoin, setPendingJoin] = useState(() => {
+    const c = new URLSearchParams(window.location.search).get('join')
+    if (c) {
+      window.history.replaceState({}, '', window.location.pathname)
+      return c.toUpperCase()
+    }
+    return null
+  })
+  const [view, setView] = useState(pendingJoin ? 'online' : 'menu') // menu | online | local | settings | achievements | profile | friends
 
   if (!isSupabaseEnabled) return <Login />
   if (loading) return <FullLoader />
@@ -143,11 +152,7 @@ function Shell({ ui }) {
       inner = <Friends onBack={toMenu} onJoinRoom={joinByCode} />
       break
     case 'groups':
-      inner = (
-        <ProfileViewerProvider>
-          <Groups onBack={toMenu} />
-        </ProfileViewerProvider>
-      )
+      inner = <Groups onBack={toMenu} />
       break
     default:
       inner = (
@@ -166,7 +171,11 @@ function Shell({ ui }) {
   return (
     <NotificationProvider>
       <FriendsProvider>
-        <ErrorBoundary onReset={toMenu}>{inner}</ErrorBoundary>
+        <ProfileViewerProvider>
+          <ErrorBoundary onReset={toMenu}>
+            <Suspense fallback={<FullLoader />}>{inner}</Suspense>
+          </ErrorBoundary>
+        </ProfileViewerProvider>
         <LevelUpOverlay />
       </FriendsProvider>
     </NotificationProvider>
@@ -207,11 +216,11 @@ export default function App() {
   const ui = { theme, setTheme, sfxOn, setSfxOn, musicOn, setMusicOn }
 
   return (
-    <>
+    <LanguageProvider>
       <Background />
       <AuthProvider>
         <Shell ui={ui} />
       </AuthProvider>
-    </>
+    </LanguageProvider>
   )
 }

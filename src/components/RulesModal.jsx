@@ -1,33 +1,35 @@
 import { X, Users, Eye, MessageSquare, Vote, Trophy } from 'lucide-react'
 import { Button } from './ui'
+import { useT } from '../lib/i18n'
 
 // مۆداڵی «چۆنیەتی یاری کردن»
 export default function RulesModal({ onClose }) {
+  const t = useT()
   const rules = [
     {
       icon: Users,
-      title: 'دەستەی کەشتی و ساختەکار',
-      text: 'هەموو یاریزانان دەستەی کەشتین جگە لە چەند ساختەکارێک. دەستەی کەشتی وشە نهێنیەکە دەزانن، بەڵام ساختەکارەکان نا!',
+      title: t('دەستەی کەشتی و ساختەکار'),
+      text: t('هەموو یاریزانان دەستەی کەشتین جگە لە چەند ساختەکارێک. دەستەی کەشتی وشە نهێنیەکە دەزانن، بەڵام ساختەکارەکان نا!'),
     },
     {
       icon: Eye,
-      title: 'ئاشکراکردنی ڕۆڵ',
-      text: 'ئامێرەکە بەسەر یاریزاناندا بگێڕە. هەر یاریزانێک بە نهێنی ڕۆڵ و وشەی خۆی دەبینێت.',
+      title: t('ئاشکراکردنی ڕۆڵ'),
+      text: t('ئامێرەکە بەسەر یاریزاناندا بگێڕە. هەر یاریزانێک بە نهێنی ڕۆڵ و وشەی خۆی دەبینێت.'),
     },
     {
       icon: MessageSquare,
-      title: 'گفتوگۆ',
-      text: 'هەر یاریزانێک ئاماژەیەک دەربارەی وشەکە دەدات بەبێ ئەوەی ڕاستەوخۆ بیڵێت. ساختەکارەکان هەوڵ دەدەن خۆیان بشارنەوە!',
+      title: t('گفتوگۆ'),
+      text: t('هەر یاریزانێک ئاماژەیەک دەربارەی وشەکە دەدات بەبێ ئەوەی ڕاستەوخۆ بیڵێت. ساختەکارەکان هەوڵ دەدەن خۆیان بشارنەوە!'),
     },
     {
       icon: Vote,
-      title: 'دەنگدانی نهێنی',
-      text: 'بە نۆرە دەنگ دەدەن بۆ ئەو کەسەی گومانی لێ دەکەن ساختەکارە، یان دەنگدان تێدەپەڕێنن.',
+      title: t('دەنگدانی نهێنی'),
+      text: t('بە نۆرە دەنگ دەدەن بۆ ئەو کەسەی گومانی لێ دەکەن ساختەکارە، یان دەنگدان تێدەپەڕێنن.'),
     },
     {
       icon: Trophy,
-      title: 'سەرکەوتن',
-      text: 'دەستەی کەشتی سەردەکەون ئەگەر هەموو ساختەکارەکان دەربکرێن. ساختەکارەکان سەردەکەون ئەگەر ژمارەیان یەکسان بێت بە دەستەی کەشتی.',
+      title: t('سەرکەوتن'),
+      text: t('دەستەی کەشتی سەردەکەون ئەگەر هەموو ساختەکارەکان دەربکرێن. ساختەکارەکان سەردەکەون ئەگەر ژمارەیان یەکسان بێت بە دەستەی کەشتی.'),
     },
   ]
 
@@ -41,7 +43,7 @@ export default function RulesModal({ onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-black text-crew">چۆنیەتی یاری کردن</h2>
+          <h2 className="text-xl font-black text-crew">{t('چۆنیەتی یاری کردن')}</h2>
           <button
             onClick={onClose}
             className="btn-press rounded-full p-2 bg-ink/5 hover:bg-ink/10 text-ink/70"
@@ -65,7 +67,7 @@ export default function RulesModal({ onClose }) {
         </div>
 
         <Button onClick={onClose} className="w-full mt-6">
-          تێگەیشتم، با دەست پێ بکەین!
+          {t('تێگەیشتم، با دەست پێ بکەین!')}
         </Button>
       </div>
     </div>

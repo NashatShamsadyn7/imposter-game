@@ -5,11 +5,14 @@ import { useRoom } from '../state/RoomContext'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import Chat from '../components/Chat'
+import Reactions from '../components/Reactions'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 export default function Discussion() {
   const { user } = useAuth()
   const { room, players, me, isHost, nextTurn, beginVoting } = useRoom()
+  const t = useT()
   const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
@@ -57,16 +60,16 @@ export default function Discussion() {
             <Panel className="!p-3 flex items-center gap-2">
               <Users className="h-5 w-5 text-crew" />
               <div>
-                <p className="text-xs text-ink/50">یاریزان</p>
+                <p className="text-xs text-ink/50">{t('یاریزان')}</p>
                 <p className="font-black text-ink">{players.length}</p>
               </div>
             </Panel>
             <Panel className="!p-3 flex items-center gap-2">
               <Eye className="h-5 w-5 text-crew" />
               <div>
-                <p className="text-xs text-ink/50">ڕۆڵی تۆ</p>
-                <p className={`font-black ${me?.role === 'impostor' ? 'text-impostor' : 'text-crew'}`}>
-                  {me?.role === 'impostor' ? 'ساختەکار' : 'کەشتی'}
+                <p className="text-xs text-ink/50">{t('ڕۆڵی تۆ')}</p>
+                <p className={`font-black ${me?.is_spectator ? 'text-ink/50' : me?.role === 'impostor' ? 'text-impostor' : 'text-crew'}`}>
+                  {me?.is_spectator ? t('بینەر') : me?.role === 'impostor' ? t('ساختەکار') : t('کەشتی')}
                 </p>
               </div>
             </Panel>
@@ -76,7 +79,7 @@ export default function Discussion() {
           <Panel className="flex flex-col items-center py-6">
             <div className="mb-2 flex items-center gap-2 text-ink/60">
               <Clock className="h-4 w-4" />
-              <span className="text-sm">کاتی گفتوگۆ</span>
+              <span className="text-sm">{t('کاتی گفتوگۆ')}</span>
             </div>
             <p
               className={`text-5xl font-black tabular-nums ${
@@ -89,7 +92,7 @@ export default function Discussion() {
 
           {/* ڕیزی قسەکردن */}
           <Panel>
-            <p className="mb-3 text-sm font-bold text-ink">ڕیزی وەسفکردن</p>
+            <p className="mb-3 text-sm font-bold text-ink">{t('ڕیزی وەسفکردن')}</p>
             <div className="space-y-1.5">
               {ordered.map((p) => {
                 const active = p.user_id === room.turn_player_id
@@ -120,16 +123,22 @@ export default function Discussion() {
                 className="mt-3 w-full !py-2 !text-sm"
               >
                 <SkipForward className="h-4 w-4" />
-                {turnPlayer ? 'نۆرەی دواتر' : 'دەستپێکردنی ڕیز'}
+                {turnPlayer ? t('نۆرەی دواتر') : t('دەستپێکردنی ڕیز')}
               </Button>
             )}
+          </Panel>
+
+          {/* کاردانەوەی خێرا */}
+          <Panel className="!p-3">
+            <p className="mb-2 text-center text-xs font-bold text-ink/60">{t('کاردانەوەی خێرا')}</p>
+            <Reactions />
           </Panel>
 
           {/* چوون بۆ دەنگدان */}
           {isHost && (
             <Button onClick={beginVoting} variant="danger" className="w-full !py-4">
               <Vote className="h-5 w-5" />
-              چوون بەرەو قۆناغی دەنگدان
+              {t('چوون بەرەو قۆناغی دەنگدان')}
             </Button>
           )}
         </div>

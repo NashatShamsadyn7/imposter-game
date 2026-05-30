@@ -12,12 +12,14 @@ import {
   subscribeDirectMessages,
 } from '../lib/supabase'
 import { isOnline, lastSeenText } from '../lib/presence'
+import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 // گفتوگۆی تایبەت لەگەڵ هاوڕێیەک
 export default function DirectChat({ friend, onBack, onJoinRoom }) {
   const { user } = useAuth()
   const { clearUnread } = useFriends()
+  const t = useT()
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [showGif, setShowGif] = useState(false)
@@ -99,7 +101,7 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
       {/* نامەکان */}
       <div className="flex-1 space-y-2 overflow-y-auto rounded-2xl border border-ink/10 bg-surface/40 p-3">
         {messages.length === 0 && (
-          <p className="py-8 text-center text-sm text-ink/30">هێشتا نامەیەک نییە — سڵاو بکە! 👋</p>
+          <p className="py-8 text-center text-sm text-ink/30">{t('هێشتا نامەیەک نییە — سڵاو بکە! 👋')}</p>
         )}
         {messages.map((m) => {
           const mine = m.sender_id === user.id
@@ -109,7 +111,7 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
                 <div className="max-w-[80%] rounded-2xl border border-crew/40 bg-crew/10 p-3">
                   <p className="mb-2 flex items-center gap-2 text-sm font-bold text-crew">
                     <Gamepad2 className="h-4 w-4" />
-                    بانگهێشت بۆ ژوور
+                    {t('بانگهێشت بۆ ژوور')}
                   </p>
                   <p className="mb-2 font-mono text-xl font-black tracking-widest text-ink">
                     {m.content}
@@ -120,7 +122,7 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
                       className="btn-press flex w-full items-center justify-center gap-1.5 rounded-xl bg-crew py-2 text-sm font-bold text-white"
                     >
                       <LogIn className="h-4 w-4" />
-                      بەشداربوون
+                      {t('بەشداربوون')}
                     </button>
                   )}
                 </div>
@@ -182,7 +184,7 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="نامەیەک بنووسە…"
+          placeholder={t('نامەیەک بنووسە…')}
           maxLength={500}
           className="min-w-0 flex-1 rounded-2xl border border-ink/10 bg-ink/5 px-4 py-3 text-ink placeholder:text-ink/30 outline-none focus:border-crew/60"
         />

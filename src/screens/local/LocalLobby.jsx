@@ -7,9 +7,11 @@ import { useLocal } from '../../state/LocalContext'
 import { RANDOM_CATEGORY } from '../../data/words'
 import { Button, Panel } from '../../components/ui'
 import RulesModal from '../../components/RulesModal'
+import { useT } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
 
 export default function LocalLobby({ onExit }) {
+  const t = useT()
   const {
     players, settings, scores, CATEGORIES, MAX_PLAYERS,
     addPlayer, removePlayer, renamePlayer, movePlayer, updateSettings, startGame, resetScores,
@@ -44,11 +46,11 @@ export default function LocalLobby({ onExit }) {
           className="btn-press flex items-center gap-1 rounded-xl bg-surface px-3 py-2 text-sm text-muted shadow-card hover:text-ink"
         >
           <ChevronRight className="h-4 w-4" />
-          گەڕانەوە
+          {t('گەڕانەوە')}
         </button>
         <div className="text-center">
-          <h1 className="text-xl font-black text-ink">یاریکردنی ناوخۆیی</h1>
-          <p className="text-xs text-muted">یەک ئامێر</p>
+          <h1 className="text-xl font-black text-ink">{t('یاریکردنی ناوخۆیی')}</h1>
+          <p className="text-xs text-muted">{t('یەک ئامێر')}</p>
         </div>
         <button
           onClick={() => { sfx.click(); setShowRules(true) }}
@@ -64,13 +66,13 @@ export default function LocalLobby({ onExit }) {
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-crew" />
-              <h2 className="font-bold text-ink">خاڵەکانی ئەم کۆبوونەوەیە</h2>
+              <h2 className="font-bold text-ink">{t('خاڵەکانی ئەم کۆبوونەوەیە')}</h2>
             </div>
             <button
               onClick={() => { sfx.tap(); resetScores() }}
               className="btn-press flex items-center gap-1 rounded-lg bg-ink/5 px-2 py-1 text-xs text-muted hover:text-impostor"
             >
-              <RotateCcw className="h-3 w-3" /> سفرکردنەوە
+              <RotateCcw className="h-3 w-3" /> {t('سفرکردنەوە')}
             </button>
           </div>
           <div className="space-y-1.5">
@@ -90,7 +92,7 @@ export default function LocalLobby({ onExit }) {
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5 text-crew" />
-            <h2 className="font-bold text-ink">یاریزانان</h2>
+            <h2 className="font-bold text-ink">{t('یاریزانان')}</h2>
           </div>
           <span className="text-sm text-muted">{players.length} / {MAX_PLAYERS}</span>
         </div>
@@ -100,7 +102,7 @@ export default function LocalLobby({ onExit }) {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            placeholder="ناوی یاریزان…"
+            placeholder={t('ناوی یاریزان…')}
             maxLength={20}
             className="min-w-0 flex-1 rounded-xl border border-line bg-surface2 px-4 py-2.5 text-ink placeholder:text-muted/60 outline-none focus:border-crew"
           />
@@ -139,7 +141,7 @@ export default function LocalLobby({ onExit }) {
         <div>
           <div className="mb-2 flex items-center gap-2">
             <Tag className="h-4 w-4 text-crew" />
-            <span className="text-sm font-bold text-ink">هاوپۆلی وشە</span>
+            <span className="text-sm font-bold text-ink">{t('هاوپۆلی وشە')}</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[RANDOM_CATEGORY, ...CATEGORIES].map((c) => (
@@ -163,7 +165,7 @@ export default function LocalLobby({ onExit }) {
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Skull className="h-4 w-4 text-impostor" />
-              <span className="text-sm font-bold text-ink">ژمارەی ساختەکار</span>
+              <span className="text-sm font-bold text-ink">{t('ژمارەی ساختەکار')}</span>
             </div>
             <span className="font-black text-impostor">{settings.impostorCount}</span>
           </div>
@@ -188,7 +190,7 @@ export default function LocalLobby({ onExit }) {
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-crew" />
-              <span className="text-sm font-bold text-ink">کاتی گفتوگۆ</span>
+              <span className="text-sm font-bold text-ink">{t('کاتی گفتوگۆ')}</span>
             </div>
             <span className="font-bold text-crew">
               {Math.floor(settings.discussionSeconds / 60)}:{String(settings.discussionSeconds % 60).padStart(2, '0')}
@@ -207,7 +209,7 @@ export default function LocalLobby({ onExit }) {
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-crew" />
-              <span className="text-sm font-bold text-ink">قەبارەی خاڵ</span>
+              <span className="text-sm font-bold text-ink">{t('قەبارەی خاڵ')}</span>
             </div>
             <span className="font-black text-crew">×{settings.multiplier}</span>
           </div>
@@ -227,9 +229,9 @@ export default function LocalLobby({ onExit }) {
 
       <Button onClick={startGame} disabled={!canStart} variant="danger" className="w-full !py-4 !text-lg">
         <Play className="h-6 w-6" />
-        دەستپێکردنی یاری
+        {t('دەستپێکردنی یاری')}
       </Button>
-      {!canStart && <p className="mt-3 text-center text-sm text-muted">پێویستە بەلایەنی کەم ٣ یاریزان هەبن</p>}
+      {!canStart && <p className="mt-3 text-center text-sm text-muted">{t('پێویستە بەلایەنی کەم ٣ یاریزان هەبن')}</p>}
     </div>
   )
 }

@@ -16,6 +16,9 @@ import {
   removeFriendship,
   subscribeFriendships,
   subscribeDirectMessages,
+  fetchBlockedIds,
+  blockUser,
+  unblockUser,
 } from '../lib/supabase'
 
 const FriendsContext = createContext(null)
@@ -27,6 +30,7 @@ export function FriendsProvider({ children }) {
   const [friendships, setFriendships] = useState([])
   const [profiles, setProfiles] = useState({}) // id -> profile
   const [unread, setUnread] = useState({}) // id -> count
+  const [blocked, setBlocked] = useState([]) // idـی بلۆککراوەکان
   const idsRef = useRef([])
   const profilesRef = useRef({})
   const incomingIdsRef = useRef(null) // ناسینەوەی داواکاری نوێ
@@ -40,11 +44,16 @@ export function FriendsProvider({ children }) {
       ...new Set(fs.map((f) => (f.requester_id === user.id ? f.addressee_id : f.requester_id))),
     ]
     idsRef.current = ids
-    const [profs, counts] = await Promise.all([fetchProfilesByIds(ids), fetchUnreadCounts(user.id)])
+    const [profs, counts, blk] = await Promise.all([
+      fetchProfilesByIds(ids),
+      fetchUnreadCounts(user.id),
+      fetchBlockedIds(user.id).catch(() => []),
+    ])
     const profMap = Object.fromEntries(profs.map((p) => [p.id, p]))
     profilesRef.current = profMap
     setProfiles(profMap)
     setUnread(counts)
+    setBlocked(blk)
 
     // ناسینەوەی داواکاری هاوڕێیەتیی نوێ بۆ ئاگادارکردنەوە
     const incomingIds = fs
@@ -82,6 +91,7 @@ export function FriendsProvider({ children }) {
       setFriendships([])
       setProfiles({})
       setUnread({})
+      setBlocked([])
       return
     }
     load()
@@ -168,6 +178,19 @@ export function FriendsProvider({ children }) {
   const reject = useCallback(async (id) => { await respondFriendRequest(id, false); await load() }, [load])
   const remove = useCallback(async (id) => { await removeFriendship(id); await load() }, [load])
 
+  // ───── بلۆککردن ─────
+  const block = useCallback(async (id) => {
+    if (!user || id === user.id) return
+    setBlocked((p) => (p.includes(id) ? p : [...p, id]))
+    try { await blockUser(user.id, id) } catch { /* noop */ }
+  }, [user])
+  const unblock = useCallback(async (id) => {
+    if (!user) return
+    setBlocked((p) => p.filter((x) => x !== id))
+    try { await unblockUser(user.id, id) } catch { /* noop */ }
+  }, [user])
+  const isBlocked = useCallback((id) => blocked.includes(id), [blocked])
+
   // پاککردنەوەی نەخوێندراوەکان بۆ هاوڕێیەک (دوای کردنەوەی گفتوگۆ)
   const clearUnread = useCallback((otherId) => {
     setUnread((prev) => {
@@ -211,6 +234,10 @@ export function FriendsProvider({ children }) {
     reject,
     remove,
     clearUnread,
+    blocked,
+    block,
+    unblock,
+    isBlocked,
     reload: load,
   }
 

@@ -2,7 +2,7 @@
 //  Service Worker — بۆ تواناکردنی دامەزراندن (PWA) و کارکردن بەبێ ئینتەرنێت
 // ═══════════════════════════════════════════════════════════
 
-const CACHE = 'imposter-v3'
+const CACHE = 'imposter-v4'
 const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
@@ -39,15 +39,20 @@ self.addEventListener('push', (event) => {
   )
 })
 
-// کرتە لەسەر ئاگادارکردنەوەی سیستەم — ئەپ بکەرەوە/فۆکەس بکە
+// کرتە لەسەر ئاگادارکردنەوەی سیستەم — ئەپ بکەرەوە/فۆکەس بکە (لەگەڵ لینکی ڕاستەوخۆ)
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
+  const url = event.notification.data?.url || '/'
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
       for (const c of list) {
-        if ('focus' in c) return c.focus()
+        if ('focus' in c) {
+          // ئەگەر لینکەکە بانگهێشتی ژوور بوو، ناوبڕینی بکە بۆ ئەو URLـە
+          if (url !== '/' && 'navigate' in c) c.navigate(url).catch(() => {})
+          return c.focus()
+        }
       }
-      if (self.clients.openWindow) return self.clients.openWindow('/')
+      if (self.clients.openWindow) return self.clients.openWindow(url)
     })
   )
 })
