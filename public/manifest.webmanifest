@@ -1,0 +1,27 @@
+{
+  "name": "ساختەکار — یاری گرووپی",
+  "short_name": "ساختەکار",
+  "description": "یاری گرووپیی ساختەکار — ئۆنلاین و ناوخۆیی",
+  "lang": "ckb",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f1c",
+  "theme_color": "#0b0f1c",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "maskable"
+    }
+  ]
+}

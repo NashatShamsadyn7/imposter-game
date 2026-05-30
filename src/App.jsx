@@ -8,6 +8,7 @@ import Login from './screens/Login'
 import MainMenu from './screens/MainMenu'
 import SettingsScreen from './screens/Settings'
 import Home from './screens/Home'
+import Achievements from './screens/Achievements'
 import RoomLobby from './screens/RoomLobby'
 import Reveal from './screens/Reveal'
 import Discussion from './screens/Discussion'
@@ -80,12 +81,15 @@ function Shell({ ui }) {
       )
     case 'settings':
       return <SettingsScreen ui={ui} onBack={toMenu} />
+    case 'achievements':
+      return <Achievements onBack={toMenu} />
     default:
       return (
         <MainMenu
           onOnline={() => setView('online')}
           onLocal={() => setView('local')}
           onSettings={() => setView('settings')}
+          onAchievements={() => setView('achievements')}
         />
       )
   }

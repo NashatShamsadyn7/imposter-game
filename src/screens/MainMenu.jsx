@@ -1,12 +1,14 @@
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft } from 'lucide-react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
+import { levelInfo } from '../lib/achievements'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // مێنیوی سەرەکی دوای چوونەژوورەوە
-export default function MainMenu({ onOnline, onLocal, onSettings }) {
+export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements }) {
   const { profile, signOut } = useAuth()
+  const { level } = levelInfo(profile?.total_points)
 
   const go = (fn) => {
     unlockAudio()
@@ -18,23 +20,41 @@ export default function MainMenu({ onOnline, onLocal, onSettings }) {
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-6">
       {/* پرۆفایل */}
       <header className="mb-8 flex items-center justify-between animate-fade-in">
-        <div className="flex items-center gap-3 rounded-full bg-surface py-1.5 pl-4 pr-1.5 shadow-card">
-          <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} ring />
-          <div className="leading-tight">
+        <button
+          onClick={() => go(onAchievements)}
+          className="btn-press flex items-center gap-3 rounded-full bg-surface py-1.5 pl-4 pr-1.5 shadow-card transition hover:border-crew"
+          title="دەستکەوت و ئاست"
+        >
+          <div className="relative">
+            <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} ring />
+            <span className="absolute -bottom-1 -left-1 grid h-5 min-w-5 place-items-center rounded-full bg-crew px-1 text-[10px] font-black text-white">
+              {level}
+            </span>
+          </div>
+          <div className="text-right leading-tight">
             <p className="text-sm font-bold text-ink">{profile?.display_name}</p>
             <p className="flex items-center gap-1 text-xs text-crew">
               <Star className="h-3 w-3 fill-crew" />
               {profile?.total_points ?? 0} خاڵ
             </p>
           </div>
-        </div>
-        <button
-          onClick={() => signOut()}
-          className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-muted shadow-card hover:text-impostor"
-          title="چوونەدەرەوە"
-        >
-          <LogOut className="h-5 w-5" />
         </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => go(onAchievements)}
+            className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
+            title="دەستکەوت و ئاست"
+          >
+            <Trophy className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => signOut()}
+            className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-muted shadow-card hover:text-impostor"
+            title="چوونەدەرەوە"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
+        </div>
       </header>
 
       {/* هیرۆ */}
