@@ -621,17 +621,15 @@ export async function findGroupByCode(code) {
 }
 
 // بەشداربوون لە گرووپ بە کۆد
-export async function joinGroupByCode(code, user) {
+// فەنکشنی security definer (join_group_by_code) بەکاردێنین تاکو
+// RLS ڕێگری لە دۆزینەوەی گرووپ نەکات بۆ کەسی نا-ئەندام، و هاوکات ئەندام دەکات.
+export async function joinGroupByCode(code) {
   need()
-  const group = await findGroupByCode(code)
-  if (!group) throw new Error('گرووپ نەدۆزرایەوە')
-  const { error } = await supabase
-    .from('group_members')
-    .upsert(
-      { group_id: group.id, user_id: user.id, role: 'member' },
-      { onConflict: 'group_id,user_id', ignoreDuplicates: true }
-    )
+  const { data: group, error } = await supabase.rpc('join_group_by_code', {
+    p_code: code.trim().toUpperCase(),
+  })
   if (error) throw error
+  if (!group) throw new Error('گرووپ نەدۆزرایەوە')
   return group
 }
 

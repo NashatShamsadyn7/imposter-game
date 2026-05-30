@@ -81,7 +81,7 @@ export default function Groups({ onBack }) {
     setBusy(true)
     setError(null)
     try {
-      const g = await joinGroupByCode(code, user)
+      const g = await joinGroupByCode(code)
       setModal(null)
       setCode('')
       load()
