@@ -1,5 +1,6 @@
 import { ChevronRight, Volume2, Music, Sun, Moon, Settings as SettingsIcon } from 'lucide-react'
 import { Panel } from '../components/ui'
+import PushToggle from '../components/PushToggle'
 import { sfx } from '../lib/sound'
 
 function Toggle({ on }) {
@@ -58,6 +59,8 @@ export default function Settings({ ui, onBack }) {
           </div>
           <Toggle on={musicOn} />
         </button>
+
+        <PushToggle />
       </Panel>
 
       {/* ڕووکار */}

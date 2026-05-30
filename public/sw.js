@@ -2,7 +2,7 @@
 //  Service Worker — بۆ تواناکردنی دامەزراندن (PWA) و کارکردن بەبێ ئینتەرنێت
 // ═══════════════════════════════════════════════════════════
 
-const CACHE = 'imposter-v2'
+const CACHE = 'imposter-v3'
 const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
@@ -17,6 +17,26 @@ self.addEventListener('activate', (event) => {
     )
   )
   self.clients.claim()
+})
+
+// وەرگرتنی Push (تەنانەت کاتێک ئەپ بەتەواوی داخراوە)
+self.addEventListener('push', (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch (e) {
+    data = { title: 'ساختەکار', body: event.data?.text() || '' }
+  }
+  const title = data.title || 'ساختەکار'
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || '',
+      icon: '/favicon.svg',
+      badge: '/favicon.svg',
+      tag: data.tag || 'push',
+      data: { url: data.url || '/' },
+    })
+  )
 })
 
 // کرتە لەسەر ئاگادارکردنەوەی سیستەم — ئەپ بکەرەوە/فۆکەس بکە
