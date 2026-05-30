@@ -41,7 +41,9 @@ export default function Discussion() {
   const myTurn = room.turn_player_id === user.id
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-5">
+    // pb-28: شوێن بۆ شریتی دەنگ (VoiceBar) کە لە ژێرەوە دەمێنێتەوە، تاکو لەسەر مۆبایل
+    // لەگەڵ خانەی نووسینی چات تێکەڵ نەبێت
+    <div className="mx-auto max-w-5xl px-4 py-5 pb-28">
       {/* بانەری نۆرە */}
       {myTurn && (
         <div className="mb-4 flex items-center gap-3 rounded-2xl border border-crew bg-crew/15 px-4 py-3 animate-pulse-glow">
@@ -144,7 +146,7 @@ export default function Discussion() {
         </div>
 
         {/* ───── لای ڕاست: چات ───── */}
-        <Chat className="h-[60vh] md:h-[78vh]" />
+        <Chat className="h-[52vh] md:h-[78vh]" />
       </div>
     </div>
   )
