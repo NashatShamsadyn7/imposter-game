@@ -449,10 +449,11 @@ export async function fetchUnreadCounts(meId) {
 }
 
 // گوێگرتن لە نامە تایبەتە هاتووەکان (هەرکوێ بم)
+// ناوی کەناڵ بێهاوتایە تاکو لەگەڵ کەناڵەکانی تر تێکەڵ نەبێت
 export function subscribeDirectMessages(userId, onMessage) {
   need()
   const channel = supabase
-    .channel(`dm:${userId}`)
+    .channel(`dm:${userId}:${Math.random().toString(36).slice(2, 9)}`)
     .on(
       'postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'direct_messages', filter: `recipient_id=eq.${userId}` },

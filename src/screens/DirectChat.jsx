@@ -22,15 +22,19 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
   const other = friend.profile
   const online = isOnline(other?.last_seen)
 
+  const [error, setError] = useState(null)
+
   useEffect(() => {
     let active = true
-    fetchDirectMessages(user.id, friend.id).then((m) => active && setMessages(m))
-    markMessagesRead(user.id, friend.id)
+    fetchDirectMessages(user.id, friend.id)
+      .then((m) => active && setMessages(m))
+      .catch((e) => active && setError(e.message))
+    markMessagesRead(user.id, friend.id).catch(() => {})
     clearUnread(friend.id)
     const unsub = subscribeDirectMessages(user.id, (msg) => {
       if (msg.sender_id === friend.id) {
         setMessages((prev) => [...prev, msg])
-        markMessagesRead(user.id, friend.id)
+        markMessagesRead(user.id, friend.id).catch(() => {})
       }
     })
     return () => {
@@ -49,8 +53,12 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
     const content = text.trim().slice(0, 500)
     setText('')
     sfx.tap()
-    const row = await sendDirectMessage(user.id, friend.id, content)
-    setMessages((prev) => [...prev, row])
+    try {
+      const row = await sendDirectMessage(user.id, friend.id, content)
+      setMessages((prev) => [...prev, row])
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   return (
@@ -66,7 +74,7 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
         <div className="relative">
           <Avatar url={other?.avatar_url} name={other?.display_name} size={42} ring />
           {online && (
-            <span className="absolute bottom-0 left-0 h-3 w-3 rounded-full border-2 border-bg bg-crew" />
+            <span className="absolute bottom-0 left-0 h-3 w-3 rounded-full border-2 border-surface bg-crew" />
           )}
         </div>
         <div className="leading-tight">
@@ -74,6 +82,12 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
           <p className="text-xs text-muted">{lastSeenText(other?.last_seen)}</p>
         </div>
       </header>
+
+      {error && (
+        <p className="mb-2 rounded-xl bg-impostor/10 px-3 py-2 text-center text-xs text-impostor" dir="ltr">
+          {error}
+        </p>
+      )}
 
       {/* نامەکان */}
       <div className="flex-1 space-y-2 overflow-y-auto rounded-2xl border border-ink/10 bg-surface/40 p-3">

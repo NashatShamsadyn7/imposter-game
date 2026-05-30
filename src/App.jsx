@@ -5,6 +5,7 @@ import { RoomProvider, useRoom } from './state/RoomContext'
 import { LocalProvider, useLocal } from './state/LocalContext'
 import { FriendsProvider } from './state/FriendsContext'
 import Background from './components/Background'
+import ErrorBoundary from './components/ErrorBoundary'
 import Login from './screens/Login'
 import MainMenu from './screens/MainMenu'
 import SettingsScreen from './screens/Settings'
@@ -130,7 +131,11 @@ function Shell({ ui }) {
       )
   }
 
-  return <FriendsProvider>{inner}</FriendsProvider>
+  return (
+    <FriendsProvider>
+      <ErrorBoundary onReset={toMenu}>{inner}</ErrorBoundary>
+    </FriendsProvider>
+  )
 }
 
 export default function App() {
