@@ -41,6 +41,7 @@ export function RoomProvider({ children }) {
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
   const resultsRef = useRef(false)
+  const prevStatusRef = useRef(null)
 
   // ───── هاوکاتکردنی ڕاستەوخۆ ─────
   const refreshAll = useCallback(async (rid) => {
@@ -90,6 +91,18 @@ export function RoomProvider({ children }) {
       unsub?.()
     }
   }, [roomId, refreshAll])
+
+  // کاتێک دەنگدان دەستپێدەکات، دەنگە کۆنەکان پاک بکەرەوە و دووبارە بیانهێنە.
+  // (Supabase realtime ڕووداوەکانی DELETE بە فلتەر دەستەبەر ناکات، بۆیە
+  //  ناتوانین پشت بە onVote ببەستین بۆ سڕینەوەی دەنگەکانی جۆلی پێشوو)
+  useEffect(() => {
+    if (!room) return
+    if (room.status === 'voting' && prevStatusRef.current !== 'voting') {
+      setVotes([])
+      if (roomId) fetchVotes(roomId).then(setVotes)
+    }
+    prevStatusRef.current = room.status
+  }, [room?.status, roomId])
 
   // ───── کردارەکانی ژوور ─────
   const createRoom = useCallback(

@@ -17,7 +17,7 @@ export default function Voting() {
 
   // ژمارەی دەنگدەرە جیاوازەکان
   const voterCount = useMemo(() => new Set(votes.map((v) => v.voter_id)).size, [votes])
-  const allVoted = voterCount >= players.length
+  const allVoted = voterCount > 0 && voterCount >= players.length
 
   // خانەخوێ خۆکار کۆتایی پێدەهێنێت کاتێک هەموان دەنگیان دا
   useEffect(() => {

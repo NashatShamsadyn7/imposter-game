@@ -48,11 +48,12 @@ export async function ensureProfile(user) {
     .maybeSingle()
 
   if (!existing) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .insert({ id: user.id, display_name, avatar_url })
       .select()
       .single()
+    if (error) throw error
     return data
   }
   // نوێکردنەوەی ناو/وێنە ئەگەر گۆڕابن

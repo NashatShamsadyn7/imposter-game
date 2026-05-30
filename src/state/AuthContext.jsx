@@ -8,6 +8,20 @@ import { supabase, isSupabaseEnabled, ensureProfile, signOut } from '../lib/supa
 const AuthContext = createContext(null)
 export const useAuth = () => useContext(AuthContext)
 
+// پرۆفایلی جێگرەوە لە زانیاری گووگڵ — بۆ ئەوەی ئەپڵیکەیشن هەرگیز
+// لە شاشەی بارکردن نەمێنێتەوە ئەگەر بنکەی دراوە بەردەست نەبوو
+function fallbackProfile(user) {
+  const meta = user.user_metadata || {}
+  return {
+    id: user.id,
+    display_name: meta.full_name || meta.name || user.email?.split('@')[0] || 'یاریزان',
+    avatar_url: meta.avatar_url || meta.picture || null,
+    total_points: 0,
+    games_played: 0,
+    wins: 0,
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -18,10 +32,11 @@ export function AuthProvider({ children }) {
       setLoading(false)
       return
     }
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user || null)
-      setLoading(false)
-    })
+    supabase.auth
+      .getSession()
+      .then(({ data }) => setUser(data.session?.user || null))
+      .catch((e) => console.warn('getSession:', e.message))
+      .finally(() => setLoading(false))
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user || null)
     })
@@ -34,9 +49,19 @@ export function AuthProvider({ children }) {
       setProfile(null)
       return
     }
+    let cancelled = false
     ensureProfile(user)
-      .then(setProfile)
-      .catch((e) => console.warn('ensureProfile:', e.message))
+      .then((p) => {
+        if (!cancelled) setProfile(p || fallbackProfile(user))
+      })
+      .catch((e) => {
+        console.warn('ensureProfile:', e.message)
+        // ئەگەر بنکەی دراوە سەرکەوتوو نەبوو، بە پرۆفایلی جێگرەوە بەردەوام بە
+        if (!cancelled) setProfile(fallbackProfile(user))
+      })
+    return () => {
+      cancelled = true
+    }
   }, [user])
 
   const refreshProfile = async () => {
