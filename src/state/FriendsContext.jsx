@@ -129,6 +129,41 @@ export function FriendsProvider({ children }) {
     [user, friendships, load]
   )
 
+  // ناردنی داواکاری بە id (لە ناو ژوور/گرووپ)
+  const addFriendById = useCallback(
+    async (targetId) => {
+      if (!user) return { error: 'چوونەژوورەوە پێویستە' }
+      if (targetId === user.id) return { error: 'ناتوانیت خۆت زیاد بکەیت' }
+      const exists = friendships.find(
+        (f) => f.requester_id === targetId || f.addressee_id === targetId
+      )
+      if (exists) return { error: 'پێشتر داواکاری/هاوڕێیەتی هەیە' }
+      try {
+        await sendFriendRequest(user.id, targetId)
+        await load()
+        return { ok: true }
+      } catch (e) {
+        return { error: e.message }
+      }
+    },
+    [user, friendships, load]
+  )
+
+  // دۆخی پەیوەندی لەگەڵ بەکارهێنەرێک
+  const friendStatusWith = useCallback(
+    (otherId) => {
+      if (!otherId || otherId === user?.id) return 'self'
+      const f = friendships.find(
+        (x) => x.requester_id === otherId || x.addressee_id === otherId
+      )
+      if (!f) return 'none'
+      if (f.status === 'accepted') return 'friend'
+      if (f.status === 'pending') return f.requester_id === user?.id ? 'outgoing' : 'incoming'
+      return 'none'
+    },
+    [friendships, user]
+  )
+
   const accept = useCallback(async (id) => { await respondFriendRequest(id, true); await load() }, [load])
   const reject = useCallback(async (id) => { await respondFriendRequest(id, false); await load() }, [load])
   const remove = useCallback(async (id) => { await removeFriendship(id); await load() }, [load])
@@ -170,6 +205,8 @@ export function FriendsProvider({ children }) {
     unread,
     totalUnread,
     addFriendByCode,
+    addFriendById,
+    friendStatusWith,
     accept,
     reject,
     remove,

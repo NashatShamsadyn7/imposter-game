@@ -3,12 +3,14 @@ import { Loader2 } from 'lucide-react'
 import { AuthProvider, useAuth } from './state/AuthContext'
 import { RoomProvider, useRoom } from './state/RoomContext'
 import { VoiceProvider } from './state/VoiceContext'
+import { ProfileViewerProvider } from './state/ProfileViewer'
 import { LocalProvider, useLocal } from './state/LocalContext'
 import { FriendsProvider } from './state/FriendsContext'
 import { NotificationProvider } from './state/NotificationContext'
 import Background from './components/Background'
 import ErrorBoundary from './components/ErrorBoundary'
 import VoiceBar from './components/VoiceBar'
+import LevelUpOverlay from './components/LevelUpOverlay'
 import Login from './screens/Login'
 import MainMenu from './screens/MainMenu'
 import SettingsScreen from './screens/Settings'
@@ -69,8 +71,10 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
       name={profile?.display_name}
       canSpeak={!!me?.can_speak}
     >
-      {screen}
-      <VoiceBar />
+      <ProfileViewerProvider>
+        {screen}
+        <VoiceBar />
+      </ProfileViewerProvider>
     </VoiceProvider>
   )
 }
@@ -154,6 +158,7 @@ function Shell({ ui }) {
     <NotificationProvider>
       <FriendsProvider>
         <ErrorBoundary onReset={toMenu}>{inner}</ErrorBoundary>
+        <LevelUpOverlay />
       </FriendsProvider>
     </NotificationProvider>
   )

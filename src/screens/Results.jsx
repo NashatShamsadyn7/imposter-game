@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { Trophy, Skull, ShieldCheck, RotateCcw, LogOut, Star, UserX } from 'lucide-react'
 import { useRoom } from '../state/RoomContext'
+import { useAuth } from '../state/AuthContext'
+import { useProfileViewer } from '../state/ProfileViewer'
 import { CATEGORIES, findWord } from '../data/words'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
@@ -9,6 +11,8 @@ import { sfx } from '../lib/sound'
 
 export default function Results() {
   const { room, players, isHost, playAgain, leaveRoom } = useRoom()
+  const { refreshProfile } = useAuth()
+  const { openProfile } = useProfileViewer() || {}
   const impostorWin = room.winner_side === 'impostor'
   const category = CATEGORIES.find((c) => c.id === room.category_id)
 
@@ -16,6 +20,12 @@ export default function Results() {
     if (impostorWin) sfx.lose()
     else sfx.win()
   }, [impostorWin])
+
+  // نوێکردنەوەی خاڵەکانی پرۆفایلی خۆم — بۆ ئەنیمەیشنی بەرزبوونەوەی ئاست
+  useEffect(() => {
+    const t = setTimeout(() => refreshProfile?.(), 1200)
+    return () => clearTimeout(t)
+  }, [])
 
   // ڕیزکردن بەپێی خاڵ
   const ranked = [...players].sort((a, b) => b.points_this_game - a.points_this_game)
@@ -55,9 +65,10 @@ export default function Results() {
         <h2 className="mb-3 text-center font-bold text-ink">ئەنجام و خاڵەکان</h2>
         <div className="space-y-2">
           {ranked.map((p) => (
-            <div
+            <button
               key={p.user_id}
-              className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${
+              onClick={() => openProfile?.(p.user_id, p.display_name, p.avatar_url)}
+              className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-right ${
                 p.role === 'impostor'
                   ? 'border-impostor/40 bg-impostor/10'
                   : 'border-crew/25 bg-crew/5'
@@ -85,7 +96,7 @@ export default function Results() {
               <span className="flex items-center gap-1 font-black text-crew">
                 <Star className="h-4 w-4" />+{p.points_this_game}
               </span>
-            </div>
+            </button>
           ))}
         </div>
       </Panel>

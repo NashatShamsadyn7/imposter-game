@@ -380,6 +380,18 @@ export async function fetchProfilesByIds(ids) {
   return data || []
 }
 
+// هێنانی پرۆفایلی گشتیی تەواوی یەک بەکارهێنەر (بۆ پیشاندانی ئاست/ئامار)
+export async function fetchPublicProfile(userId) {
+  need()
+  if (!userId) return null
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, display_name, avatar_url, friend_code, total_points, games_played, wins, last_seen')
+    .eq('id', userId)
+    .maybeSingle()
+  return data
+}
+
 // گوێگرتن لە گۆڕانکاری هاوڕێیەتی (داواکاری نوێ/قبووڵکردن)
 export function subscribeFriendships(userId, onChange) {
   need()

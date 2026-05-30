@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
+import { useProfileViewer } from '../state/ProfileViewer'
 import { CATEGORIES, RANDOM_CATEGORY } from '../data/words'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
@@ -35,6 +36,7 @@ export default function RoomLobby() {
     startGame,
   } = useRoom()
   const [copied, setCopied] = useState(false)
+  const { openProfile } = useProfileViewer() || {}
 
   const ordered = [...players].sort((a, b) => a.order_index - b.order_index)
   const maxImpostors = Math.max(1, Math.floor((players.length - 1) / 2))
@@ -100,11 +102,16 @@ export default function RoomLobby() {
           {ordered.map((p, i) => (
             <div key={p.user_id} className="flex items-center gap-2 rounded-xl bg-ink/5 px-3 py-2">
               <span className="w-5 text-center text-sm font-bold text-ink/40">{i + 1}</span>
-              <Avatar url={p.avatar_url} name={p.display_name} size={36} />
-              <span className="flex-1 truncate font-medium text-ink">
-                {p.display_name}
-                {p.user_id === user.id && <span className="text-xs text-crew"> (تۆ)</span>}
-              </span>
+              <button
+                onClick={() => openProfile?.(p.user_id, p.display_name, p.avatar_url)}
+                className="flex min-w-0 flex-1 items-center gap-2"
+              >
+                <Avatar url={p.avatar_url} name={p.display_name} size={36} />
+                <span className="truncate font-medium text-ink">
+                  {p.display_name}
+                  {p.user_id === user.id && <span className="text-xs text-crew"> (تۆ)</span>}
+                </span>
+              </button>
               {p.is_host && <Crown className="h-4 w-4 text-amber-500" title="خانەخوێ" />}
 
               {isHost && p.user_id !== user.id && (
