@@ -24,8 +24,11 @@ create table if not exists public.rooms (
   impostor_count int default 1,
   discussion_seconds int default 120,
   multiplier int default 1,
+  mode text default 'classic',            -- classic | undercover (دۆخی یاری)
   secret_word_ku text,
   secret_word_en text,
+  decoy_word_ku text,                     -- وشەی نزیک بۆ ساختەکار (تەنها دۆخی undercover)
+  decoy_word_en text,
   winner_side text,                       -- crew | impostor (لە کۆتایی یاری)
   turn_player_id uuid,                    -- ئەو یاریزانەی ئێستا نۆرەی وەسفکردنیەتی
   phase_ends_at timestamptz,              -- بۆ هاوکاتکردنی تایمەر

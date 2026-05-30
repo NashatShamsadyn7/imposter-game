@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Plus, Trash2, Users, Play, Skull, Clock, Sparkles, Tag,
-  ChevronUp, ChevronDown, ChevronRight, HelpCircle, Trophy, RotateCcw,
+  ChevronUp, ChevronDown, ChevronRight, HelpCircle, Trophy, RotateCcw, VenetianMask,
 } from 'lucide-react'
 import { useLocal } from '../../state/LocalContext'
 import { RANDOM_CATEGORY } from '../../data/words'
@@ -157,6 +157,34 @@ export default function LocalLobby({ onExit }) {
                 <span className="ml-1">{c.icon}</span>{c.name}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* دۆخی یاری */}
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <VenetianMask className="h-4 w-4 text-crew" />
+            <span className="text-sm font-bold text-ink">{t('دۆخی یاری')}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { id: 'classic', label: t('کلاسیک'), desc: t('ساختەکار هیچ نازانێت') },
+              { id: 'undercover', label: t('متخفّی'), desc: t('ساختەکار وشەیەکی نزیک وەردەگرێت') },
+            ].map((m) => {
+              const active = (settings.mode || 'classic') === m.id
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => { sfx.tap(); updateSettings({ mode: m.id }) }}
+                  className={`btn-press rounded-xl border px-3 py-2.5 text-right ${
+                    active ? 'border-crew bg-crew/12' : 'border-line bg-surface2'
+                  }`}
+                >
+                  <p className={`text-sm font-bold ${active ? 'text-crew' : 'text-muted'}`}>{m.label}</p>
+                  <p className="mt-0.5 text-[11px] leading-tight text-muted">{m.desc}</p>
+                </button>
+              )
+            })}
           </div>
         </div>
 

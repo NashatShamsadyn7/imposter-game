@@ -4,7 +4,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'
 import { useAuth } from './AuthContext'
-import { resolveCategory, pickRandomWord } from '../data/words'
+import { resolveCategory, pickRandomWord, pickDecoyWord } from '../data/words'
 import { resolveGame } from '../lib/scoring'
 import {
   supabase,
@@ -163,6 +163,7 @@ export function RoomProvider({ children }) {
         impostorCount: 'impostor_count',
         discussionSeconds: 'discussion_seconds',
         multiplier: 'multiplier',
+        mode: 'mode',
       }
       const dbPatch = {}
       Object.entries(patch).forEach(([k, v]) => (dbPatch[map[k] || k] = v))
@@ -192,6 +193,8 @@ export function RoomProvider({ children }) {
     if (!isHost) return
     const category = resolveCategory(room.category_id)
     const word = pickRandomWord(category, room.secret_word_ku)
+    // دۆخی «متخفّی»: ساختەکار وشەیەکی نزیکی هاوپۆڵ وەردەگرێت لە جیاتی هیچ
+    const decoy = room.mode === 'undercover' ? pickDecoyWord(category, word.ku) : null
 
     // بینەرەکان لە دابەشکردنی ڕۆڵ و یاری بەدەر دەکرێن
     const playable = players.filter((p) => !p.is_spectator)
@@ -215,6 +218,8 @@ export function RoomProvider({ children }) {
       category_id: category.id, // ئەگەر 'random' بوو، هاوپۆڵە دیاریکراوەکە هەڵدەگرێت
       secret_word_ku: word.ku,
       secret_word_en: word.en,
+      decoy_word_ku: decoy?.ku || null,
+      decoy_word_en: decoy?.en || null,
       turn_player_id: null,
     })
   }, [isHost, room, players, roomId])

@@ -22,6 +22,8 @@ export default function Reveal() {
   const isImpostor = me?.role === 'impostor'
   const category = CATEGORIES.find((c) => c.id === room.category_id)
   const allies = players.filter((p) => p.role === 'impostor' && p.user_id !== user.id)
+  // دۆخی «متخفّی»: ساختەکار وشەیەکی نزیک وەردەگرێت لە جیاتی هیچ
+  const isUndercover = room.mode === 'undercover' && !!room.decoy_word_ku
 
   // شاردنەوەی خۆکاری کارت بۆ دەستەی کەشتی دوای ١٠ چرکە
   useEffect(() => {
@@ -94,7 +96,21 @@ export default function Reveal() {
             <Skull className="h-14 w-14 text-impostor" />
           </div>
           <h1 className="mb-1 text-3xl font-black text-impostor">{t('ساختەکار')}</h1>
-          <p className="mb-6 text-lg font-bold text-ink">{t('تۆ وشەکە نازانیت!')}</p>
+          {isUndercover ? (
+            <>
+              <p className="mb-3 text-lg font-bold text-ink">{t('وشەی تۆ نزیکە — بەڵام لەوانەیە جیاواز بێت!')}</p>
+              <Panel className="mb-6 border-impostor/40">
+                <p className="mb-2 text-xs text-ink/50">{t('وشەی تۆ')}</p>
+                <h2 className="mb-3 text-3xl font-black text-impostor">{room.decoy_word_ku}</h2>
+                <div className="flex justify-center">
+                  <WordImage englishPrompt={room.decoy_word_en} emoji={findWord(room.decoy_word_ku)?.emoji} size={160} />
+                </div>
+                <p className="mt-3 text-xs text-ink/50">{t('خۆت دەربخە وەک دەستەی کەشتی — ئەوان لەوانەیە وشەیەکی تری هاوپۆڵیان هەبێت.')}</p>
+              </Panel>
+            </>
+          ) : (
+            <p className="mb-6 text-lg font-bold text-ink">{t('تۆ وشەکە نازانیت!')}</p>
+          )}
 
           <Panel className="mb-6 border-impostor/30">
             {allies.length > 0 ? (

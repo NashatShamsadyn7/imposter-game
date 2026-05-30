@@ -17,6 +17,7 @@ export default function LocalReveal() {
 
   const player = game.players[game.revealIndex]
   const isImpostor = player.role === 'impostor'
+  const isUndercover = !!game.decoyWord
   const isLast = game.revealIndex === game.players.length - 1
   const allies = game.players.filter((p) => p.role === 'impostor' && p.id !== player.id)
 
@@ -74,7 +75,20 @@ export default function LocalReveal() {
             <Skull className="h-16 w-16 text-impostor" />
           </div>
           <h1 className="mb-2 text-4xl font-black text-impostor">{t('ساختەکار')}</h1>
-          <p className="mb-5 text-xl font-bold text-ink">{t('تۆ وشەکە نازانیت!')}</p>
+          {isUndercover ? (
+            <>
+              <p className="mb-4 text-xl font-bold text-ink">{t('وشەی تۆ نزیکە — بەڵام لەوانەیە جیاواز بێت!')}</p>
+              <Panel className="mx-auto mb-5 max-w-xs border-impostor/40">
+                <p className="mb-2 text-xs text-muted">{t('وشەی تۆ')}</p>
+                <h2 className="mb-3 text-3xl font-black text-impostor">{game.decoyWord.ku}</h2>
+                <div className="flex justify-center">
+                  <WordImage englishPrompt={game.decoyWord.en} emoji={game.decoyWord.emoji} size={150} />
+                </div>
+              </Panel>
+            </>
+          ) : (
+            <p className="mb-5 text-xl font-bold text-ink">{t('تۆ وشەکە نازانیت!')}</p>
+          )}
           <Panel className="mx-auto mb-6 max-w-xs">
             {allies.length > 0 ? (
               <>

@@ -143,6 +143,7 @@ export async function createRoom(user, profile, settings) {
         impostor_count: settings?.impostorCount || 1,
         discussion_seconds: settings?.discussionSeconds || 120,
         multiplier: settings?.multiplier || 1,
+        mode: settings?.mode || 'classic',
       })
       .select()
       .single()

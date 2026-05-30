@@ -62,6 +62,11 @@ export default function Results() {
         <div className="flex justify-center">
           <WordImage englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={200} />
         </div>
+        {room.mode === 'undercover' && room.decoy_word_ku && (
+          <p className="mt-4 text-sm text-ink/50">
+            {t('وشەی ساختەکار')}: <span className="font-bold text-impostor">{room.decoy_word_ku}</span>
+          </p>
+        )}
       </Panel>
 
       {/* ئەنجامەکان */}

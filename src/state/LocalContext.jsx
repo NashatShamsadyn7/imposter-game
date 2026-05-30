@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { resolveCategory, pickRandomWord, CATEGORIES, RANDOM_CATEGORY } from '../data/words'
+import { resolveCategory, pickRandomWord, pickDecoyWord, CATEGORIES, RANDOM_CATEGORY } from '../data/words'
 import { resolveGame } from '../lib/scoring'
 import { sfx } from '../lib/sound'
 
@@ -18,6 +18,7 @@ const DEFAULT_SETTINGS = {
   impostorCount: 1,
   discussionSeconds: 60,
   multiplier: 1,
+  mode: 'classic', // classic | undercover
 }
 
 function makeId() {
@@ -84,6 +85,8 @@ export function LocalProvider({ children }) {
   const startGame = useCallback(() => {
     const category = resolveCategory(settings.categoryId)
     const word = pickRandomWord(category, game?.secretWord?.ku)
+    // دۆخی «متخفّی»: ساختەکار وشەیەکی نزیک وەردەگرێت
+    const decoy = settings.mode === 'undercover' ? pickDecoyWord(category, word.ku) : null
     const ids = players.map((p) => p.id)
     const shuffled = [...ids].sort(() => Math.random() - 0.5)
     const impostorIds = new Set(shuffled.slice(0, settings.impostorCount))
@@ -96,6 +99,7 @@ export function LocalProvider({ children }) {
       })),
       category,
       secretWord: word,
+      decoyWord: decoy,
       revealIndex: 0,
       results: null,
       winner: null,

@@ -234,6 +234,14 @@ export function pickRandomWord(category, avoidKu = null) {
   return list[Math.floor(Math.random() * list.length)]
 }
 
+// هەڵبژاردنی وشەیەکی نزیک (هاوپۆڵ) بۆ دۆخی «متخفّی» — جیاواز لە وشە نهێنیەکە
+// ساختەکار ئەم وشە نزیکە وەردەگرێت لە جیاتی هیچ، بۆیە دەتوانێت خۆی بشارێتەوە.
+export function pickDecoyWord(category, secretKu) {
+  const pool = category.words.filter((w) => w.ku !== secretKu)
+  if (!pool.length) return null
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
 // دۆزینەوەی وشە (بۆ وەرگرتنی ئیمۆجی لە ئۆنلایندا)
 export function findWord(ku) {
   for (const c of CATEGORIES) {

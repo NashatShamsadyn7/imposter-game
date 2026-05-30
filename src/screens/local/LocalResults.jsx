@@ -36,6 +36,11 @@ export default function LocalResults() {
         <div className="flex justify-center">
           <WordImage englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={200} />
         </div>
+        {game.decoyWord && (
+          <p className="mt-4 text-sm text-muted">
+            {t('وشەی ساختەکار')}: <span className="font-bold text-impostor">{game.decoyWord.ku}</span>
+          </p>
+        )}
       </Panel>
 
       <Panel className="mb-6 !p-4">
