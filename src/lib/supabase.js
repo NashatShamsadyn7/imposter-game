@@ -476,3 +476,160 @@ export function subscribeDirectMessages(userId, onMessage) {
     .subscribe()
   return () => supabase.removeChannel(channel)
 }
+
+// ═══════════════ گرووپەکان (Groups) ═══════════════
+// دروستکردنی گرووپ — دروستکەر دەبێتە owner
+export async function createGroup(user, profile, name) {
+  need()
+  const { data: group, error } = await supabase
+    .from('groups')
+    .insert({ name: name.trim().slice(0, 40), owner_id: user.id })
+    .select()
+    .single()
+  if (error) throw error
+  await supabase
+    .from('group_members')
+    .insert({ group_id: group.id, user_id: user.id, role: 'owner' })
+  return group
+}
+
+// دۆزینەوەی گرووپ بە کۆد
+export async function findGroupByCode(code) {
+  need()
+  const { data } = await supabase
+    .from('groups')
+    .select('*')
+    .eq('code', code.trim().toUpperCase())
+    .maybeSingle()
+  return data
+}
+
+// بەشداربوون لە گرووپ بە کۆد
+export async function joinGroupByCode(code, user) {
+  need()
+  const group = await findGroupByCode(code)
+  if (!group) throw new Error('گرووپ نەدۆزرایەوە')
+  const { error } = await supabase
+    .from('group_members')
+    .upsert(
+      { group_id: group.id, user_id: user.id, role: 'member' },
+      { onConflict: 'group_id,user_id', ignoreDuplicates: true }
+    )
+  if (error) throw error
+  return group
+}
+
+// دەرچوون لە گرووپ
+export async function leaveGroup(groupId, userId) {
+  need()
+  await supabase.from('group_members').delete().eq('group_id', groupId).eq('user_id', userId)
+}
+
+// سڕینەوەی گرووپ (تەنها owner)
+export async function deleteGroup(groupId) {
+  need()
+  await supabase.from('groups').delete().eq('id', groupId)
+}
+
+// هێنانی گرووپەکانی من
+export async function fetchMyGroups(userId) {
+  need()
+  const { data: mems } = await supabase
+    .from('group_members')
+    .select('group_id, role')
+    .eq('user_id', userId)
+  const ids = (mems || []).map((m) => m.group_id)
+  if (!ids.length) return []
+  const { data: groups } = await supabase.from('groups').select('*').in('id', ids)
+  const roleMap = Object.fromEntries((mems || []).map((m) => [m.group_id, m.role]))
+  return (groups || [])
+    .map((g) => ({ ...g, myRole: roleMap[g.id] }))
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+}
+
+// هێنانی یەک گرووپ
+export async function fetchGroup(groupId) {
+  need()
+  const { data } = await supabase.from('groups').select('*').eq('id', groupId).maybeSingle()
+  return data
+}
+
+// هێنانی ئەندامانی گرووپ (لەگەڵ پرۆفایل)
+export async function fetchGroupMembers(groupId) {
+  need()
+  const { data: mems } = await supabase
+    .from('group_members')
+    .select('user_id, role, joined_at')
+    .eq('group_id', groupId)
+  const ids = (mems || []).map((m) => m.user_id)
+  const profs = await fetchProfilesByIds(ids)
+  const pMap = Object.fromEntries(profs.map((p) => [p.id, p]))
+  return (mems || []).map((m) => ({
+    ...m,
+    profile: pMap[m.user_id] || null,
+  }))
+}
+
+// نامەکانی گرووپ
+export async function fetchGroupMessages(groupId) {
+  need()
+  const { data } = await supabase
+    .from('group_messages')
+    .select('*')
+    .eq('group_id', groupId)
+    .order('created_at', { ascending: true })
+    .limit(200)
+  return data || []
+}
+
+// ناردنی نامەی گرووپ
+export async function sendGroupMessage(groupId, user, profile, content, kind = 'text') {
+  need()
+  const { data, error } = await supabase
+    .from('group_messages')
+    .insert({
+      group_id: groupId,
+      sender_id: user.id,
+      display_name: profile.display_name,
+      avatar_url: profile.avatar_url,
+      content,
+      kind,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+// گوێگرتن لە یەک گرووپ (نامە + ئەندامان)
+export function subscribeGroup(groupId, { onMessage, onMembers } = {}) {
+  need()
+  const channel = supabase
+    .channel(`group:${groupId}:${Math.random().toString(36).slice(2, 9)}`)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'group_messages', filter: `group_id=eq.${groupId}` },
+      (payload) => onMessage?.(payload.new)
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'group_members', filter: `group_id=eq.${groupId}` },
+      () => onMembers?.()
+    )
+    .subscribe()
+  return () => supabase.removeChannel(channel)
+}
+
+// گوێگرتن لە ئەندامبوونەکانی من (بۆ نوێکردنەوەی لیستی گرووپەکان)
+export function subscribeMyGroupMemberships(userId, onChange) {
+  need()
+  const channel = supabase
+    .channel(`mygroups:${userId}:${Math.random().toString(36).slice(2, 9)}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'group_members', filter: `user_id=eq.${userId}` },
+      () => onChange?.()
+    )
+    .subscribe()
+  return () => supabase.removeChannel(channel)
+}

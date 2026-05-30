@@ -18,6 +18,7 @@ import Home from './screens/Home'
 import Achievements from './screens/Achievements'
 import ProfileEdit from './screens/ProfileEdit'
 import Friends from './screens/Friends'
+import Groups from './screens/Groups'
 import RoomLobby from './screens/RoomLobby'
 import Reveal from './screens/Reveal'
 import Discussion from './screens/Discussion'
@@ -141,6 +142,13 @@ function Shell({ ui }) {
     case 'friends':
       inner = <Friends onBack={toMenu} onJoinRoom={joinByCode} />
       break
+    case 'groups':
+      inner = (
+        <ProfileViewerProvider>
+          <Groups onBack={toMenu} />
+        </ProfileViewerProvider>
+      )
+      break
     default:
       inner = (
         <MainMenu
@@ -150,6 +158,7 @@ function Shell({ ui }) {
           onAchievements={() => setView('achievements')}
           onProfile={() => setView('profile')}
           onFriends={() => setView('friends')}
+          onGroups={() => setView('groups')}
         />
       )
   }
