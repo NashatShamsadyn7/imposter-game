@@ -25,29 +25,26 @@ create policy "push delete own" on public.push_subscriptions for delete using (a
 
 -- ═══════════════════════════════════════════════════════════
 --  Trigger: کاتێک نامەیەکی تایبەت/داواکارییەک دروست دەبێت، Edge Function بانگ بکە
---  (پێویستی بە ئەکستێنشنی pg_net هەیە — لە Dashboard > Database > Extensions چالاکی بکە)
---
---  دوای جێگرەوەکردنی <PROJECT_REF> و <SERVICE_ROLE_KEY> ئەم بەشە لێبکەرەوە.
+--  (فەنکشن بە --no-verify-jwt نێردراوە، بۆیە پێویست بە Authorization نییە)
 -- ═══════════════════════════════════════════════════════════
--- create or replace function public.notify_push()
--- returns trigger as $$
--- begin
---   perform net.http_post(
---     url := 'https://<PROJECT_REF>.functions.supabase.co/send-push',
---     headers := jsonb_build_object(
---       'Content-Type', 'application/json',
---       'Authorization', 'Bearer <SERVICE_ROLE_KEY>'
---     ),
---     body := jsonb_build_object('table', TG_TABLE_NAME, 'record', row_to_json(NEW))
---   );
---   return NEW;
--- end;
--- $$ language plpgsql security definer;
---
--- drop trigger if exists dm_push_trigger on public.direct_messages;
--- create trigger dm_push_trigger after insert on public.direct_messages
---   for each row execute function public.notify_push();
---
--- drop trigger if exists friend_push_trigger on public.friendships;
--- create trigger friend_push_trigger after insert on public.friendships
---   for each row execute function public.notify_push();
+create extension if not exists pg_net;
+
+create or replace function public.notify_push()
+returns trigger as $$
+begin
+  perform net.http_post(
+    url := 'https://wfcexabryfemvxkvqiie.supabase.co/functions/v1/send-push',
+    headers := jsonb_build_object('Content-Type', 'application/json'),
+    body := jsonb_build_object('table', TG_TABLE_NAME, 'record', row_to_json(NEW))
+  );
+  return NEW;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists dm_push_trigger on public.direct_messages;
+create trigger dm_push_trigger after insert on public.direct_messages
+  for each row execute function public.notify_push();
+
+drop trigger if exists friend_push_trigger on public.friendships;
+create trigger friend_push_trigger after insert on public.friendships
+  for each row execute function public.notify_push();
