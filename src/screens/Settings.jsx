@@ -6,7 +6,7 @@ import Avatar from '../components/Avatar'
 import { useFriends } from '../state/FriendsContext'
 import { useLang } from '../lib/i18n'
 import { fetchProfilesByIds } from '../lib/supabase'
-import { sfx, MUSIC_TRACKS, getMusicTrackId, setMusicTrack } from '../lib/sound'
+import { sfx } from '../lib/sound'
 
 function Toggle({ on }) {
   return (
@@ -20,13 +20,6 @@ function Toggle({ on }) {
 export default function Settings({ ui, onBack }) {
   const { theme, setTheme, sfxOn, setSfxOn, musicOn, setMusicOn } = ui
   const { lang, setLang, t } = useLang()
-  const [track, setTrack] = useState(getMusicTrackId())
-
-  const pickTrack = (id) => {
-    sfx.tap()
-    setTrack(id)
-    setMusicTrack(id)
-  }
 
   return (
     <div className="mx-auto max-w-md px-4 py-6">
@@ -96,31 +89,10 @@ export default function Settings({ ui, onBack }) {
           </div>
           <div className="flex-1 text-right">
             <p className="font-bold text-ink">{t('مۆسیقای پاشبنە')}</p>
-            <p className="text-xs text-muted">{t('مۆسیقای هێمنی فەزایی')}</p>
+            <p className="text-xs text-muted">{t('ڕادیۆی هاوبەش — هاوکات لەسەر هەموو ئامێرەکان')}</p>
           </div>
           <Toggle on={musicOn} />
         </button>
-
-        {/* هەڵبژاردنی ئاوازی مۆسیقا — تەنها کاتێک مۆسیقا چالاکە */}
-        {musicOn && (
-          <div className="px-3 pb-3">
-            <div className="grid grid-cols-3 gap-2">
-              {MUSIC_TRACKS.map((mt) => (
-                <button
-                  key={mt.id}
-                  onClick={() => pickTrack(mt.id)}
-                  className={`btn-press rounded-xl border py-2 text-sm font-bold ${
-                    track === mt.id
-                      ? 'border-crew bg-crew/12 text-crew'
-                      : 'border-line bg-surface2 text-muted'
-                  }`}
-                >
-                  {mt.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         <PushToggle />
       </Panel>

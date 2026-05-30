@@ -91,17 +91,48 @@ export const MUSIC_TRACKS = [
   { id: 'warqa', name: 'ورقة', src: '/music/saif-warqa.mp3' },
 ]
 
-const TRACK_KEY = 'imposter:musictrack'
 let musicEl = null // <audio> element
 let usingFallback = false // ئایا یەدەگی ئەمبیێنتی کارا کراوە؟
+let durations = null // چرکەی هەر ئاوازێک (هاوڕیز لەگەڵ MUSIC_TRACKS)
+let metaPromise = null
+let driftTimer = null
 
-export function getMusicTrackId() {
-  if (typeof localStorage === 'undefined') return MUSIC_TRACKS[0].id
-  return localStorage.getItem(TRACK_KEY) || MUSIC_TRACKS[0].id
+// بارکردنی درێژایی هەموو ئاوازەکان (یەک جار) — پێویستە بۆ هەژمارکردنی «ڕادیۆ»
+function loadDurations() {
+  if (metaPromise) return metaPromise
+  metaPromise = Promise.all(
+    MUSIC_TRACKS.map(
+      (tk) =>
+        new Promise((resolve) => {
+          if (typeof Audio === 'undefined') return resolve(180)
+          const a = new Audio()
+          a.preload = 'metadata'
+          a.src = tk.src
+          a.addEventListener('loadedmetadata', () =>
+            resolve(isFinite(a.duration) && a.duration > 0 ? a.duration : 180)
+          )
+          a.addEventListener('error', () => resolve(180)) // فایل نەبوو → بنەڕەت
+        })
+    )
+  ).then((d) => {
+    durations = d
+    return d
+  })
+  return metaPromise
 }
 
-function currentTrack() {
-  return MUSIC_TRACKS.find((t) => t.id === getMusicTrackId()) || MUSIC_TRACKS[0]
+// «ڕادیۆ»: لە کاتی جیهانیەوە (Date.now) دیاری دەکات کام ئاواز و کام چرکە بدرێت.
+// هەموو ئامێرەکان هەمان ژمێریاری دەکەن → هاوکات دەبن (هەر ئامێرێک خۆی هاوڕیز دەکات).
+function radioPosition() {
+  if (!durations || !durations.length) return { index: 0, offset: 0 }
+  const total = durations.reduce((s, d) => s + d, 0)
+  if (total <= 0) return { index: 0, offset: 0 }
+  let t = (Date.now() / 1000) % total
+  for (let i = 0; i < durations.length; i++) {
+    if (t < durations[i]) return { index: i, offset: t }
+    t -= durations[i]
+  }
+  return { index: 0, offset: 0 }
 }
 
 // دروستکردن/گەڕاندنەوەی ئێلێمێنتی ئۆدیۆ
@@ -109,23 +140,59 @@ function ensureEl() {
   if (typeof Audio === 'undefined') return null
   if (!musicEl) {
     musicEl = new Audio()
-    musicEl.loop = false // لیستی لێدان: دوای هەر ئاوازێک، دواتر لێدەدرێت
-    musicEl.volume = 0.35
+    musicEl.loop = false
+    musicEl.volume = 0.2
     musicEl.preload = 'auto'
-    // کاتێک ئاوازێک تەواو بوو → ئاوازی دواتر (پلەی لیستی لێدان)
+    // دوای کۆتایی ئاوازێک → هاوکاتکردنەوە (خۆکار دەچێتە ئاوازی دواتری ڕادیۆ)
     musicEl.addEventListener('ended', () => {
-      if (!musicEnabled) return
-      const ids = MUSIC_TRACKS.map((t) => t.id)
-      const idx = ids.indexOf(getMusicTrackId())
-      const next = MUSIC_TRACKS[(idx + 1) % MUSIC_TRACKS.length]
-      setMusicTrack(next.id)
+      if (musicEnabled) syncPlay()
     })
-    // ئەگەر فایلەکە نەدۆزرایەوە/بار نەبوو → یەدەگی ئەمبیێنتی
     musicEl.addEventListener('error', () => {
       if (musicEnabled) startAmbient()
     })
   }
   return musicEl
+}
+
+// لێدانی هاوکات بەپێی کاتی ڕادیۆ (هەمان ئاواز و هەمان چرکە لەسەر هەموو ئامێرەکان)
+function syncPlay() {
+  const el = ensureEl()
+  if (!el || !durations) return
+  const { index, offset } = radioPosition()
+  const track = MUSIC_TRACKS[index]
+  stopAmbient()
+  const seekAndPlay = () => {
+    try {
+      el.currentTime = offset
+    } catch { /* noop */ }
+    el.play().catch(() => startAmbient())
+  }
+  if (el.src && el.src.endsWith(track.src)) {
+    if (el.readyState >= 1) seekAndPlay()
+    else el.addEventListener('loadedmetadata', seekAndPlay, { once: true })
+  } else {
+    el.src = track.src
+    el.addEventListener('loadedmetadata', seekAndPlay, { once: true })
+  }
+}
+
+// چاککردنەوەی لادان (drift) — هەر ٢٠ چرکە دڵنیادەبینەوە لە هاوکاتبوون
+function startDriftTimer() {
+  if (driftTimer) return
+  driftTimer = setInterval(() => {
+    if (!musicEnabled || !musicEl || musicEl.paused || !durations) return
+    const { index, offset } = radioPosition()
+    const track = MUSIC_TRACKS[index]
+    if (!musicEl.src.endsWith(track.src)) {
+      syncPlay()
+      return
+    }
+    if (Math.abs(musicEl.currentTime - offset) > 2.5) {
+      try {
+        musicEl.currentTime = offset
+      } catch { /* noop */ }
+    }
+  }, 20000)
 }
 
 // ───── دەستپێکردنی مۆسیقا ─────
@@ -136,34 +203,20 @@ export function startMusic() {
     startAmbient()
     return
   }
-  const track = currentTrack()
-  // ئەگەر سۆرس نوێیە، دایبنێ
-  if (!el.src || !el.src.endsWith(track.src)) el.src = track.src
-  stopAmbient() // ئەگەر یەدەگ کارا بوو، بیکوژێنەوە
-  el.play().catch(() => {
-    // ڕێگەپێنەدراو (autoplay) یان هەڵە → یەدەگی ئەمبیێنتی
-    startAmbient()
+  loadDurations().then(() => {
+    if (!musicEnabled) return
+    syncPlay()
+    startDriftTimer()
   })
 }
 
 export function stopMusic() {
-  if (musicEl) {
-    musicEl.pause()
+  if (musicEl) musicEl.pause()
+  if (driftTimer) {
+    clearInterval(driftTimer)
+    driftTimer = null
   }
   stopAmbient()
-}
-
-// گۆڕینی ئاواز
-export function setMusicTrack(id) {
-  if (typeof localStorage !== 'undefined') localStorage.setItem(TRACK_KEY, id)
-  const el = ensureEl()
-  if (!el) return
-  const track = MUSIC_TRACKS.find((t) => t.id === id) || MUSIC_TRACKS[0]
-  el.src = track.src
-  if (musicEnabled) {
-    stopAmbient()
-    el.play().catch(() => startAmbient())
-  }
 }
 
 // ───── یەدەگ: دڕۆنی ئەمبیێنتی فەزایی (ئەگەر فایلی mp3 نەبوو) ─────
@@ -243,14 +296,13 @@ export function unlockAudio() {
   getCtx()
 }
 
-// ───── بەردەوامی: کاتێک بەکارهێنەر دەگەڕێتەوە بۆ موقع، مۆسیقا بەردەوام بکە ─────
+// ───── بەردەوامی + هاوکاتکردنەوە: کاتێک بەکارهێنەر دەگەڕێتەوە، خۆی هاوڕیز دەکات ─────
+//  ئەوانەی ماونەتەوە نەوەستاون؛ ئەمەی گەڕاوەتەوە دەچێتە هەمان خاڵی ڕادیۆ.
 if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && musicEnabled) {
       if (ctx && ctx.state === 'suspended') ctx.resume()
-      if (musicEl && musicEl.paused && !usingFallback) {
-        musicEl.play().catch(() => {})
-      }
+      if (durations) syncPlay()
     }
   })
 }
