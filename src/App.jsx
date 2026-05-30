@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { AuthProvider, useAuth } from './state/AuthContext'
 import { RoomProvider, useRoom } from './state/RoomContext'
+import { VoiceProvider } from './state/VoiceContext'
 import { LocalProvider, useLocal } from './state/LocalContext'
 import { FriendsProvider } from './state/FriendsContext'
 import { NotificationProvider } from './state/NotificationContext'
 import Background from './components/Background'
 import ErrorBoundary from './components/ErrorBoundary'
+import VoiceBar from './components/VoiceBar'
 import Login from './screens/Login'
 import MainMenu from './screens/MainMenu'
 import SettingsScreen from './screens/Settings'
@@ -37,6 +39,7 @@ function FullLoader() {
 // ───── ڕێڕەوی ئۆنلاین ─────
 function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
   const { room, joinRoom } = useRoom()
+  const { user, profile } = useAuth()
 
   // بانگهێشت: ئەگەر کۆدی پەیوەستبوون هەبوو، خۆکار بەشداربە
   useEffect(() => {
@@ -48,13 +51,23 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
   }, [joinCode])
 
   if (!room) return <Home onExit={onExit} />
+
+  let screen
   switch (room.status) {
-    case 'reveal': return <Reveal />
-    case 'discussion': return <Discussion />
-    case 'voting': return <Voting />
-    case 'results': return <Results />
-    default: return <RoomLobby />
+    case 'reveal': screen = <Reveal />; break
+    case 'discussion': screen = <Discussion />; break
+    case 'voting': screen = <Voting />; break
+    case 'results': screen = <Results />; break
+    default: screen = <RoomLobby />
   }
+
+  // دەنگی ڕاستەوخۆ لە تەواوی ژوور (لۆبی → ئەنجام)
+  return (
+    <VoiceProvider roomId={room.id} identity={user?.id} name={profile?.display_name}>
+      {screen}
+      <VoiceBar />
+    </VoiceProvider>
+  )
 }
 
 // ───── ڕێڕەوی ناوخۆیی ─────
