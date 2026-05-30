@@ -4,7 +4,7 @@ import { useLocal } from '../../state/LocalContext'
 import { Button, Panel } from '../../components/ui'
 import WordImage from '../../components/WordImage'
 import { useT } from '../../lib/i18n'
-import { sfx } from '../../lib/sound'
+import { sfx, playGameStart } from '../../lib/sound'
 
 const REVEAL_SECONDS = 10
 
@@ -14,6 +14,11 @@ export default function LocalReveal() {
   const [flipped, setFlipped] = useState(false)
   const [countdown, setCountdown] = useState(REVEAL_SECONDS)
   const timerRef = useRef(null)
+
+  // دەنگی دەستپێکردنی یاری — یەک جار لە سەرەتای یاری
+  useEffect(() => {
+    playGameStart()
+  }, [])
 
   const player = game.players[game.revealIndex]
   const isImpostor = player.role === 'impostor'

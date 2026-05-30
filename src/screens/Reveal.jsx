@@ -7,7 +7,7 @@ import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import WordImage from '../components/WordImage'
 import { useT } from '../lib/i18n'
-import { sfx } from '../lib/sound'
+import { sfx, playGameStart } from '../lib/sound'
 
 const REVEAL_SECONDS = 10
 
@@ -18,6 +18,11 @@ export default function Reveal() {
   const [flipped, setFlipped] = useState(false)
   const [countdown, setCountdown] = useState(REVEAL_SECONDS)
   const timerRef = useRef(null)
+
+  // دەنگی دەستپێکردنی یاری — یەک جار کاتێک قۆناغی ئاشکراکردن دەستپێدەکات
+  useEffect(() => {
+    playGameStart()
+  }, [])
 
   const isImpostor = me?.role === 'impostor'
   const category = CATEGORIES.find((c) => c.id === room.category_id)

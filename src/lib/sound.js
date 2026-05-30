@@ -203,6 +203,29 @@ function stopAmbient() {
   if (musicGain && c) musicGain.disconnect()
 }
 
+// ───── دەنگی دەستپێکردنی یاری — یەک جار کاتێک یاری دەستپێدەکات ─────
+//  فایل لە public/game-start/start.mp3 ـەوە. ئەگەر نەبوو → یەدەگی synth.
+//  بۆ هەموو جۆرە یاریەکان (نەک تەنها ساختەکار).
+let startEl = null
+export function playGameStart() {
+  if (!sfxEnabled) return
+  if (typeof Audio === 'undefined') {
+    sfx.reveal()
+    return
+  }
+  if (!startEl) {
+    startEl = new Audio('/game-start/start.mp3')
+    startEl.volume = 0.6
+  }
+  try {
+    startEl.currentTime = 0
+    const p = startEl.play()
+    if (p) p.catch(() => sfx.reveal()) // فایل نەبوو/ڕێگەپێنەدراو → یەدەگ
+  } catch {
+    sfx.reveal()
+  }
+}
+
 // چالاککردنی ئۆدیۆ لەدوای یەکەم کرتەی بەکارهێنەر
 export function unlockAudio() {
   getCtx()
