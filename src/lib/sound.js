@@ -80,11 +80,15 @@ export const sfx = {
 //  فایلەکان لە public/music/ دادەنرێن. بەکارهێنەر دەتوانێت ئاوازەکە بگۆڕێت.
 // ═══════════════════════════════════════════════════════════
 
-// لیستی ئاوازەکان — فایلەکان لە public/music/ دابنێ بەم ناوانە
+// لیستی ئاوازەکان — فایلەکان لە public/music/ ـدان
 export const MUSIC_TRACKS = [
-  { id: 'calm', name: 'هادئ', src: '/music/calm.mp3' },
-  { id: 'mystery', name: 'غموض', src: '/music/mystery.mp3' },
-  { id: 'oud', name: 'عربي', src: '/music/oud.mp3' },
+  { id: 'wildflower', name: 'Wildflower', src: '/music/billie-wildflower.mp3' },
+  { id: 'iwannabeyours', name: 'I Wanna Be Yours', src: '/music/arctic-i-wanna-be-yours.mp3' },
+  { id: 'noonenoticed', name: 'No One Noticed', src: '/music/themarias-no-one-noticed.mp3' },
+  { id: 'bonibaran', name: 'بۆنی باران', src: '/music/hardi-boni-baran.mp3' },
+  { id: 'durit', name: 'دووریت', src: '/music/haydeh-durit.mp3' },
+  { id: 'shoofwajhak', name: 'شوف وجهك', src: '/music/saif-shoof-wajhak.mp3' },
+  { id: 'warqa', name: 'ورقة', src: '/music/saif-warqa.mp3' },
 ]
 
 const TRACK_KEY = 'imposter:musictrack'
@@ -105,9 +109,17 @@ function ensureEl() {
   if (typeof Audio === 'undefined') return null
   if (!musicEl) {
     musicEl = new Audio()
-    musicEl.loop = true
+    musicEl.loop = false // لیستی لێدان: دوای هەر ئاوازێک، دواتر لێدەدرێت
     musicEl.volume = 0.35
     musicEl.preload = 'auto'
+    // کاتێک ئاوازێک تەواو بوو → ئاوازی دواتر (پلەی لیستی لێدان)
+    musicEl.addEventListener('ended', () => {
+      if (!musicEnabled) return
+      const ids = MUSIC_TRACKS.map((t) => t.id)
+      const idx = ids.indexOf(getMusicTrackId())
+      const next = MUSIC_TRACKS[(idx + 1) % MUSIC_TRACKS.length]
+      setMusicTrack(next.id)
+    })
     // ئەگەر فایلەکە نەدۆزرایەوە/بار نەبوو → یەدەگی ئەمبیێنتی
     musicEl.addEventListener('error', () => {
       if (musicEnabled) startAmbient()
