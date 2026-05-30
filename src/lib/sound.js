@@ -75,11 +75,91 @@ export const sfx = {
   tick: () => blip(880, 0.04, 'sine', 0.08),
 }
 
-// ───── مۆسیقای پاشبنە (دڕۆنی ئەمبیێنتی فەزایی) ─────
+// ═══════════════════════════════════════════════════════════
+//  مۆسیقای پاشبنە — فایلی mp3 (لووپ) + یەدەگی ئەمبیێنتی ئەگەر فایل نەبوو
+//  فایلەکان لە public/music/ دادەنرێن. بەکارهێنەر دەتوانێت ئاوازەکە بگۆڕێت.
+// ═══════════════════════════════════════════════════════════
+
+// لیستی ئاوازەکان — فایلەکان لە public/music/ دابنێ بەم ناوانە
+export const MUSIC_TRACKS = [
+  { id: 'calm', name: 'هادئ', src: '/music/calm.mp3' },
+  { id: 'mystery', name: 'غموض', src: '/music/mystery.mp3' },
+  { id: 'oud', name: 'عربي', src: '/music/oud.mp3' },
+]
+
+const TRACK_KEY = 'imposter:musictrack'
+let musicEl = null // <audio> element
+let usingFallback = false // ئایا یەدەگی ئەمبیێنتی کارا کراوە؟
+
+export function getMusicTrackId() {
+  if (typeof localStorage === 'undefined') return MUSIC_TRACKS[0].id
+  return localStorage.getItem(TRACK_KEY) || MUSIC_TRACKS[0].id
+}
+
+function currentTrack() {
+  return MUSIC_TRACKS.find((t) => t.id === getMusicTrackId()) || MUSIC_TRACKS[0]
+}
+
+// دروستکردن/گەڕاندنەوەی ئێلێمێنتی ئۆدیۆ
+function ensureEl() {
+  if (typeof Audio === 'undefined') return null
+  if (!musicEl) {
+    musicEl = new Audio()
+    musicEl.loop = true
+    musicEl.volume = 0.35
+    musicEl.preload = 'auto'
+    // ئەگەر فایلەکە نەدۆزرایەوە/بار نەبوو → یەدەگی ئەمبیێنتی
+    musicEl.addEventListener('error', () => {
+      if (musicEnabled) startAmbient()
+    })
+  }
+  return musicEl
+}
+
+// ───── دەستپێکردنی مۆسیقا ─────
 export function startMusic() {
   if (!musicEnabled) return
+  const el = ensureEl()
+  if (!el) {
+    startAmbient()
+    return
+  }
+  const track = currentTrack()
+  // ئەگەر سۆرس نوێیە، دایبنێ
+  if (!el.src || !el.src.endsWith(track.src)) el.src = track.src
+  stopAmbient() // ئەگەر یەدەگ کارا بوو، بیکوژێنەوە
+  el.play().catch(() => {
+    // ڕێگەپێنەدراو (autoplay) یان هەڵە → یەدەگی ئەمبیێنتی
+    startAmbient()
+  })
+}
+
+export function stopMusic() {
+  if (musicEl) {
+    musicEl.pause()
+  }
+  stopAmbient()
+}
+
+// گۆڕینی ئاواز
+export function setMusicTrack(id) {
+  if (typeof localStorage !== 'undefined') localStorage.setItem(TRACK_KEY, id)
+  const el = ensureEl()
+  if (!el) return
+  const track = MUSIC_TRACKS.find((t) => t.id === id) || MUSIC_TRACKS[0]
+  el.src = track.src
+  if (musicEnabled) {
+    stopAmbient()
+    el.play().catch(() => startAmbient())
+  }
+}
+
+// ───── یەدەگ: دڕۆنی ئەمبیێنتی فەزایی (ئەگەر فایلی mp3 نەبوو) ─────
+function startAmbient() {
+  if (!musicEnabled || usingFallback) return
   const c = getCtx()
   if (!c || musicNodes) return
+  usingFallback = true
 
   musicGain = c.createGain()
   musicGain.gain.value = 0.05
@@ -107,7 +187,8 @@ export function startMusic() {
   musicNodes = oscs
 }
 
-export function stopMusic() {
+function stopAmbient() {
+  usingFallback = false
   if (!musicNodes) return
   const c = getCtx()
   musicNodes.forEach(({ osc, lfo }) => {
@@ -125,4 +206,16 @@ export function stopMusic() {
 // چالاککردنی ئۆدیۆ لەدوای یەکەم کرتەی بەکارهێنەر
 export function unlockAudio() {
   getCtx()
+}
+
+// ───── بەردەوامی: کاتێک بەکارهێنەر دەگەڕێتەوە بۆ موقع، مۆسیقا بەردەوام بکە ─────
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && musicEnabled) {
+      if (ctx && ctx.state === 'suspended') ctx.resume()
+      if (musicEl && musicEl.paused && !usingFallback) {
+        musicEl.play().catch(() => {})
+      }
+    }
+  })
 }
