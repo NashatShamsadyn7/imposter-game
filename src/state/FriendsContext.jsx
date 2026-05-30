@@ -4,6 +4,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { useAuth } from './AuthContext'
+import { useNotify } from './NotificationContext'
 import {
   supabase,
   fetchFriendships,
@@ -22,10 +23,13 @@ export const useFriends = () => useContext(FriendsContext)
 
 export function FriendsProvider({ children }) {
   const { user } = useAuth()
+  const notify = useNotify()
   const [friendships, setFriendships] = useState([])
   const [profiles, setProfiles] = useState({}) // id -> profile
   const [unread, setUnread] = useState({}) // id -> count
   const idsRef = useRef([])
+  const profilesRef = useRef({})
+  const incomingIdsRef = useRef(null) // ناسینەوەی داواکاری نوێ
 
   // ───── بارکردنی هەموو پەیوەندییەکان ─────
   const load = useCallback(async () => {
@@ -37,9 +41,30 @@ export function FriendsProvider({ children }) {
     ]
     idsRef.current = ids
     const [profs, counts] = await Promise.all([fetchProfilesByIds(ids), fetchUnreadCounts(user.id)])
-    setProfiles(Object.fromEntries(profs.map((p) => [p.id, p])))
+    const profMap = Object.fromEntries(profs.map((p) => [p.id, p]))
+    profilesRef.current = profMap
+    setProfiles(profMap)
     setUnread(counts)
-  }, [user])
+
+    // ناسینەوەی داواکاری هاوڕێیەتیی نوێ بۆ ئاگادارکردنەوە
+    const incomingIds = fs
+      .filter((f) => f.status === 'pending' && f.addressee_id === user.id)
+      .map((f) => f.requester_id)
+    if (incomingIdsRef.current === null) {
+      incomingIdsRef.current = new Set(incomingIds) // یەکەم بارکردن — ئاگادار مەکەرەوە
+    } else {
+      incomingIds.forEach((rid) => {
+        if (!incomingIdsRef.current.has(rid)) {
+          notify({
+            title: 'داواکاری هاوڕێیەتی',
+            body: `${profMap[rid]?.display_name || 'یاریزانێک'} دەیەوێت ببێتە هاوڕێت`,
+            type: 'friend',
+          })
+        }
+      })
+      incomingIdsRef.current = new Set(incomingIds)
+    }
+  }, [user, notify])
 
   // نوێکردنەوەی حزووری هاوڕێیان (last_seen) بەبێ بارکردنەوەی هەمووی
   const refreshPresence = useCallback(async () => {
@@ -63,6 +88,16 @@ export function FriendsProvider({ children }) {
     const unsubF = subscribeFriendships(user.id, load)
     const unsubD = subscribeDirectMessages(user.id, (msg) => {
       setUnread((prev) => ({ ...prev, [msg.sender_id]: (prev[msg.sender_id] || 0) + 1 }))
+      const name = profilesRef.current[msg.sender_id]?.display_name || 'یاریزانێک'
+      if (msg.kind === 'invite') {
+        notify({
+          title: 'بانگهێشت بۆ ژوور 🎮',
+          body: `${name} بانگهێشتی کردیت — کۆد: ${msg.content}`,
+          type: 'invite',
+        })
+      } else {
+        notify({ title: name, body: msg.content, type: 'dm' })
+      }
     })
     const iv = setInterval(refreshPresence, 30000)
     return () => {
@@ -70,7 +105,7 @@ export function FriendsProvider({ children }) {
       unsubD?.()
       clearInterval(iv)
     }
-  }, [user, load, refreshPresence])
+  }, [user, load, refreshPresence, notify])
 
   // ───── کردارەکان ─────
   const addFriendByCode = useCallback(

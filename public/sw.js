@@ -2,7 +2,7 @@
 //  Service Worker — بۆ تواناکردنی دامەزراندن (PWA) و کارکردن بەبێ ئینتەرنێت
 // ═══════════════════════════════════════════════════════════
 
-const CACHE = 'imposter-v1'
+const CACHE = 'imposter-v2'
 const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
@@ -17,6 +17,19 @@ self.addEventListener('activate', (event) => {
     )
   )
   self.clients.claim()
+})
+
+// کرتە لەسەر ئاگادارکردنەوەی سیستەم — ئەپ بکەرەوە/فۆکەس بکە
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ('focus' in c) return c.focus()
+      }
+      if (self.clients.openWindow) return self.clients.openWindow('/')
+    })
+  )
 })
 
 self.addEventListener('fetch', (event) => {

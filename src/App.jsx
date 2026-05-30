@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './state/AuthContext'
 import { RoomProvider, useRoom } from './state/RoomContext'
 import { LocalProvider, useLocal } from './state/LocalContext'
 import { FriendsProvider } from './state/FriendsContext'
+import { NotificationProvider } from './state/NotificationContext'
 import Background from './components/Background'
 import ErrorBoundary from './components/ErrorBoundary'
 import Login from './screens/Login'
@@ -132,9 +133,11 @@ function Shell({ ui }) {
   }
 
   return (
-    <FriendsProvider>
-      <ErrorBoundary onReset={toMenu}>{inner}</ErrorBoundary>
-    </FriendsProvider>
+    <NotificationProvider>
+      <FriendsProvider>
+        <ErrorBoundary onReset={toMenu}>{inner}</ErrorBoundary>
+      </FriendsProvider>
+    </NotificationProvider>
   )
 }
 
