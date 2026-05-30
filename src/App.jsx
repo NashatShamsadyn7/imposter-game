@@ -3,12 +3,15 @@ import { Loader2 } from 'lucide-react'
 import { AuthProvider, useAuth } from './state/AuthContext'
 import { RoomProvider, useRoom } from './state/RoomContext'
 import { LocalProvider, useLocal } from './state/LocalContext'
+import { FriendsProvider } from './state/FriendsContext'
 import Background from './components/Background'
 import Login from './screens/Login'
 import MainMenu from './screens/MainMenu'
 import SettingsScreen from './screens/Settings'
 import Home from './screens/Home'
 import Achievements from './screens/Achievements'
+import ProfileEdit from './screens/ProfileEdit'
+import Friends from './screens/Friends'
 import RoomLobby from './screens/RoomLobby'
 import Reveal from './screens/Reveal'
 import Discussion from './screens/Discussion'
@@ -30,8 +33,18 @@ function FullLoader() {
 }
 
 // ───── ڕێڕەوی ئۆنلاین ─────
-function OnlineRoomRouter({ onExit }) {
-  const { room } = useRoom()
+function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
+  const { room, joinRoom } = useRoom()
+
+  // بانگهێشت: ئەگەر کۆدی پەیوەستبوون هەبوو، خۆکار بەشداربە
+  useEffect(() => {
+    if (joinCode && !room) {
+      joinRoom(joinCode)
+      onJoinHandled?.()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [joinCode])
+
   if (!room) return <Home onExit={onExit} />
   switch (room.status) {
     case 'reveal': return <Reveal />
@@ -57,7 +70,8 @@ function LocalRouter({ onExit }) {
 // ───── ناوەوەی دوای چوونەژوورەوە ─────
 function Shell({ ui }) {
   const { user, profile, loading, isSupabaseEnabled } = useAuth()
-  const [view, setView] = useState('menu') // menu | online | local | settings
+  const [view, setView] = useState('menu') // menu | online | local | settings | achievements | profile | friends
+  const [pendingJoin, setPendingJoin] = useState(null)
 
   if (!isSupabaseEnabled) return <Login />
   if (loading) return <FullLoader />
@@ -65,34 +79,58 @@ function Shell({ ui }) {
   if (!profile) return <FullLoader />
 
   const toMenu = () => setView('menu')
+  // بانگهێشت بۆ ژوور: کۆد هەڵبگرە و بڕۆ بۆ ئۆنلاین
+  const joinByCode = (code) => {
+    setPendingJoin(code)
+    setView('online')
+  }
 
+  let inner
   switch (view) {
     case 'online':
-      return (
+      inner = (
         <RoomProvider>
-          <OnlineRoomRouter onExit={toMenu} />
+          <OnlineRoomRouter
+            onExit={toMenu}
+            joinCode={pendingJoin}
+            onJoinHandled={() => setPendingJoin(null)}
+          />
         </RoomProvider>
       )
+      break
     case 'local':
-      return (
+      inner = (
         <LocalProvider>
           <LocalRouter onExit={toMenu} />
         </LocalProvider>
       )
+      break
     case 'settings':
-      return <SettingsScreen ui={ui} onBack={toMenu} />
+      inner = <SettingsScreen ui={ui} onBack={toMenu} />
+      break
     case 'achievements':
-      return <Achievements onBack={toMenu} />
+      inner = <Achievements onBack={toMenu} />
+      break
+    case 'profile':
+      inner = <ProfileEdit onBack={toMenu} />
+      break
+    case 'friends':
+      inner = <Friends onBack={toMenu} onJoinRoom={joinByCode} />
+      break
     default:
-      return (
+      inner = (
         <MainMenu
           onOnline={() => setView('online')}
           onLocal={() => setView('local')}
           onSettings={() => setView('settings')}
           onAchievements={() => setView('achievements')}
+          onProfile={() => setView('profile')}
+          onFriends={() => setView('friends')}
         />
       )
   }
+
+  return <FriendsProvider>{inner}</FriendsProvider>
 }
 
 export default function App() {

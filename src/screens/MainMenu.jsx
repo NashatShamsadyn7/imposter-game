@@ -1,14 +1,17 @@
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy } from 'lucide-react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
+import { useFriends } from '../state/FriendsContext'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import { levelInfo } from '../lib/achievements'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // مێنیوی سەرەکی دوای چوونەژوورەوە
-export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements }) {
+export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements, onProfile, onFriends }) {
   const { profile, signOut } = useAuth()
+  const { totalUnread, incoming } = useFriends()
   const { level } = levelInfo(profile?.total_points)
+  const friendBadge = totalUnread + incoming.length
 
   const go = (fn) => {
     unlockAudio()
@@ -21,9 +24,9 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
       {/* پرۆفایل */}
       <header className="mb-8 flex items-center justify-between animate-fade-in">
         <button
-          onClick={() => go(onAchievements)}
+          onClick={() => go(onProfile)}
           className="btn-press flex items-center gap-3 rounded-full bg-surface py-1.5 pl-4 pr-1.5 shadow-card transition hover:border-crew"
-          title="دەستکەوت و ئاست"
+          title="پرۆفایلی من"
         >
           <div className="relative">
             <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} ring />
@@ -40,6 +43,18 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
           </div>
         </button>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => go(onFriends)}
+            className="btn-press relative grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
+            title="هاوڕێیان"
+          >
+            <Users className="h-5 w-5" />
+            {friendBadge > 0 && (
+              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-impostor px-1 text-[10px] font-black text-white">
+                {friendBadge}
+              </span>
+            )}
+          </button>
           <button
             onClick={() => go(onAchievements)}
             className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"

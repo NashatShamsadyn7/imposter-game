@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase, isSupabaseEnabled, ensureProfile, signOut } from '../lib/supabase'
+import { supabase, isSupabaseEnabled, ensureProfile, signOut, touchLastSeen } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 export const useAuth = () => useContext(AuthContext)
@@ -61,6 +61,19 @@ export function AuthProvider({ children }) {
       })
     return () => {
       cancelled = true
+    }
+  }, [user])
+
+  // حزووری ئۆنلاین — نوێکردنەوەی last_seen هەر ٤٠ چرکە (و کاتی کرانەوە)
+  useEffect(() => {
+    if (!user) return
+    touchLastSeen()
+    const iv = setInterval(touchLastSeen, 40000)
+    const onVisible = () => document.visibilityState === 'visible' && touchLastSeen()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(iv)
+      document.removeEventListener('visibilitychange', onVisible)
     }
   }, [user])
 

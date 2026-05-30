@@ -19,6 +19,7 @@ import { useRoom } from '../state/RoomContext'
 import { CATEGORIES, RANDOM_CATEGORY } from '../data/words'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
+import InviteFriends from '../components/InviteFriends'
 import { sfx } from '../lib/sound'
 
 export default function RoomLobby() {
@@ -61,13 +62,16 @@ export default function RoomLobby() {
     <div className="mx-auto max-w-md px-4 py-6 pb-24">
       {/* سەرپەڕە */}
       <header className="mb-5 flex items-center justify-between animate-fade-in">
-        <button
-          onClick={() => leaveRoom()}
-          className="btn-press flex items-center gap-1 rounded-xl bg-ink/5 px-3 py-2 text-sm text-ink/70 hover:bg-ink/10"
-        >
-          <LogOut className="h-4 w-4" />
-          دەرچوون
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => leaveRoom()}
+            className="btn-press flex items-center gap-1 rounded-xl bg-ink/5 px-3 py-2 text-sm text-ink/70 hover:bg-ink/10"
+          >
+            <LogOut className="h-4 w-4" />
+            دەرچوون
+          </button>
+          <InviteFriends roomCode={room.code} />
+        </div>
         <button
           onClick={copyCode}
           className="btn-press flex items-center gap-2 rounded-xl border border-crew/40 bg-crew/10 px-4 py-2"

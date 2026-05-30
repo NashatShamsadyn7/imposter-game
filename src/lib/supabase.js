@@ -56,11 +56,51 @@ export async function ensureProfile(user) {
     if (error) throw error
     return data
   }
-  // نوێکردنەوەی ناو/وێنە ئەگەر گۆڕابن
-  if (existing.avatar_url !== avatar_url || existing.display_name !== display_name) {
-    await supabase.from('profiles').update({ display_name, avatar_url }).eq('id', user.id)
+
+  // ئەگەر بەکارهێنەر پرۆفایلەکەی خۆی دەستکاری کردبێت، دەستکاری گووگڵ ناگۆڕینەوە
+  const patch = {}
+  if (!existing.custom_profile) {
+    if (existing.display_name !== display_name) patch.display_name = display_name
+    if (existing.avatar_url !== avatar_url) patch.avatar_url = avatar_url
   }
-  return { ...existing, display_name, avatar_url }
+  // دڵنیابوون لە بوونی کۆدی هاوڕێیەتی (یەدەگ ئەگەر default کارینەکرد)
+  if (!existing.friend_code) patch.friend_code = genCode() + genCode().slice(0, 1)
+  if (Object.keys(patch).length) {
+    await supabase.from('profiles').update(patch).eq('id', user.id)
+  }
+  return { ...existing, ...patch }
+}
+
+// نوێکردنەوەی پرۆفایلی خۆم (ناو/وێنە) — custom_profile چالاک دەکات
+export async function updateMyProfile(userId, patch) {
+  need()
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ ...patch, custom_profile: true })
+    .eq('id', userId)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+// بارکردنی وێنەی پرۆفایل بۆ Storage و گەڕاندنەوەی URL ـی گشتی
+export async function uploadAvatar(userId, file) {
+  need()
+  const ext = (file.name?.split('.').pop() || 'jpg').toLowerCase()
+  const path = `${userId}/avatar-${Date.now()}.${ext}`
+  const { error } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true, cacheControl: '3600' })
+  if (error) throw error
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+  return data.publicUrl
+}
+
+// نوێکردنەوەی کاتی دواین بینین (حزووری ئۆنلاین)
+export async function touchLastSeen() {
+  if (!supabase) return
+  await supabase.rpc('touch_last_seen')
 }
 
 export async function getProfile(userId) {
@@ -277,5 +317,147 @@ export function subscribeRoom(roomId, handlers) {
     )
     .subscribe()
 
+  return () => supabase.removeChannel(channel)
+}
+
+// ═══════════════ هاوڕێیان ═══════════════
+// دۆزینەوەی پرۆفایل بە کۆدی هاوڕێیەتی
+export async function findProfileByCode(code) {
+  need()
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, display_name, avatar_url, friend_code, total_points, last_seen')
+    .eq('friend_code', code.trim().toUpperCase())
+    .maybeSingle()
+  return data
+}
+
+// ناردنی داواکاری هاوڕێیەتی
+export async function sendFriendRequest(requesterId, addresseeId) {
+  need()
+  const { error } = await supabase
+    .from('friendships')
+    .insert({ requester_id: requesterId, addressee_id: addresseeId, status: 'pending' })
+  if (error) throw error
+}
+
+// وەڵامدانەوەی داواکاری: قبووڵ (accept) یان ڕەتکردنەوە (delete)
+export async function respondFriendRequest(friendshipId, accept) {
+  need()
+  if (accept) {
+    await supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId)
+  } else {
+    await supabase.from('friendships').delete().eq('id', friendshipId)
+  }
+}
+
+// سڕینەوەی هاوڕێ یان هەڵوەشاندنەوەی داواکاری
+export async function removeFriendship(friendshipId) {
+  need()
+  await supabase.from('friendships').delete().eq('id', friendshipId)
+}
+
+// هێنانی هەموو پەیوەندییەکانی هاوڕێیەتی (هاوڕێی پەیوەستکراو + داواکارییەکان)
+export async function fetchFriendships(userId) {
+  need()
+  const { data } = await supabase
+    .from('friendships')
+    .select('*')
+    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
+  return data || []
+}
+
+// هێنانی پرۆفایلی چەند بەکارهێنەرێک بە id
+export async function fetchProfilesByIds(ids) {
+  need()
+  if (!ids.length) return []
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, display_name, avatar_url, friend_code, total_points, last_seen')
+    .in('id', ids)
+  return data || []
+}
+
+// گوێگرتن لە گۆڕانکاری هاوڕێیەتی (داواکاری نوێ/قبووڵکردن)
+export function subscribeFriendships(userId, onChange) {
+  need()
+  const channel = supabase
+    .channel(`friends:${userId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'friendships', filter: `addressee_id=eq.${userId}` },
+      () => onChange?.()
+    )
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'friendships', filter: `requester_id=eq.${userId}` },
+      () => onChange?.()
+    )
+    .subscribe()
+  return () => supabase.removeChannel(channel)
+}
+
+// ═══════════════ نامەی تایبەت (DM) ═══════════════
+// هێنانی گفتوگۆ لەگەڵ هاوڕێیەک
+export async function fetchDirectMessages(meId, otherId) {
+  need()
+  const { data } = await supabase
+    .from('direct_messages')
+    .select('*')
+    .or(
+      `and(sender_id.eq.${meId},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${meId})`
+    )
+    .order('created_at', { ascending: true })
+    .limit(200)
+  return data || []
+}
+
+// ناردنی نامەی تایبەت (text یان invite)
+export async function sendDirectMessage(senderId, recipientId, content, kind = 'text') {
+  need()
+  const { data, error } = await supabase
+    .from('direct_messages')
+    .insert({ sender_id: senderId, recipient_id: recipientId, content, kind })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+// نیشانکردنی نامەکانی هاتوو وەک خوێندراوە
+export async function markMessagesRead(meId, otherId) {
+  need()
+  await supabase
+    .from('direct_messages')
+    .update({ read_at: new Date().toISOString() })
+    .eq('recipient_id', meId)
+    .eq('sender_id', otherId)
+    .is('read_at', null)
+}
+
+// ژمارەی نامە نەخوێندراوەکان (بۆ هەموو هاوڕێیان)
+export async function fetchUnreadCounts(meId) {
+  need()
+  const { data } = await supabase
+    .from('direct_messages')
+    .select('sender_id')
+    .eq('recipient_id', meId)
+    .is('read_at', null)
+  const counts = {}
+  ;(data || []).forEach((m) => (counts[m.sender_id] = (counts[m.sender_id] || 0) + 1))
+  return counts
+}
+
+// گوێگرتن لە نامە تایبەتە هاتووەکان (هەرکوێ بم)
+export function subscribeDirectMessages(userId, onMessage) {
+  need()
+  const channel = supabase
+    .channel(`dm:${userId}`)
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'direct_messages', filter: `recipient_id=eq.${userId}` },
+      (payload) => onMessage?.(payload.new)
+    )
+    .subscribe()
   return () => supabase.removeChannel(channel)
 }
