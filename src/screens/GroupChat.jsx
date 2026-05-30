@@ -3,10 +3,12 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useRef, useState } from 'react'
-import { ChevronRight, Send, Smile, Users, Copy, Check, LogOut, Crown } from 'lucide-react'
+import { ChevronRight, Send, Smile, Users, Copy, Check, LogOut, Crown, Film } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useProfileViewer } from '../state/ProfileViewer'
 import Avatar from '../components/Avatar'
+import GifPicker from '../components/GifPicker'
+import { isGifEnabled } from '../lib/gif'
 import {
   fetchGroupMessages,
   fetchGroupMembers,
@@ -28,6 +30,7 @@ export default function GroupChat({ group, onBack, onLeft }) {
   const [members, setMembers] = useState([])
   const [text, setText] = useState('')
   const [showEmoji, setShowEmoji] = useState(false)
+  const [showGif, setShowGif] = useState(false)
   const [showMembers, setShowMembers] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState(null)
@@ -180,7 +183,14 @@ export default function GroupChat({ group, onBack, onLeft }) {
               )}
               <div className={`max-w-[75%] ${mine ? 'items-end' : 'items-start'} flex flex-col`}>
                 {!mine && <span className="mb-0.5 px-1 text-[11px] text-muted">{m.display_name}</span>}
-                {emojiOnly ? (
+                {m.kind === 'gif' ? (
+                  <img
+                    src={m.content}
+                    alt="GIF"
+                    loading="lazy"
+                    className="max-h-52 w-auto rounded-2xl border border-line object-contain"
+                  />
+                ) : emojiOnly ? (
                   <span className="text-4xl leading-tight">{m.content}</span>
                 ) : (
                   <div
@@ -216,15 +226,42 @@ export default function GroupChat({ group, onBack, onLeft }) {
         </div>
       )}
 
+      {/* هەڵبژاردنی GIF */}
+      {showGif && (
+        <GifPicker
+          onSelect={(url) => {
+            send(url, 'gif')
+            setShowGif(false)
+          }}
+          onClose={() => setShowGif(false)}
+        />
+      )}
+
       {/* نووسین */}
       <form onSubmit={submit} className="mt-3 flex gap-2">
         <button
           type="button"
-          onClick={() => setShowEmoji((s) => !s)}
+          onClick={() => {
+            setShowEmoji((s) => !s)
+            setShowGif(false)
+          }}
           className="btn-press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-ink/5 text-crew"
         >
           <Smile className="h-5 w-5" />
         </button>
+        {isGifEnabled && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowGif((s) => !s)
+              setShowEmoji(false)
+            }}
+            className="btn-press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-ink/5 text-crew"
+            title="GIF"
+          >
+            <Film className="h-5 w-5" />
+          </button>
+        )}
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChevronRight, Send, Gamepad2, LogIn } from 'lucide-react'
+import { ChevronRight, Send, Gamepad2, LogIn, Film } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import Avatar from '../components/Avatar'
+import GifPicker from '../components/GifPicker'
+import { isGifEnabled } from '../lib/gif'
 import {
   fetchDirectMessages,
   sendDirectMessage,
@@ -18,6 +20,7 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
   const { clearUnread } = useFriends()
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
+  const [showGif, setShowGif] = useState(false)
   const endRef = useRef(null)
   const other = friend.profile
   const online = isOnline(other?.last_seen)
@@ -47,18 +50,22 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const submit = async (e) => {
-    e.preventDefault()
-    if (!text.trim()) return
-    const content = text.trim().slice(0, 500)
-    setText('')
+  const sendMsg = async (content, kind = 'text') => {
+    if (!content.trim()) return
     sfx.tap()
     try {
-      const row = await sendDirectMessage(user.id, friend.id, content)
+      const row = await sendDirectMessage(user.id, friend.id, content.trim().slice(0, 500), kind)
       setMessages((prev) => [...prev, row])
     } catch (err) {
       setError(err.message)
     }
+  }
+
+  const submit = async (e) => {
+    e.preventDefault()
+    const content = text
+    setText('')
+    await sendMsg(content)
   }
 
   return (
@@ -120,6 +127,18 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
               </div>
             )
           }
+          if (m.kind === 'gif') {
+            return (
+              <div key={m.id} className={`flex ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
+                <img
+                  src={m.content}
+                  alt="GIF"
+                  loading="lazy"
+                  className="max-h-52 w-auto rounded-2xl border border-line object-contain"
+                />
+              </div>
+            )
+          }
           return (
             <div key={m.id} className={`flex ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
               <div
@@ -137,8 +156,29 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
         <div ref={endRef} />
       </div>
 
+      {/* هەڵبژاردنی GIF */}
+      {showGif && (
+        <GifPicker
+          onSelect={(url) => {
+            sendMsg(url, 'gif')
+            setShowGif(false)
+          }}
+          onClose={() => setShowGif(false)}
+        />
+      )}
+
       {/* نووسین */}
       <form onSubmit={submit} className="mt-3 flex gap-2">
+        {isGifEnabled && (
+          <button
+            type="button"
+            onClick={() => setShowGif((s) => !s)}
+            className="btn-press grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-ink/5 text-crew"
+            title="GIF"
+          >
+            <Film className="h-5 w-5" />
+          </button>
+        )}
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
