@@ -38,7 +38,7 @@ function FullLoader() {
 
 // ───── ڕێڕەوی ئۆنلاین ─────
 function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
-  const { room, joinRoom } = useRoom()
+  const { room, joinRoom, me } = useRoom()
   const { user, profile } = useAuth()
 
   // بانگهێشت: ئەگەر کۆدی پەیوەستبوون هەبوو، خۆکار بەشداربە
@@ -63,7 +63,12 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
 
   // دەنگی ڕاستەوخۆ لە تەواوی ژوور (لۆبی → ئەنجام)
   return (
-    <VoiceProvider roomId={room.id} identity={user?.id} name={profile?.display_name}>
+    <VoiceProvider
+      roomId={room.id}
+      identity={user?.id}
+      name={profile?.display_name}
+      canSpeak={!!me?.can_speak}
+    >
       {screen}
       <VoiceBar />
     </VoiceProvider>

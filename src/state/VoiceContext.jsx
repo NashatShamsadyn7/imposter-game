@@ -16,7 +16,7 @@ import { supabase } from '../lib/supabase'
 const VoiceContext = createContext(null)
 export const useVoice = () => useContext(VoiceContext)
 
-export function VoiceProvider({ roomId, identity, name, children }) {
+export function VoiceProvider({ roomId, identity, name, canSpeak = false, children }) {
   const roomRef = useRef(null)
   const [status, setStatus] = useState('idle') // idle | connecting | connected | error
   const [micOn, setMicOn] = useState(false)
@@ -123,10 +123,21 @@ export function VoiceProvider({ roomId, identity, name, children }) {
     }
   }, [roomId, identity, name, attachAudio, refreshParticipants])
 
+  // ───── ناچاری کتم بۆ ئەوەی ڕێگەی پێنەدراوە ─────
+  useEffect(() => {
+    const room = roomRef.current
+    if (!room || status !== 'connected') return
+    if (!canSpeak && room.localParticipant.isMicrophoneEnabled) {
+      room.localParticipant.setMicrophoneEnabled(false).catch(() => {})
+      setMicOn(false)
+    }
+  }, [canSpeak, status])
+
   // ───── کتم/کردنەوەی مایک ─────
   const toggleMic = useCallback(async () => {
     const room = roomRef.current
     if (!room || status !== 'connected') return
+    if (!canSpeak) return // ڕێگەت پێنەدراوە
     try {
       const next = !room.localParticipant.isMicrophoneEnabled
       await room.localParticipant.setMicrophoneEnabled(next)
@@ -134,7 +145,7 @@ export function VoiceProvider({ roomId, identity, name, children }) {
     } catch (e) {
       setError(e?.message || 'مایک کاری نەکرد')
     }
-  }, [status])
+  }, [status, canSpeak])
 
   const value = {
     status,
@@ -144,6 +155,7 @@ export function VoiceProvider({ roomId, identity, name, children }) {
     participants,
     error,
     available,
+    canSpeak,
     selfIdentity: identity,
     isSpeaking: useCallback((id) => speakers.has(id), [speakers]),
   }

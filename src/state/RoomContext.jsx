@@ -298,6 +298,22 @@ export function RoomProvider({ children }) {
     await updateRoom(roomId, { status: 'lobby', turn_player_id: null, phase_ends_at: null })
   }, [isHost, players, roomId])
 
+  // ───── کۆنترۆڵی مایک ─────
+  // یاریزان داوای مایک دەکات
+  const requestMic = useCallback(() => {
+    if (!user || !roomId) return
+    updatePlayer(roomId, user.id, { mic_requested: true })
+  }, [user, roomId])
+
+  // خانەخوێ ڕێگە دەدات/دەسەنێتەوە
+  const setSpeak = useCallback(
+    (uid, can) => {
+      if (!isHost) return
+      updatePlayer(roomId, uid, { can_speak: can, mic_requested: false })
+    },
+    [isHost, roomId]
+  )
+
   // ───── چات ─────
   const sendMessage = useCallback(
     (content, kind = 'chat') => {
@@ -331,6 +347,8 @@ export function RoomProvider({ children }) {
     finishGame,
     playAgain,
     sendMessage,
+    requestMic,
+    setSpeak,
   }
 
   return <RoomContext.Provider value={value}>{children}</RoomContext.Provider>

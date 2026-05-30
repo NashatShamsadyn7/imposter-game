@@ -181,6 +181,8 @@ async function joinRoomRow(roomId, user, profile, isHost) {
       role: null,
       ejected: false,
       points_this_game: 0,
+      can_speak: isHost,        // خانەخوێ ڕاستەوخۆ دەتوانێت قسە بکات
+      mic_requested: false,
     },
     { onConflict: 'room_id,user_id' }
   )
