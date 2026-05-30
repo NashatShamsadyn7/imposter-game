@@ -68,7 +68,7 @@ export default function GifPicker({ onSelect, onClose }) {
           </div>
         )}
       </div>
-      <p className="mt-1 text-center text-[10px] text-muted">Powered by Tenor</p>
+      <p className="mt-1 text-center text-[10px] text-muted">Powered by GIPHY</p>
     </div>
   )
 }
