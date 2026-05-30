@@ -91,7 +91,8 @@ export default function Voting() {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    // pb-28: شوێن بۆ شریتی دەنگی شۆڕاو لە ژێرەوە (مۆبایل)
+    <div className="mx-auto max-w-md px-4 py-6 pb-28">
       <div className="mb-5 text-center animate-fade-in">
         <Vote className="mx-auto mb-2 h-10 w-10 text-impostor" />
         <h1 className="text-2xl font-black text-ink">{t('دەنگدانی نهێنی')}</h1>

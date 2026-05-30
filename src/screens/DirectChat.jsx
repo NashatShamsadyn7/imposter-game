@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChevronRight, Send, Gamepad2, LogIn, Film } from 'lucide-react'
+import { ChevronRight, Send, Gamepad2, LogIn, Film, Phone } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
+import { VoiceProvider } from '../state/VoiceContext'
 import Avatar from '../components/Avatar'
 import GifPicker from '../components/GifPicker'
+import DirectVoiceBar from '../components/DirectVoiceBar'
 import { isGifEnabled } from '../lib/gif'
 import {
   fetchDirectMessages,
@@ -17,15 +19,18 @@ import { sfx } from '../lib/sound'
 
 // گفتوگۆی تایبەت لەگەڵ هاوڕێیەک
 export default function DirectChat({ friend, onBack, onJoinRoom }) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { clearUnread } = useFriends()
   const t = useT()
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [showGif, setShowGif] = useState(false)
+  const [callActive, setCallActive] = useState(false)
   const endRef = useRef(null)
   const other = friend.profile
   const online = isOnline(other?.last_seen)
+  // ناوی ژووری دەنگ — هاوبەش لەنێوان هەردوو لا (idـەکان ڕیزکراو)
+  const voiceRoomId = `dm-${[user.id, friend.id].sort().join('-')}`
 
   const [error, setError] = useState(null)
 
@@ -90,7 +95,28 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
           <p className="font-bold text-ink">{other?.display_name}</p>
           <p className="text-xs text-muted">{lastSeenText(other?.last_seen)}</p>
         </div>
+        {/* دوگمەی پەیوەندیی دەنگی */}
+        <button
+          onClick={() => { sfx.tap(); setCallActive((c) => !c) }}
+          className={`btn-press ms-auto grid h-10 w-10 shrink-0 place-items-center rounded-xl shadow-card transition ${
+            callActive ? 'bg-crew text-white' : 'bg-surface text-crew hover:text-ink'
+          }`}
+          title={t('پەیوەندیی دەنگی')}
+        >
+          <Phone className="h-5 w-5" />
+        </button>
       </header>
+
+      {/* شریتی پەیوەندیی دەنگی */}
+      {callActive && (
+        <VoiceProvider roomId={voiceRoomId} identity={user.id} name={profile?.display_name} canSpeak>
+          <DirectVoiceBar
+            onEnd={() => setCallActive(false)}
+            otherIdentity={friend.id}
+            other={other}
+          />
+        </VoiceProvider>
+      )}
 
       {error && (
         <p className="mb-2 rounded-xl bg-impostor/10 px-3 py-2 text-center text-xs text-impostor" dir="ltr">

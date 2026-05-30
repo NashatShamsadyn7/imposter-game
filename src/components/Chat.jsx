@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Smile, X } from 'lucide-react'
+import { Send, Smile, X, Film } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { useFriends } from '../state/FriendsContext'
 import Avatar from './Avatar'
+import GifPicker from './GifPicker'
+import { isGifEnabled } from '../lib/gif'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
@@ -22,6 +24,7 @@ export default function Chat({ disabled = false, className = '' }) {
   const t = useT()
   const [text, setText] = useState('')
   const [showQuick, setShowQuick] = useState(false)
+  const [showGif, setShowGif] = useState(false)
   const endRef = useRef(null)
 
   // نامەکانی کەسە بلۆککراوەکان نیشان نادرێن
@@ -71,7 +74,14 @@ export default function Chat({ disabled = false, className = '' }) {
               <Avatar url={m.avatar_url} name={m.display_name} size={28} />
               <div className={`max-w-[75%] ${mine ? 'text-left' : 'text-right'}`}>
                 {!mine && <p className="mb-0.5 text-xs text-ink/50">{m.display_name}</p>}
-                {emojiOnly ? (
+                {m.kind === 'gif' ? (
+                  <img
+                    src={m.content}
+                    alt="GIF"
+                    loading="lazy"
+                    className="max-h-44 w-auto rounded-2xl border border-ink/10 object-contain"
+                  />
+                ) : emojiOnly ? (
                   <div className={`text-4xl leading-none ${mine ? 'text-left' : 'text-right'}`}>
                     {m.content}
                   </div>
@@ -121,11 +131,25 @@ export default function Chat({ disabled = false, className = '' }) {
         </div>
       )}
 
+      {/* هەڵبژاردنی GIF */}
+      {showGif && !disabled && (
+        <div className="border-t border-ink/10 px-2 pb-2">
+          <GifPicker
+            onSelect={(url) => {
+              sendMessage(url, 'gif')
+              sfx.tap()
+              setShowGif(false)
+            }}
+            onClose={() => setShowGif(false)}
+          />
+        </div>
+      )}
+
       {/* نووسین */}
       <form onSubmit={submit} className="flex gap-2 border-t border-ink/10 p-2">
         <button
           type="button"
-          onClick={() => setShowQuick((v) => !v)}
+          onClick={() => { setShowQuick((v) => !v); setShowGif(false) }}
           disabled={disabled}
           className={`btn-press flex shrink-0 items-center justify-center rounded-xl px-3 disabled:opacity-40 ${
             showQuick ? 'bg-crew/20 text-crew' : 'bg-ink/5 text-ink/60 hover:bg-ink/10'
@@ -134,6 +158,19 @@ export default function Chat({ disabled = false, className = '' }) {
         >
           {showQuick ? <X className="h-5 w-5" /> : <Smile className="h-5 w-5" />}
         </button>
+        {isGifEnabled && (
+          <button
+            type="button"
+            onClick={() => { setShowGif((v) => !v); setShowQuick(false) }}
+            disabled={disabled}
+            className={`btn-press flex shrink-0 items-center justify-center rounded-xl px-3 disabled:opacity-40 ${
+              showGif ? 'bg-crew/20 text-crew' : 'bg-ink/5 text-ink/60 hover:bg-ink/10'
+            }`}
+            title="GIF"
+          >
+            <Film className="h-5 w-5" />
+          </button>
+        )}
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}

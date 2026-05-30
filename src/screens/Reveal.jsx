@@ -73,7 +73,7 @@ export default function Reveal() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 py-8">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 py-8 pb-28">
       {/* پێش کلیک */}
       {!flipped ? (
         <div className="animate-fade-in text-center">
