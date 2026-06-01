@@ -320,7 +320,8 @@ export default function IQLocal({ onExit }) {
         </div>
 
         {/* پرسیار */}
-        <Panel className="mb-6 flex min-h-[110px] items-center justify-center text-center">
+        <Panel className="mb-6 flex min-h-[110px] flex-col items-center justify-center gap-3 text-center">
+          {bomb.q.image && <img src={bomb.q.image} alt="" loading="lazy" className="h-24 w-auto max-w-[70%] object-contain" />}
           <p className="text-xl font-black leading-relaxed text-ink">{bomb.q.q}</p>
         </Panel>
 
@@ -415,7 +416,8 @@ export default function IQLocal({ onExit }) {
       <div className="mb-6 h-2 w-full overflow-hidden rounded-full bg-surface2">
         <div className="h-full bg-crew transition-all" style={{ width: `${(index / questions.length) * 100}%` }} />
       </div>
-      <Panel className="mb-6 flex min-h-[120px] items-center justify-center text-center">
+      <Panel className="mb-6 flex min-h-[120px] flex-col items-center justify-center gap-3 text-center">
+        {current.image && <img src={current.image} alt="" loading="lazy" className="h-28 w-auto max-w-[70%] object-contain" />}
         <p className="text-xl font-black leading-relaxed text-ink">{current.q}</p>
       </Panel>
       <div className="grid gap-3">

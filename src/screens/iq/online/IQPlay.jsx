@@ -64,7 +64,8 @@ export default function IQPlay() {
       </div>
 
       {/* پرسیار */}
-      <Panel className="mb-6 flex min-h-[110px] items-center justify-center text-center">
+      <Panel className="mb-6 flex min-h-[110px] flex-col items-center justify-center gap-3 text-center">
+        {q.image && <img src={q.image} alt="" loading="lazy" className="h-24 w-auto max-w-[70%] object-contain" />}
         <p className="text-xl font-black leading-relaxed text-ink">{q.q}</p>
       </Panel>
 

@@ -445,6 +445,59 @@ const TECH = [
   ['ما الجهاز الذي يخزّن البيانات بشكل دائم في الحاسوب؟', 'کام ئامێر داتا بە شێوەی هەمیشەیی لە کۆمپیوتەردا هەڵدەگرێت؟', 'القرص الصلب', 'دیسکی ڕەق', ['ذاكرة RAM', 'المعالج', 'الشاشة'], ['بیرگەی RAM', 'پرۆسێسەر', 'شاشە']],
 ]
 
+// ═══════════════════════════════════════════════════════════
+//  ١٠) وێنە: ئاڵا و لۆگۆ — بەبێ بارکردنی وێنە (لە CDN)
+// ═══════════════════════════════════════════════════════════
+// دروستکردنی پرسیاری وێنەیی: هەر دانە لەگەڵ ٣ هەڵبژاردەی هەڵە لە هەمان لیست
+function genImageCategory(list, promptAr, promptKu, cat) {
+  return list.map((item) => {
+    const others = shuffle(list.filter((x) => x !== item)).slice(0, 3)
+    const pairs = shuffle([{ ar: item.ar, ku: item.ku }, ...others.map((o) => ({ ar: o.ar, ku: o.ku }))])
+    const choices = pairs.map((p) => p.ar)
+    const choices_ku = pairs.map((p) => p.ku)
+    return {
+      id: nid(), q: promptAr, q_ku: promptKu, image: item.image,
+      choices, choices_ku, correct: choices.indexOf(item.ar), cat,
+    }
+  })
+}
+
+// ئاڵاکان — وێنە لە flagcdn.com (کۆدی ISO)
+const FLAG_DATA = [
+  ['iq', 'العراق', 'عێراق'], ['sa', 'السعودية', 'سعوودیە'], ['eg', 'مصر', 'میسر'],
+  ['sy', 'سوريا', 'سووریا'], ['jo', 'الأردن', 'ئوردن'], ['lb', 'لبنان', 'لوبنان'],
+  ['kw', 'الكويت', 'کوەیت'], ['qa', 'قطر', 'قەتەر'], ['ae', 'الإمارات', 'ئیمارات'],
+  ['om', 'عُمان', 'عومان'], ['ye', 'اليمن', 'یەمەن'], ['ps', 'فلسطين', 'فەلەستین'],
+  ['tr', 'تركيا', 'تورکیا'], ['ir', 'إيران', 'ئێران'], ['ma', 'المغرب', 'مەغریب'],
+  ['dz', 'الجزائر', 'جەزائیر'], ['tn', 'تونس', 'تونس'], ['ly', 'ليبيا', 'لیبیا'],
+  ['sd', 'السودان', 'سوودان'], ['fr', 'فرنسا', 'فەڕەنسا'], ['de', 'ألمانيا', 'ئەڵمانیا'],
+  ['it', 'إيطاليا', 'ئیتاڵیا'], ['es', 'إسبانيا', 'ئیسپانیا'], ['gb', 'بريطانيا', 'بەریتانیا'],
+  ['nl', 'هولندا', 'هۆڵەندا'], ['ru', 'روسيا', 'ڕووسیا'], ['ua', 'أوكرانيا', 'ئۆکراینا'],
+  ['se', 'السويد', 'سوید'], ['cn', 'الصين', 'چین'], ['jp', 'اليابان', 'ژاپۆن'],
+  ['kr', 'كوريا الجنوبية', 'کۆریای باشوور'], ['in', 'الهند', 'هیند'], ['br', 'البرازيل', 'بەرازیل'],
+  ['ar', 'الأرجنتين', 'ئەرژەنتین'], ['us', 'أمريكا', 'ئەمریکا'], ['ca', 'كندا', 'کەنەدا'],
+  ['au', 'أستراليا', 'ئوسترالیا'], ['mx', 'المكسيك', 'مەکسیک'],
+]
+const FLAGS = FLAG_DATA.map(([code, ar, ku]) => ({ ar, ku, image: `https://flagcdn.com/w320/${code}.png` }))
+
+// لۆگۆی کۆمپانیاکان — وێنە لە logo.clearbit.com (domain)
+const BRAND_DATA = [
+  ['netflix.com', 'نتفليكس', 'نێتفلیکس'], ['youtube.com', 'يوتيوب', 'یوتیوب'],
+  ['google.com', 'غوغل', 'گووگڵ'], ['apple.com', 'آبل', 'ئاپڵ'],
+  ['microsoft.com', 'مايكروسوفت', 'مایکرۆسۆفت'], ['amazon.com', 'أمازون', 'ئەمازۆن'],
+  ['facebook.com', 'فيسبوك', 'فەیسبووک'], ['instagram.com', 'إنستغرام', 'ئینستاگرام'],
+  ['whatsapp.com', 'واتساب', 'واتساب'], ['tiktok.com', 'تيك توك', 'تیک تۆک'],
+  ['spotify.com', 'سبوتيفاي', 'سپۆتیفای'], ['snapchat.com', 'سناب شات', 'سناپچات'],
+  ['nike.com', 'نايكي', 'نایکی'], ['adidas.com', 'أديداس', 'ئادیداس'],
+  ['mcdonalds.com', 'ماكدونالدز', 'ماکدۆناڵد'], ['starbucks.com', 'ستاربكس', 'ستاربەکس'],
+  ['coca-cola.com', 'كوكا كولا', 'کۆکاکۆلا'], ['pepsi.com', 'بيبسي', 'پێپسی'],
+  ['tesla.com', 'تسلا', 'تێسلا'], ['samsung.com', 'سامسونغ', 'سامسۆنگ'],
+]
+const BRANDS = BRAND_DATA.map(([domain, ar, ku]) => ({ ar, ku, image: `https://logo.clearbit.com/${domain}` }))
+
+const flagsQ = genImageCategory(FLAGS, 'علم أي دولة هذا؟', 'ئەمە ئاڵای کام وڵاتە؟', 'flags')
+const brandsQ = genImageCategory(BRANDS, 'شعار أي شركة هذا؟', 'ئەمە لۆگۆی کام کۆمپانیایە؟', 'brands')
+
 // ───── گۆڕینی لیست بۆ ئۆبجێکت ─────
 // ٣ ئەندام = تەنها عەرەبی؛ ٦ ئەندام = دووزمانە
 //   [qAr, qKu, ansAr, ansKu, [distrAr×٣], [distrKu×٣]]
@@ -483,6 +536,8 @@ export const IQ_CATEGORIES = [
   { id: 'sports', name: 'وەرزش', icon: '⚽', questions: sportsQ },
   { id: 'religion', name: 'ئاینی', icon: '🕌', questions: religionQ },
   { id: 'tech', name: 'تەکنەلۆژیا', icon: '💻', questions: techQ },
+  { id: 'flags', name: 'ئاڵاکان', icon: '🚩', questions: flagsQ },
+  { id: 'brands', name: 'لۆگۆکان', icon: '🏷️', questions: brandsQ },
 ]
 
 // هاوپۆڵی «منوّعة» = هەمووی تێکەڵ
