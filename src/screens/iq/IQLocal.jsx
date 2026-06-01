@@ -25,6 +25,9 @@ export default function IQLocal({ onExit }) {
   const [mode, setMode] = useState('solo')   // solo | bomb
   const [phase, setPhase] = useState('setup') // setup | play | results | bomb | bombEnd
   const [earnedXp, setEarnedXp] = useState(0)
+  const [catId, setCatId] = useState('mix')
+  const [count, setCount] = useState(10)
+  const [secondsPerQ, setSecondsPerQ] = useState(15)
 
   // پاداشتی XP بۆ پرۆفایل (هەموو دۆخەکان) + نوێکردنەوە بۆ ئەنیمەیشنی ئاست
   const awardXp = useCallback((xp, won) => {
@@ -35,9 +38,6 @@ export default function IQLocal({ onExit }) {
         .then(() => setTimeout(() => refreshProfile?.(), 900)).catch(() => {})
     }
   }, [user, refreshProfile, catId])
-  const [catId, setCatId] = useState('mix')
-  const [count, setCount] = useState(10)
-  const [secondsPerQ, setSecondsPerQ] = useState(15)
 
   // ───── تاکە کەس ─────
   const [questions, setQuestions] = useState([])
