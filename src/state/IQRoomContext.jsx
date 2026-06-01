@@ -9,7 +9,7 @@ import { pickQuestions } from '../data/iq'
 import {
   iqCreateRoom, iqJoinRoom, iqLeaveRoom, iqUpdateRoom,
   iqFetchRoom, iqFetchPlayers, iqFetchAnswers, iqSubmitAnswer,
-  subscribeIQRoom, addPoints, supabase,
+  subscribeIQRoom, recordResult, supabase,
 } from '../lib/supabase'
 
 const IQRoomContext = createContext(null)
@@ -174,7 +174,7 @@ export function IQRoomProvider({ children }) {
       const correct = answers.filter((a) => a.user_id === s.user_id && a.is_correct).length
       const won = top && s.user_id === top.user_id && s.score > 0
       const xp = correct * 5 + (won ? 30 : 0)
-      if (xp > 0) addPoints(s.user_id, xp, won).catch(() => {})
+      if (xp > 0) recordResult(s.user_id, xp, won, 'iq', room.category_id, null).catch(() => {})
     })
   }, [isHost, room?.status, scoreboard, answers])
 

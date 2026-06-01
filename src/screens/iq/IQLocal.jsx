@@ -4,7 +4,7 @@ import { Button, Panel } from '../../components/ui'
 import { useLang } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
 import { useAuth } from '../../state/AuthContext'
-import { addPoints } from '../../lib/supabase'
+import { recordResult } from '../../lib/supabase'
 import { IQ_CATEGORIES, pickQuestions, localizeQuestion } from '../../data/iq'
 
 const BEST_KEY = 'iq:local:best:v1'
@@ -29,10 +29,12 @@ export default function IQLocal({ onExit }) {
   // پاداشتی XP بۆ پرۆفایل (هەموو دۆخەکان) + نوێکردنەوە بۆ ئەنیمەیشنی ئاست
   const awardXp = useCallback((xp, won) => {
     setEarnedXp(xp)
+    // record_result: XP + تۆمار لە game_results (بۆ مەرجی ڕۆژانە + مێژوو)
     if (user && xp > 0) {
-      addPoints(user.id, xp, won).then(() => setTimeout(() => refreshProfile?.(), 900)).catch(() => {})
+      recordResult(user.id, xp, won, 'iq', catId, null)
+        .then(() => setTimeout(() => refreshProfile?.(), 900)).catch(() => {})
     }
-  }, [user, refreshProfile])
+  }, [user, refreshProfile, catId])
   const [catId, setCatId] = useState('mix')
   const [count, setCount] = useState(10)
   const [secondsPerQ, setSecondsPerQ] = useState(15)
