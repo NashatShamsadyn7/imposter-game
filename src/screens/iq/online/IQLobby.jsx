@@ -19,7 +19,7 @@ export default function IQLobby() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
+    <div className="mx-auto max-w-md px-4 py-6 pb-24">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Brain className="h-6 w-6 text-amber-500" />
@@ -52,7 +52,7 @@ export default function IQLobby() {
       <div className="mb-2 flex items-center gap-2 text-sm font-bold text-muted">
         <Users className="h-4 w-4" />{t('یاریزانان')} ({players.length})
       </div>
-      <div className="mb-6 flex-1 space-y-2 overflow-y-auto">
+      <div className="mb-6 space-y-2">
         {players.map((p) => (
           <Panel key={p.user_id} className="flex items-center gap-3 !p-3">
             <Avatar url={p.avatar_url} name={p.display_name} size={36} />

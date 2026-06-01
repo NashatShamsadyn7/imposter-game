@@ -31,7 +31,8 @@ let _id = 0
 const nid = () => `q${++_id}`
 
 // دروستکردنی پرسیاری ژمارەیی: وەڵامی ڕاست + ٣ هەڵبژاردەی هەڵە نزیک
-function numMCQ(q, correct) {
+// q = عەرەبی، qKu = کوردی (ئەگەر نەبوو، هەمان q بەکاردێت). هەڵبژاردەکان ژمارەن (هاوبەش).
+function numMCQ(q, qKu, correct) {
   const set = new Set([correct])
   let guard = 0
   while (set.size < 4 && guard++ < 60) {
@@ -43,7 +44,7 @@ function numMCQ(q, correct) {
   let pad = 1
   while (set.size < 4) set.add(correct + (pad++) * 2 + 1)
   const choices = shuffle([...set]).map(String)
-  return { id: nid(), q, choices, correct: choices.indexOf(String(correct)) }
+  return { id: nid(), q, q_ku: qKu || q, choices, correct: choices.indexOf(String(correct)) }
 }
 
 // دروستکردنی پرسیاری هەڵبژاردنی دەقی
@@ -61,7 +62,7 @@ function genMath(count) {
   let guard = 0
   while (out.length < count && guard++ < count * 8) {
     const kind = randInt(0, 8)
-    let q, ans
+    let q, qKu, ans
     if (kind === 0) {
       const a = randInt(8, 240), b = randInt(8, 240)
       q = `${a} + ${b} = ?`; ans = a + b
@@ -79,23 +80,23 @@ function genMath(count) {
     } else if (kind === 4) {
       const p = pick([10, 20, 25, 40, 50, 75])
       const base = pick([40, 60, 80, 120, 160, 200, 240, 400])
-      q = `كم يساوي ${p}% من ${base}؟`; ans = Math.round((p / 100) * base)
+      q = `كم يساوي ${p}% من ${base}؟`; qKu = `${p}% ی ${base} چەندە؟`; ans = Math.round((p / 100) * base)
     } else if (kind === 5) {
       const a = randInt(2, 12)
-      q = `ما هو مربّع العدد ${a}؟ (${a}²)`; ans = a * a
+      q = `ما هو مربّع العدد ${a}؟ (${a}²)`; qKu = `چوارگۆشەی ژمارەی ${a} چەندە؟ (${a}²)`; ans = a * a
     } else if (kind === 6) {
       const a = randInt(10, 90), b = randInt(10, 90), c = randInt(10, 90)
       q = `${a} + ${b} + ${c} = ?`; ans = a + b + c
     } else if (kind === 7) {
       const a = randInt(6, 120)
-      q = `ما هو ضعف العدد ${a}؟`; ans = a * 2
+      q = `ما هو ضعف العدد ${a}؟`; qKu = `دووقاتی ژمارەی ${a} چەندە؟`; ans = a * 2
     } else {
       const a = randInt(2, 60) * 2
-      q = `ما هو نصف العدد ${a}؟`; ans = a / 2
+      q = `ما هو نصف العدد ${a}؟`; qKu = `نیوەی ژمارەی ${a} چەندە؟`; ans = a / 2
     }
     if (seen.has(q)) continue
     seen.add(q)
-    const item = numMCQ(q, ans)
+    const item = numMCQ(q, qKu, ans)
     item.cat = 'math'
     out.push(item)
   }
@@ -130,10 +131,12 @@ function genSequences(count) {
       for (let i = 0; i < 3; i++) { v += d; d++; arr.push(v) }
       ans = v + d
     }
-    const q = `أكمل المتتالية: ${arr.join('، ')}، ؟`
+    const seq = arr.join('، ')
+    const q = `أكمل المتتالية: ${seq}، ؟`
+    const qKu = `زنجیرەکە تەواو بکە: ${seq}، ؟`
     if (seen.has(q)) continue
     seen.add(q)
-    const item = numMCQ(q, ans)
+    const item = numMCQ(q, qKu, ans)
     item.cat = 'iq'
     out.push(item)
   }
@@ -168,6 +171,7 @@ function genCapitals() {
   return entries.map(([country, capital]) => {
     const others = shuffle(allCaps.filter((c) => c !== capital)).slice(0, 3)
     const item = textMCQ(`ما عاصمة ${country}؟`, capital, others)
+    item.q_ku = `پایتەختی ${country} چییە؟`
     item.cat = 'geography'
     return item
   })
@@ -428,6 +432,14 @@ export const TOTAL_QUESTIONS = IQ_CATEGORIES.slice(1).reduce(
   (n, c) => n + c.questions.length,
   0
 )
+
+// گەڕاندنەوەی پرسیار بە زمانی دیاریکراو (ku بنەڕەتە؛ ئەگەر کوردی نەبوو، عەرەبی)
+export function localizeQuestion(item, lang) {
+  if (!item) return item
+  const q = lang === 'ku' ? item.q_ku || item.q : item.q
+  const choices = lang === 'ku' ? item.choices_ku || item.choices : item.choices
+  return { ...item, q, choices }
+}
 
 // ───── یارمەتیدەرەکان ─────
 export function resolveIQCategory(id) {

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Brain, ArrowRight, Check, X, Trophy, RotateCcw, Clock } from 'lucide-react'
 import { Button, Panel } from '../../components/ui'
-import { useT } from '../../lib/i18n'
+import { useLang } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
-import { IQ_CATEGORIES, pickQuestions } from '../../data/iq'
+import { IQ_CATEGORIES, pickQuestions, localizeQuestion } from '../../data/iq'
 
 const BEST_KEY = 'iq:local:best:v1'
 const COUNT_OPTIONS = [10, 20, 30, 50]
@@ -14,7 +14,7 @@ function loadBest() {
 }
 
 export default function IQLocal({ onExit }) {
-  const t = useT()
+  const { t, lang } = useLang()
   const [phase, setPhase] = useState('setup') // setup | play | results
   const [catId, setCatId] = useState('mix')
   const [count, setCount] = useState(10)
@@ -41,7 +41,7 @@ export default function IQLocal({ onExit }) {
     setPhase('play')
   }
 
-  const current = questions[index]
+  const current = localizeQuestion(questions[index], lang)
 
   // دەستپێکردنی تایمەری هەر پرسیارێک
   useEffect(() => {
@@ -90,7 +90,7 @@ export default function IQLocal({ onExit }) {
   // ═══════════ SETUP ═══════════
   if (phase === 'setup') {
     return (
-      <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
+      <div className="mx-auto max-w-md px-4 py-6 pb-24">
         <button onClick={() => { sfx.tap(); onExit() }} className="btn-press mb-6 flex items-center gap-1 self-start text-sm text-muted hover:text-ink">
           <ArrowRight className="h-4 w-4" />{t('گەڕانەوە')}
         </button>
@@ -145,7 +145,7 @@ export default function IQLocal({ onExit }) {
   if (phase === 'results') {
     const pct = Math.round((score / questions.length) * 100)
     return (
-      <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
+      <div className="mx-auto max-w-md px-4 py-6 pb-24">
         <div className="mb-6 flex flex-col items-center text-center animate-scale-in">
           <div className="mb-3 grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-amber-400 to-crew shadow-soft">
             <Trophy className="h-10 w-10 text-white" />
@@ -154,7 +154,7 @@ export default function IQLocal({ onExit }) {
           <p className="mt-1 text-lg font-bold text-crew">{pct}%</p>
         </div>
 
-        <div className="mb-6 flex-1 space-y-2 overflow-y-auto">
+        <div className="mb-6 space-y-2">
           {log.map((l, i) => (
             <Panel key={i} className="!p-3">
               <div className="flex items-start gap-2">
@@ -184,7 +184,7 @@ export default function IQLocal({ onExit }) {
   if (!current) return null
   const danger = timeLeft <= 4
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
+    <div className="mx-auto max-w-md px-4 py-6 pb-24">
       {/* سەرپەڕە: پێشکەوتن + خاڵ + کات */}
       <div className="mb-5 flex items-center justify-between">
         <span className="text-sm font-bold text-muted">{index + 1} / {questions.length}</span>

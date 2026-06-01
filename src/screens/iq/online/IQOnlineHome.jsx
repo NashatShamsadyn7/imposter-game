@@ -19,7 +19,7 @@ export default function IQOnlineHome({ onExit }) {
   const [code, setCode] = useState('')
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
+    <div className="mx-auto max-w-md px-4 py-6 pb-24">
       <button onClick={() => { sfx.tap(); onExit() }} className="btn-press mb-6 flex items-center gap-1 self-start text-sm text-muted hover:text-ink">
         <ArrowRight className="h-4 w-4" />{t('گەڕانەوە')}
       </button>

@@ -2,19 +2,20 @@ import { useState, useEffect } from 'react'
 import { Clock, Check, X, Trophy } from 'lucide-react'
 import { Panel } from '../../../components/ui'
 import Avatar from '../../../components/Avatar'
-import { useT } from '../../../lib/i18n'
+import { useLang } from '../../../lib/i18n'
 import { sfx } from '../../../lib/sound'
 import { useIQRoom } from '../../../state/IQRoomContext'
+import { localizeQuestion } from '../../../data/iq'
 
 const LETTERS = ['أ', 'ب', 'ج', 'د']
 
 // شاشەی یاری IQ ئۆنلاین — پرسیار + تایمەر + ئاشکراکردن
 export default function IQPlay() {
-  const t = useT()
+  const { t, lang } = useLang()
   const { room, myAnswer, answeredCount, players, scoreboard, submitAnswer } = useIQRoom()
   const [timeLeft, setTimeLeft] = useState(0)
 
-  const q = room?.questions?.[room.current_index]
+  const q = localizeQuestion(room?.questions?.[room.current_index], lang)
   const revealing = room?.status === 'reveal'
 
   // تایمەری هاوکات لەسەر بنەمای question_started_at
@@ -47,7 +48,7 @@ export default function IQPlay() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
+    <div className="mx-auto max-w-md px-4 py-6 pb-24">
       {/* سەرپەڕە */}
       <div className="mb-4 flex items-center justify-between">
         <span className="text-sm font-bold text-muted">{room.current_index + 1} / {room.questions.length}</span>

@@ -16,7 +16,7 @@ export default function IQResults() {
   const winner = scoreboard[0]
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-8">
+    <div className="mx-auto max-w-md px-4 py-6 pb-24">
       <div className="mb-6 flex flex-col items-center text-center animate-scale-in">
         <div className="mb-3 grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-amber-400 to-crew shadow-soft">
           <Trophy className="h-10 w-10 text-white" />
@@ -29,7 +29,7 @@ export default function IQResults() {
         )}
       </div>
 
-      <div className="mb-6 flex-1 space-y-2 overflow-y-auto">
+      <div className="mb-6 space-y-2">
         {scoreboard.map((s, idx) => (
           <Panel key={s.user_id} className={`flex items-center gap-3 !p-3 ${idx === 0 ? 'border-amber-400' : ''}`}>
             <span className="w-6 text-center text-lg font-black text-muted">{idx + 1}</span>
