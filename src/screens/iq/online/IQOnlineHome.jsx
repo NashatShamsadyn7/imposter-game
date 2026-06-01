@@ -43,7 +43,7 @@ export default function IQOnlineHome({ onExit }) {
           {IQ_CATEGORIES.map((c) => (
             <button key={c.id} onClick={() => { sfx.tap(); setCatId(c.id) }}
               className={`btn-press flex items-center gap-2 rounded-xl border p-2.5 text-right text-sm transition ${catId === c.id ? 'border-crew bg-crew/10' : 'border-line bg-surface'}`}>
-              <span>{c.icon}</span><span className="font-bold text-ink">{c.name}</span>
+              <span>{c.icon}</span><span className="font-bold text-ink">{t(c.name)}</span>
             </button>
           ))}
         </div>

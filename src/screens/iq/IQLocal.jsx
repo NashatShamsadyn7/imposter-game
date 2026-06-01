@@ -111,7 +111,7 @@ export default function IQLocal({ onExit }) {
               className={`btn-press flex items-center gap-2 rounded-2xl border p-3 text-right transition ${catId === c.id ? 'border-crew bg-crew/10' : 'border-line bg-surface'}`}>
               <span className="text-xl">{c.icon}</span>
               <div className="flex-1 leading-tight">
-                <p className="text-sm font-bold text-ink">{c.name}</p>
+                <p className="text-sm font-bold text-ink">{t(c.name)}</p>
                 {best[c.id] != null && <p className="text-[11px] text-amber-500">{t('باشترین')}: {best[c.id]}%</p>}
               </div>
             </button>

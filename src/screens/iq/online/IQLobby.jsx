@@ -43,7 +43,7 @@ export default function IQLobby() {
 
       {/* ڕێکخستن */}
       <div className="mb-5 flex gap-3 text-center text-sm">
-        <Panel className="flex-1 !p-3"><p className="text-muted">{t('هاوپۆڵ')}</p><p className="font-black text-ink">{cat.icon} {cat.name}</p></Panel>
+        <Panel className="flex-1 !p-3"><p className="text-muted">{t('هاوپۆڵ')}</p><p className="font-black text-ink">{cat.icon} {t(cat.name)}</p></Panel>
         <Panel className="flex-1 !p-3"><p className="text-muted">{t('ژمارەی پرسیار')}</p><p className="font-black text-ink">{room.question_count}</p></Panel>
         <Panel className="flex-1 !p-3"><p className="text-muted">{t('چرکە')}</p><p className="font-black text-ink">{room.seconds_per_q}s</p></Panel>
       </div>
