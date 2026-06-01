@@ -92,8 +92,17 @@ create policy "iq_answers delete host" on public.iq_answers for delete using (
 );
 
 -- ═══════════════════════════════════════════════════════════
---  چالاککردنی Realtime
+--  چالاککردنی Realtime — بە شێوەی سەلامەت (دووبارە جێبەجێکردن خراپ ناکات)
 -- ═══════════════════════════════════════════════════════════
-alter publication supabase_realtime add table public.iq_rooms;
-alter publication supabase_realtime add table public.iq_players;
-alter publication supabase_realtime add table public.iq_answers;
+do $$
+declare t text;
+begin
+  foreach t in array array['iq_rooms', 'iq_players', 'iq_answers'] loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+end $$;
