@@ -169,7 +169,7 @@ export default function LocalLobby({ onExit }) {
           <div className="grid grid-cols-2 gap-2">
             {[
               { id: 'classic', label: t('کلاسیک'), desc: t('ساختەکار هیچ نازانێت') },
-              { id: 'undercover', label: t('متخفّی'), desc: t('ساختەکار وشەیەکی نزیک وەردەگرێت') },
+              { id: 'undercover', label: t('شاراوە'), desc: t('ساختەکار وشەیەکی نزیک وەردەگرێت') },
             ].map((m) => {
               const active = (settings.mode || 'classic') === m.id
               return (

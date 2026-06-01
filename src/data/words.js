@@ -1737,11 +1737,38 @@ export function pickRandomWord(category, avoidKu = null) {
   return list[Math.floor(Math.random() * list.length)]
 }
 
-// هەڵبژاردنی وشەیەکی نزیک (هاوپۆڵ) بۆ دۆخی «متخفّی» — جیاواز لە وشە نهێنیەکە
-// ساختەکار ئەم وشە نزیکە وەردەگرێت لە جیاتی هیچ، بۆیە دەتوانێت خۆی بشارێتەوە.
+// وشە ڕێزمانییە گشتییەکان کە ناتوانن ببنە بنەمای هاوبەشی نزیکی
+// (تۆکنە تایبەتمەندەکان وەک color/shape/sign بەئەنقەست دەهێڵدرێنەوە، چونکە
+//  دەبنە هۆی گونجاندنی ڕەنگ لەگەڵ ڕەنگ، شێوە لەگەڵ شێوە — کە مەبەستمانە.)
+const DECOY_STOPWORDS = new Set([
+  'a', 'an', 'the', 'of', 'and', 'or', 'with', 'no', 'in', 'on', 'for',
+])
+
+// تۆکنەکانی واتادار لە پڕۆمپتی ئینگلیزی
+function meaningfulTokens(en) {
+  return en
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 2 && !DECOY_STOPWORDS.has(t))
+}
+
+// هەڵبژاردنی وشەیەکی نزیک بۆ دۆخی «شاراوە» — جیاواز لە وشە نهێنیەکە
+// یەکەم: وشەیەک هەڵدەبژێرێت کە تۆکنی هاوبەشی هەبێت لەگەڵ وشە نهێنیدا (نزیکترین).
+// ئەگەر نەبوو: وشەیەکی هەڕەمەکیی هەمان هاوپۆڵ (هێشتا هاوتەمایە).
 export function pickDecoyWord(category, secretKu) {
   const pool = category.words.filter((w) => w.ku !== secretKu)
   if (!pool.length) return null
+  const secret = category.words.find((w) => w.ku === secretKu)
+  if (secret) {
+    const tokens = meaningfulTokens(secret.en)
+    if (tokens.length) {
+      const related = pool.filter((w) => {
+        const wt = meaningfulTokens(w.en)
+        return tokens.some((t) => wt.includes(t))
+      })
+      if (related.length) return related[Math.floor(Math.random() * related.length)]
+    }
+  }
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
