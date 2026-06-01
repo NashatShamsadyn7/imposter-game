@@ -164,16 +164,19 @@ export function IQRoomProvider({ children }) {
     return () => clearTimeout(t)
   }, [isHost, room, roomId])
 
-  // 3) لە کۆتایی: خاڵ زیاد بکە بۆ پرۆفایلی هەر یاریزانێک (تەنها خانەخوێ، یەک جار)
+  // 3) لە کۆتایی: XP زیاد بکە بۆ پرۆفایلی هەر یاریزانێک (تەنها خانەخوێ، یەک جار)
+  //    ٥ XP بۆ هەر وەڵامی ڕاست + ٣٠ بۆنوس بۆ براوە
   useEffect(() => {
     if (!isHost || !room || room.status !== 'results' || pointsSavedRef.current) return
     pointsSavedRef.current = true
     const top = scoreboard[0]
     scoreboard.forEach((s) => {
+      const correct = answers.filter((a) => a.user_id === s.user_id && a.is_correct).length
       const won = top && s.user_id === top.user_id && s.score > 0
-      if (s.score > 0) addPoints(s.user_id, Math.round(s.score / 10), won).catch(() => {})
+      const xp = correct * 5 + (won ? 30 : 0)
+      if (xp > 0) addPoints(s.user_id, xp, won).catch(() => {})
     })
-  }, [isHost, room?.status, scoreboard])
+  }, [isHost, room?.status, scoreboard, answers])
 
   // یاری دووبارە — گەڕانەوە بۆ لۆبی
   const playAgain = useCallback(async () => {

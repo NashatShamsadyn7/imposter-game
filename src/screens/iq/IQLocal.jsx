@@ -3,6 +3,8 @@ import { Brain, ArrowRight, Check, X, Trophy, RotateCcw, Clock, Bomb, User, Plus
 import { Button, Panel } from '../../components/ui'
 import { useLang } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
+import { useAuth } from '../../state/AuthContext'
+import { addPoints } from '../../lib/supabase'
 import { IQ_CATEGORIES, pickQuestions, localizeQuestion } from '../../data/iq'
 
 const BEST_KEY = 'iq:local:best:v1'
@@ -19,8 +21,18 @@ const makeId = () => Math.random().toString(36).slice(2, 9)
 
 export default function IQLocal({ onExit }) {
   const { t, lang } = useLang()
+  const { user, refreshProfile } = useAuth()
   const [mode, setMode] = useState('solo')   // solo | bomb
   const [phase, setPhase] = useState('setup') // setup | play | results | bomb | bombEnd
+  const [earnedXp, setEarnedXp] = useState(0)
+
+  // پاداشتی XP بۆ پرۆفایل (هەموو دۆخەکان) + نوێکردنەوە بۆ ئەنیمەیشنی ئاست
+  const awardXp = useCallback((xp, won) => {
+    setEarnedXp(xp)
+    if (user && xp > 0) {
+      addPoints(user.id, xp, won).then(() => setTimeout(() => refreshProfile?.(), 900)).catch(() => {})
+    }
+  }, [user, refreshProfile])
   const [catId, setCatId] = useState('mix')
   const [count, setCount] = useState(10)
   const [secondsPerQ, setSecondsPerQ] = useState(15)
@@ -91,6 +103,8 @@ export default function IQLocal({ onExit }) {
     if (pct > prev) {
       try { localStorage.setItem(BEST_KEY, JSON.stringify({ ...best, [catId]: pct })) } catch { /* */ }
     }
+    // پاداشتی XP: ٤ بۆ هەر وەڵامی ڕاست + ٢٠ بۆنوس ئەگەر ٨٠٪+
+    awardXp(finalScore * 4 + (pct >= 80 ? 20 : 0), pct >= 50)
     if (pct >= 50) sfx.win(); else sfx.lose()
     setPhase('results')
   }
@@ -151,6 +165,8 @@ export default function IQLocal({ onExit }) {
     if (remaining.length <= 1) {
       sfx.win()
       setBomb((b) => ({ ...b, winner: remaining[0] || null }))
+      // پاداشتی XP بۆ تەواوکردنی یاری بۆمب (بەپێی ژمارەی یاریزانان)
+      awardXp(15 + players.length * 4, true)
       setPhase('bombEnd')
     } else {
       startRound(remaining)
@@ -330,6 +346,9 @@ export default function IQLocal({ onExit }) {
           </div>
           <p className="text-sm text-muted">{t('پاڵەوان')}</p>
           <h1 className="mt-1 text-4xl font-black text-ink">{bomb.winner?.name || '—'}</h1>
+          {earnedXp > 0 && (
+            <p className="mt-3 rounded-full bg-amber-400/15 px-4 py-1 text-sm font-black text-amber-500">+{earnedXp} XP</p>
+          )}
           <div className="mt-8 flex gap-3">
             <Button variant="ghost" onClick={() => { sfx.tap(); onExit() }}>{t('مێنیو')}</Button>
             <Button variant="danger" onClick={resetAll}><RotateCcw className="h-4 w-4" />{t('دووبارە')}</Button>
@@ -350,6 +369,9 @@ export default function IQLocal({ onExit }) {
           </div>
           <h1 className="text-4xl font-black text-ink">{score} / {questions.length}</h1>
           <p className="mt-1 text-lg font-bold text-crew">{pct}%</p>
+          {earnedXp > 0 && (
+            <p className="mt-2 rounded-full bg-amber-400/15 px-4 py-1 text-sm font-black text-amber-500">+{earnedXp} XP</p>
+          )}
         </div>
         <div className="mb-6 space-y-2">
           {log.map((l, i) => (
