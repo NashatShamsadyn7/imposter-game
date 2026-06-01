@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Clock, Check, X, Trophy } from 'lucide-react'
+import { Clock, Check, X, Trophy, Bomb, Heart } from 'lucide-react'
 import { Panel } from '../../../components/ui'
 import Avatar from '../../../components/Avatar'
 import { useLang } from '../../../lib/i18n'
@@ -12,11 +12,50 @@ const LETTERS = ['أ', 'ب', 'ج', 'د']
 // شاشەی یاری IQ ئۆنلاین — پرسیار + تایمەر + ئاشکراکردن
 export default function IQPlay() {
   const { t, lang } = useLang()
-  const { room, myAnswer, answeredCount, players, scoreboard, submitAnswer } = useIQRoom()
+  const { room, myAnswer, answeredCount, players, scoreboard, submitAnswer,
+    isBomb, amHolder, holder, aliveCount, bombAnswer } = useIQRoom()
   const [timeLeft, setTimeLeft] = useState(0)
 
   const q = localizeQuestion(room?.questions?.[room.current_index], lang)
   const revealing = room?.status === 'reveal'
+
+  // ───── دۆخی بۆمب ─────
+  if (isBomb && q) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-6 pb-24">
+        <div className="mb-4 flex flex-col items-center">
+          <div className="mb-2 text-5xl animate-bounce">💣</div>
+          <p className="rounded-full bg-impostor/12 px-4 py-1 text-lg font-black text-impostor">
+            {t('نۆرەی')}: {holder?.display_name || '—'}
+          </p>
+          <p className="mt-1 flex items-center gap-1 text-xs text-muted">
+            <Heart className="h-3 w-3 fill-impostor text-impostor" />{aliveCount} {t('یاریزان ماون')}
+          </p>
+        </div>
+
+        <Panel className="mb-6 flex min-h-[110px] flex-col items-center justify-center gap-3 text-center">
+          {q.image && <img src={q.image} alt="" loading="lazy" className="h-24 w-auto max-w-[70%] object-contain" />}
+          <p className="text-xl font-black leading-relaxed text-ink">{q.q}</p>
+        </Panel>
+
+        {amHolder ? (
+          <div className="grid gap-3">
+            {q.choices.map((c, i) => (
+              <button key={i} disabled={!!myAnswer} onClick={() => { sfx.tap(); bombAnswer(i) }}
+                className="btn-press flex items-center gap-3 rounded-2xl border border-line bg-surface p-4 text-right font-bold text-ink transition hover:border-crew disabled:opacity-50">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/5 text-sm">{LETTERS[i]}</span>
+                <span className="flex-1">{c}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-2xl border border-line bg-surface py-6 text-center font-bold text-muted">
+            💣 {holder?.display_name} {t('بۆمبەکەی پێیە…')}
+          </p>
+        )}
+      </div>
+    )
+  }
 
   // تایمەری هاوکات لەسەر بنەمای question_started_at
   useEffect(() => {

@@ -44,8 +44,10 @@ export default function IQLobby() {
       {/* ڕێکخستن */}
       <div className="mb-5 flex gap-3 text-center text-sm">
         <Panel className="flex-1 !p-3"><p className="text-muted">{t('هاوپۆڵ')}</p><p className="font-black text-ink">{cat.icon} {t(cat.name)}</p></Panel>
-        <Panel className="flex-1 !p-3"><p className="text-muted">{t('ژمارەی پرسیار')}</p><p className="font-black text-ink">{room.question_count}</p></Panel>
-        <Panel className="flex-1 !p-3"><p className="text-muted">{t('چرکە')}</p><p className="font-black text-ink">{room.seconds_per_q}s</p></Panel>
+        <Panel className="flex-1 !p-3"><p className="text-muted">{t('دۆخی یاری')}</p><p className="font-black text-ink">{room.game_mode === 'bomb' ? `💣 ${t('بۆمبی گەردان')}` : `⚡ ${t('خێرایی')}`}</p></Panel>
+        {room.game_mode === 'bomb'
+          ? <Panel className="flex-1 !p-3"><p className="text-muted">{t('یاریزانان')}</p><p className="font-black text-ink">{players.length}</p></Panel>
+          : <Panel className="flex-1 !p-3"><p className="text-muted">{t('ژمارەی پرسیار')}</p><p className="font-black text-ink">{room.question_count}</p></Panel>}
       </div>
 
       {/* یاریزانان */}

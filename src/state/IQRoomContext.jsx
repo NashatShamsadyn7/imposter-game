@@ -8,7 +8,7 @@ import { useAuth } from './AuthContext'
 import { pickQuestions } from '../data/iq'
 import {
   iqCreateRoom, iqJoinRoom, iqLeaveRoom, iqUpdateRoom,
-  iqFetchRoom, iqFetchPlayers, iqFetchAnswers, iqSubmitAnswer,
+  iqFetchRoom, iqFetchPlayers, iqFetchAnswers, iqSubmitAnswer, iqUpdatePlayer,
   subscribeIQRoom, recordResult, supabase,
 } from '../lib/supabase'
 
@@ -17,12 +17,22 @@ export const useIQRoom = () => useContext(IQRoomContext)
 
 const LS = 'iq:roomId'
 const REVEAL_MS = 4000 // ماوەی پیشاندانی وەڵامی ڕاست
+const BOMB_POOL = 80   // ژمارەی پرسیارەکانی دۆخی بۆمب
+const fuseMs = () => (18 + Math.random() * 22) * 1000 // ١٨–٤٠ چرکەی شاراوە
 
 // خاڵی هەر پرسیار: وەڵامی ڕاست + پاداشتی خێرایی
 function scoreFor(isCorrect, ms, secondsPerQ) {
   if (!isCorrect) return 0
   const frac = Math.min(1, ms / (secondsPerQ * 1000))
   return Math.max(100, Math.round(1000 - frac * 600))
+}
+
+// یاریزانی زیندووی دواتر دوای holderId (بازنەیی)
+function nextAlive(players, holderId) {
+  const alive = players.filter((p) => (p.lives ?? 0) > 0)
+  if (alive.length === 0) return null
+  const idx = alive.findIndex((p) => p.user_id === holderId)
+  return alive[(idx + 1) % alive.length] || alive[0]
 }
 
 export function IQRoomProvider({ children }) {
@@ -85,16 +95,50 @@ export function IQRoomProvider({ children }) {
     localStorage.removeItem(LS); setRoomId(null); setRoom(null); setPlayers([]); setAnswers([])
   }, [roomId, user])
 
+  const isBomb = room?.game_mode === 'bomb'
+
   // خانەخوێ: دەستپێکردنی یاری
   const startGame = useCallback(async () => {
     if (!isHost) return
-    const qs = pickQuestions(room.category_id, room.question_count)
     pointsSavedRef.current = false
-    await iqUpdateRoom(roomId, {
-      questions: qs, status: 'playing', current_index: 0,
-      question_started_at: new Date().toISOString(),
+    if (room.game_mode === 'bomb') {
+      // ژیانەکان ڕێکبخەرەوە (١ بۆ هەمووان)
+      await Promise.all(players.map((p) => iqUpdatePlayer(roomId, p.user_id, { lives: 1 })))
+      const first = players[0]
+      await iqUpdateRoom(roomId, {
+        questions: pickQuestions(room.category_id, BOMB_POOL),
+        status: 'playing', current_index: 0,
+        holder_id: first?.user_id || null,
+        bomb_ends_at: new Date(Date.now() + fuseMs()).toISOString(),
+      })
+    } else {
+      await iqUpdateRoom(roomId, {
+        questions: pickQuestions(room.category_id, room.question_count),
+        status: 'playing', current_index: 0,
+        question_started_at: new Date().toISOString(),
+      })
+    }
+  }, [isHost, room, roomId, players])
+
+  // ───── بۆمب: قیمەتە دەرهێنراوەکان ─────
+  const amHolder = isBomb && room?.holder_id === user?.id
+  const holder = useMemo(
+    () => players.find((p) => p.user_id === room?.holder_id) || null,
+    [players, room?.holder_id]
+  )
+  const aliveCount = useMemo(() => players.filter((p) => (p.lives ?? 0) > 0).length, [players])
+
+  // بۆمب: ناردنی وەڵامی نۆرەدار (خانەخوێ پاشان پێشکەوتنی دەکات)
+  const bombAnswer = useCallback(async (choiceIdx) => {
+    if (!room || !user || !amHolder || room.status !== 'playing') return
+    const q = room.questions?.[room.current_index]
+    if (!q) return
+    await iqSubmitAnswer({
+      room_id: roomId, q_index: room.current_index, user_id: user.id,
+      display_name: profile.display_name, avatar_url: profile.avatar_url,
+      choice: choiceIdx ?? -1, is_correct: choiceIdx === q.correct, ms: 0, points: 0,
     })
-  }, [isHost, room, roomId])
+  }, [room, user, profile, roomId, amHolder])
 
   // یاریزان: ناردنی وەڵام
   const submitAnswer = useCallback(async (choiceIdx) => {
@@ -135,9 +179,10 @@ export function IQRoomProvider({ children }) {
     return Object.values(totals).sort((x, y) => y.score - x.score)
   }, [players, answers])
 
-  // ───── خانەخوێ: بەڕێوەبردنی خۆکاری پێشکەوتن ─────
+  // ───── خانەخوێ: بەڕێوەبردنی خۆکاری پێشکەوتن (دۆخی خێرایی) ─────
   // 1) لە دۆخی playing: کاتێک کات تەواو بوو یان هەمووان وەڵامیان دا → reveal
   useEffect(() => {
+    if (isBomb) return
     if (!isHost || !room || room.status !== 'playing' || !room.question_started_at) return
     const started = new Date(room.question_started_at).getTime()
     const endsAt = started + room.seconds_per_q * 1000
@@ -152,6 +197,7 @@ export function IQRoomProvider({ children }) {
 
   // 2) لە دۆخی reveal: دوای ماوەیەک → پرسیاری دواتر یان ئەنجام
   useEffect(() => {
+    if (isBomb) return
     if (!isHost || !room || room.status !== 'reveal') return
     const t = setTimeout(() => {
       const next = room.current_index + 1
@@ -164,32 +210,89 @@ export function IQRoomProvider({ children }) {
     return () => clearTimeout(t)
   }, [isHost, room, roomId])
 
+  // ───── بۆمب (خانەخوێ): پرۆسێسکردنی وەڵامی نۆرەدار ─────
+  const bombProcRef = useRef(null)
+  useEffect(() => {
+    if (!isBomb || !isHost || !room || room.status !== 'playing') return
+    const ans = answers.find((a) => a.q_index === room.current_index && a.user_id === room.holder_id)
+    if (!ans) return
+    const key = `${room.current_index}:${room.holder_id}`
+    if (bombProcRef.current === key) return
+    bombProcRef.current = key
+    const nextIdx = (room.current_index + 1) % (room.questions?.length || 1)
+    if (ans.is_correct) {
+      // ڕاست بوو → بیگوازەرەوە بۆ یاریزانی زیندووی دواتر (بۆمب بەردەوامە)
+      const nh = nextAlive(players, room.holder_id)
+      iqUpdateRoom(roomId, { current_index: nextIdx, holder_id: nh?.user_id || room.holder_id })
+    } else {
+      // هەڵە بوو → پرسیاری نوێ بۆ هەمان کەس
+      iqUpdateRoom(roomId, { current_index: nextIdx })
+    }
+  }, [isBomb, isHost, room, roomId, answers, players])
+
+  // ───── بۆمب (خانەخوێ): تەقینەوە کاتێک کات تەواو دەبێت ─────
+  useEffect(() => {
+    if (!isBomb || !isHost || !room || room.status !== 'playing' || !room.bomb_ends_at) return
+    const ms = Math.max(0, new Date(room.bomb_ends_at).getTime() - Date.now())
+    const t = setTimeout(async () => {
+      const loser = players.find((p) => p.user_id === room.holder_id)
+      if (!loser) return
+      await iqUpdatePlayer(roomId, loser.user_id, { lives: 0 })
+      const remaining = players.filter((p) => (p.lives ?? 0) > 0 && p.user_id !== loser.user_id)
+      if (remaining.length <= 1) {
+        await iqUpdateRoom(roomId, { status: 'results' })
+      } else {
+        const nh = nextAlive(remaining, loser.user_id) || remaining[0]
+        await iqUpdateRoom(roomId, {
+          holder_id: nh.user_id,
+          current_index: (room.current_index + 1) % (room.questions?.length || 1),
+          bomb_ends_at: new Date(Date.now() + fuseMs()).toISOString(),
+        })
+      }
+    }, ms + 150)
+    return () => clearTimeout(t)
+  }, [isBomb, isHost, room, roomId, players])
+
   // 3) لە کۆتایی: XP زیاد بکە بۆ پرۆفایلی هەر یاریزانێک (تەنها خانەخوێ، یەک جار)
-  //    ٥ XP بۆ هەر وەڵامی ڕاست + ٣٠ بۆنوس بۆ براوە
   useEffect(() => {
     if (!isHost || !room || room.status !== 'results' || pointsSavedRef.current) return
     pointsSavedRef.current = true
-    const top = scoreboard[0]
-    scoreboard.forEach((s) => {
-      const correct = answers.filter((a) => a.user_id === s.user_id && a.is_correct).length
-      const won = top && s.user_id === top.user_id && s.score > 0
-      const xp = correct * 5 + (won ? 30 : 0)
-      if (xp > 0) recordResult(s.user_id, xp, won, 'iq', room.category_id, null).catch(() => {})
-    })
-  }, [isHost, room?.status, scoreboard, answers])
+    if (room.game_mode === 'bomb') {
+      // بۆمب: پاڵەوان +٤٠، ئەوانی تر +١٠ بەشداری
+      const survivor = players.find((p) => (p.lives ?? 0) > 0)
+      players.forEach((p) => {
+        const won = survivor && p.user_id === survivor.user_id
+        recordResult(p.user_id, won ? 40 : 10, !!won, 'iq', room.category_id, null).catch(() => {})
+      })
+    } else {
+      const top = scoreboard[0]
+      scoreboard.forEach((s) => {
+        const correct = answers.filter((a) => a.user_id === s.user_id && a.is_correct).length
+        const won = top && s.user_id === top.user_id && s.score > 0
+        const xp = correct * 5 + (won ? 30 : 0)
+        if (xp > 0) recordResult(s.user_id, xp, won, 'iq', room.category_id, null).catch(() => {})
+      })
+    }
+  }, [isHost, room?.status, scoreboard, answers, players])
 
   // یاری دووبارە — گەڕانەوە بۆ لۆبی
   const playAgain = useCallback(async () => {
     if (!isHost) return
     if (roomId) await supabase.from('iq_answers').delete().eq('room_id', roomId)
     pointsSavedRef.current = false
-    await iqUpdateRoom(roomId, { status: 'lobby', current_index: 0, questions: null, question_started_at: null })
-  }, [isHost, roomId])
+    bombProcRef.current = null
+    await Promise.all(players.map((p) => iqUpdatePlayer(roomId, p.user_id, { lives: 1 })))
+    await iqUpdateRoom(roomId, {
+      status: 'lobby', current_index: 0, questions: null,
+      question_started_at: null, holder_id: null, bomb_ends_at: null,
+    })
+  }, [isHost, roomId, players])
 
   const value = {
     roomId, room, players, answers, error, busy,
     isHost, myAnswer, answeredCount, scoreboard,
-    createRoom, joinRoom, leaveRoom, startGame, submitAnswer, playAgain,
+    isBomb, amHolder, holder, aliveCount,
+    createRoom, joinRoom, leaveRoom, startGame, submitAnswer, bombAnswer, playAgain,
   }
   return <IQRoomContext.Provider value={value}>{children}</IQRoomContext.Provider>
 }

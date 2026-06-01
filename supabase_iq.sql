@@ -26,9 +26,16 @@ create table if not exists public.iq_players (
   display_name text,
   avatar_url text,
   is_host boolean default false,
+  lives int default 1,            -- دۆخی بۆمب: ژیان (٠ = دەرچوو)
   joined_at timestamptz default now(),
   unique (room_id, user_id)
 );
+
+-- ───── ستوونە نوێیەکانی دۆخی بۆمب (ئەگەر خشتەکان پێشتر دروستکرابوون) ─────
+alter table public.iq_rooms   add column if not exists game_mode text default 'speed'; -- speed | bomb
+alter table public.iq_rooms   add column if not exists holder_id uuid;                 -- بۆمب: نۆرەی ئێستا
+alter table public.iq_rooms   add column if not exists bomb_ends_at timestamptz;       -- بۆمب: کاتی تەقینەوەی شاراوە
+alter table public.iq_players add column if not exists lives int default 1;
 
 -- ───── وەڵامەکان (هەر پرسیار، هەر یاریزان جارێک) ─────
 create table if not exists public.iq_answers (

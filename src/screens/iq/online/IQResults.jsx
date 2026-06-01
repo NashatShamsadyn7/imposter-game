@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Trophy, Crown, RotateCcw, LogOut } from 'lucide-react'
+import { Trophy, Crown, RotateCcw, LogOut, Heart } from 'lucide-react'
 import { Button, Panel } from '../../../components/ui'
 import Avatar from '../../../components/Avatar'
 import { useT } from '../../../lib/i18n'
@@ -11,7 +11,7 @@ import { useIQRoom } from '../../../state/IQRoomContext'
 export default function IQResults() {
   const t = useT()
   const { user, refreshProfile } = useAuth()
-  const { scoreboard, answers, isHost, playAgain, leaveRoom } = useIQRoom()
+  const { scoreboard, answers, players, isBomb, isHost, playAgain, leaveRoom } = useIQRoom()
 
   useEffect(() => { sfx.win() }, [])
 
@@ -22,11 +22,12 @@ export default function IQResults() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const winner = scoreboard[0]
-  // XP ـی خۆم بۆ پیشاندان (٥ بۆ هەر وەڵامی ڕاست + ٣٠ بۆ براوە)
+  // بۆمب: براوە = ئەوەی زیندوو ماوە؛ خێرایی = سەرەی پێشەنگ
+  const bombWinner = isBomb ? players.find((p) => (p.lives ?? 0) > 0) : null
+  const winner = isBomb ? bombWinner : scoreboard[0]
   const myCorrect = answers.filter((a) => a.user_id === user?.id && a.is_correct).length
-  const iWon = winner && winner.user_id === user?.id && winner.score > 0
-  const myXp = myCorrect * 5 + (iWon ? 30 : 0)
+  const iWon = winner && winner.user_id === user?.id
+  const myXp = isBomb ? (iWon ? 40 : 10) : myCorrect * 5 + (iWon && scoreboard[0]?.score > 0 ? 30 : 0)
 
   return (
     <div className="mx-auto max-w-md px-4 py-6 pb-24">
@@ -46,14 +47,26 @@ export default function IQResults() {
       </div>
 
       <div className="mb-6 space-y-2">
-        {scoreboard.map((s, idx) => (
-          <Panel key={s.user_id} className={`flex items-center gap-3 !p-3 ${idx === 0 ? 'border-amber-400' : ''}`}>
-            <span className="w-6 text-center text-lg font-black text-muted">{idx + 1}</span>
-            <Avatar url={s.avatar_url} name={s.display_name} size={40} />
-            <span className="flex-1 font-bold text-ink">{s.display_name}</span>
-            <span className="flex items-center gap-1 font-black text-crew"><Trophy className="h-4 w-4" />{s.score}</span>
-          </Panel>
-        ))}
+        {isBomb ? (
+          players.map((p) => (
+            <Panel key={p.user_id} className={`flex items-center gap-3 !p-3 ${(p.lives ?? 0) > 0 ? 'border-amber-400' : 'opacity-60'}`}>
+              <Avatar url={p.avatar_url} name={p.display_name} size={40} />
+              <span className="flex-1 font-bold text-ink">{p.display_name}</span>
+              {(p.lives ?? 0) > 0
+                ? <span className="flex items-center gap-1 font-black text-crew"><Crown className="h-4 w-4" />{t('پاڵەوان')}</span>
+                : <span className="flex items-center gap-1 text-sm text-muted">💥 {t('دەرچوو')}</span>}
+            </Panel>
+          ))
+        ) : (
+          scoreboard.map((s, idx) => (
+            <Panel key={s.user_id} className={`flex items-center gap-3 !p-3 ${idx === 0 ? 'border-amber-400' : ''}`}>
+              <span className="w-6 text-center text-lg font-black text-muted">{idx + 1}</span>
+              <Avatar url={s.avatar_url} name={s.display_name} size={40} />
+              <span className="flex-1 font-bold text-ink">{s.display_name}</span>
+              <span className="flex items-center gap-1 font-black text-crew"><Trophy className="h-4 w-4" />{s.score}</span>
+            </Panel>
+          ))
+        )}
       </div>
 
       <div className="flex gap-3">

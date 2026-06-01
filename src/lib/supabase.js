@@ -433,6 +433,7 @@ export async function iqCreateRoom(user, profile, settings) {
         category_id: settings?.categoryId || 'mix',
         question_count: settings?.questionCount || 10,
         seconds_per_q: settings?.secondsPerQ || 15,
+        game_mode: settings?.gameMode || 'speed',
         current_index: 0,
       })
       .select()
@@ -499,6 +500,11 @@ export async function iqFetchAnswers(roomId) {
   need()
   const { data } = await supabase.from('iq_answers').select('*').eq('room_id', roomId)
   return data || []
+}
+
+export async function iqUpdatePlayer(roomId, userId, patch) {
+  need()
+  await supabase.from('iq_players').update(patch).eq('room_id', roomId).eq('user_id', userId)
 }
 
 export async function iqSubmitAnswer(row) {

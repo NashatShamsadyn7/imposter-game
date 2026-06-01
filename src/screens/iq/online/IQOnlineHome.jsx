@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Brain, ArrowRight, Plus, LogIn } from 'lucide-react'
+import { Brain, ArrowRight, Plus, LogIn, Zap, Bomb } from 'lucide-react'
 import { Button, Panel } from '../../../components/ui'
 import { useT } from '../../../lib/i18n'
 import { sfx } from '../../../lib/sound'
@@ -16,6 +16,7 @@ export default function IQOnlineHome({ onExit }) {
   const [catId, setCatId] = useState('mix')
   const [count, setCount] = useState(10)
   const [secondsPerQ, setSecondsPerQ] = useState(15)
+  const [gameMode, setGameMode] = useState('speed') // speed | bomb
   const [code, setCode] = useState('')
 
   return (
@@ -38,6 +39,18 @@ export default function IQOnlineHome({ onExit }) {
       <Panel className="mb-5">
         <p className="mb-3 font-bold text-ink">{t('دروستکردنی ژووری نوێ')}</p>
 
+        <p className="mb-2 text-xs font-bold text-muted">{t('دۆخی یاری')}</p>
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <button onClick={() => { sfx.tap(); setGameMode('speed') }}
+            className={`btn-press flex items-center gap-2 rounded-xl border p-2.5 text-right transition ${gameMode === 'speed' ? 'border-crew bg-crew/10' : 'border-line bg-surface'}`}>
+            <Zap className="h-5 w-5 text-crew" /><span className="text-sm font-bold text-ink">{t('خێرایی')}</span>
+          </button>
+          <button onClick={() => { sfx.tap(); setGameMode('bomb') }}
+            className={`btn-press flex items-center gap-2 rounded-xl border p-2.5 text-right transition ${gameMode === 'bomb' ? 'border-impostor bg-impostor/10' : 'border-line bg-surface'}`}>
+            <Bomb className="h-5 w-5 text-impostor" /><span className="text-sm font-bold text-ink">{t('بۆمبی گەردان')}</span>
+          </button>
+        </div>
+
         <p className="mb-2 text-xs font-bold text-muted">{t('هاوپۆڵ')}</p>
         <div className="mb-4 grid grid-cols-2 gap-2">
           {IQ_CATEGORIES.map((c) => (
@@ -48,23 +61,30 @@ export default function IQOnlineHome({ onExit }) {
           ))}
         </div>
 
-        <p className="mb-2 text-xs font-bold text-muted">{t('ژمارەی پرسیار')}</p>
-        <div className="mb-4 flex gap-2">
-          {COUNT_OPTIONS.map((n) => (
-            <button key={n} onClick={() => { sfx.tap(); setCount(n) }}
-              className={`btn-press flex-1 rounded-xl border py-2 font-bold transition ${count === n ? 'border-crew bg-crew/10 text-crew' : 'border-line bg-surface text-ink'}`}>{n}</button>
-          ))}
-        </div>
+        {gameMode === 'speed' ? (
+          <>
+            <p className="mb-2 text-xs font-bold text-muted">{t('ژمارەی پرسیار')}</p>
+            <div className="mb-4 flex gap-2">
+              {COUNT_OPTIONS.map((n) => (
+                <button key={n} onClick={() => { sfx.tap(); setCount(n) }}
+                  className={`btn-press flex-1 rounded-xl border py-2 font-bold transition ${count === n ? 'border-crew bg-crew/10 text-crew' : 'border-line bg-surface text-ink'}`}>{n}</button>
+              ))}
+            </div>
+            <p className="mb-2 text-xs font-bold text-muted">{t('چرکە بۆ هەر پرسیار')}</p>
+            <div className="mb-4 flex gap-2">
+              {TIME_OPTIONS.map((s) => (
+                <button key={s} onClick={() => { sfx.tap(); setSecondsPerQ(s) }}
+                  className={`btn-press flex-1 rounded-xl border py-2 font-bold transition ${secondsPerQ === s ? 'border-crew bg-crew/10 text-crew' : 'border-line bg-surface text-ink'}`}>{s}s</button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="mb-4 rounded-xl bg-impostor/8 p-3 text-center text-xs leading-relaxed text-muted">
+            💣 {t('وەڵامی ڕاست بدە بۆ گواستنەوەی بۆمب. ئەوەی کاتی تەقینەوە لای ئەوە بێت، دەردەچێت!')}
+          </div>
+        )}
 
-        <p className="mb-2 text-xs font-bold text-muted">{t('چرکە بۆ هەر پرسیار')}</p>
-        <div className="mb-4 flex gap-2">
-          {TIME_OPTIONS.map((s) => (
-            <button key={s} onClick={() => { sfx.tap(); setSecondsPerQ(s) }}
-              className={`btn-press flex-1 rounded-xl border py-2 font-bold transition ${secondsPerQ === s ? 'border-crew bg-crew/10 text-crew' : 'border-line bg-surface text-ink'}`}>{s}s</button>
-          ))}
-        </div>
-
-        <Button disabled={busy} onClick={() => createRoom({ categoryId: catId, questionCount: count, secondsPerQ })} className="w-full">
+        <Button disabled={busy} onClick={() => createRoom({ categoryId: catId, questionCount: count, secondsPerQ, gameMode })} className="w-full">
           <Plus className="h-4 w-4" />{t('دروستکردن')}
         </Button>
       </Panel>
