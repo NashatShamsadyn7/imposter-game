@@ -144,3 +144,34 @@ input[type='number']::-webkit-outer-spin-button {
     transform: translateY(110vh) rotate(720deg);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   ئەنیمەیشنی جوانکاری (دوکان) — مظاهر متحرّكة
+   cos-shimmer: تدفّق التدرّج · cos-pulse: توهّج نابض · cos-spin: دوران
+   ═══════════════════════════════════════════════════════════ */
+
+/* تدفّق التدرّج (شایان بۆ ring و bg-clip-text) */
+@keyframes cos-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.cos-shimmer {
+  background-size: 200% 200% !important;
+  animation: cos-shimmer 3s linear infinite;
+}
+
+/* توهّج نابض */
+@keyframes cos-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.4) saturate(1.2); }
+}
+.cos-pulse { animation: cos-pulse 1.7s ease-in-out infinite; }
+
+/* دوران چوارچێوە (وێنە بەرەو سەرەوە دەمێنێتەوە بە cos-spin-rev) */
+@keyframes cos-spin { to { transform: rotate(360deg); } }
+.cos-spin { animation: cos-spin 7s linear infinite; }
+.cos-spin-rev { animation: cos-spin 7s linear infinite reverse; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cos-shimmer, .cos-pulse, .cos-spin, .cos-spin-rev { animation: none; }
+}

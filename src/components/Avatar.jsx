@@ -27,12 +27,15 @@ export default function Avatar({ url, name, size = 40, ring = false, ringColor =
   const frame = cosmeticFrame || (level != null ? levelFrame(level) : null)
   if (frame) {
     const pad = Math.max(2, Math.round(size * 0.07))
+    const anim = frame.anim || ''
+    const spins = anim.includes('cos-spin')
     return (
       <div
-        className={`shrink-0 rounded-full bg-gradient-to-br ${frame.ring} ${frame.glow}`}
+        className={`shrink-0 rounded-full bg-gradient-to-br ${frame.ring} ${frame.glow} ${anim}`}
         style={{ width: size + pad * 2, height: size + pad * 2, padding: pad }}
       >
-        <div style={{ width: size, height: size }}>{inner}</div>
+        {/* وێنە بەرەو سەرەوە دەمێنێتەوە کاتێک چوارچێوەکە دەسوڕێتەوە */}
+        <div className={spins ? 'cos-spin-rev' : ''} style={{ width: size, height: size }}>{inner}</div>
       </div>
     )
   }

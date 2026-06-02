@@ -27,9 +27,10 @@ const TABS = [
 // نموونەی بچووکی هەر شتومەکێک بەپێی جۆر
 function Swatch({ item }) {
   if (item.type === 'frame') {
+    const spins = (item.anim || '').includes('cos-spin')
     return (
-      <div className={`grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br ${item.ring} ${item.glow}`}>
-        <div className="h-8 w-8 rounded-full bg-surface" />
+      <div className={`grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br ${item.ring} ${item.glow} ${item.anim || ''}`}>
+        <div className={`h-8 w-8 rounded-full bg-surface ${spins ? 'cos-spin-rev' : ''}`} />
       </div>
     )
   }
