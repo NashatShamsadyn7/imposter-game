@@ -12,8 +12,17 @@ export default function LocalReveal() {
   const { game, nextReveal } = useLocal()
   const t = useT()
   const [flipped, setFlipped] = useState(false)
+  const [shownIndex, setShownIndex] = useState(game.revealIndex)
   const [countdown, setCountdown] = useState(REVEAL_SECONDS)
   const timerRef = useRef(null)
+
+  // ڕێکخستنی دۆخ کاتێک یاریزان دەگۆڕێت — هاوکات لەگەڵ ڕێندەرکردن، نەک لە useEffect.
+  // بەمە پەردەی ڕۆڵ (سووری ساختەکار) بۆ ساتێکیش دەرناکەوێت پێش ناوی یاریزانی دواتر،
+  // چونکە React پێش پیشاندان دۆخەکە ڕێسێت دەکاتەوە.
+  if (shownIndex !== game.revealIndex) {
+    setShownIndex(game.revealIndex)
+    setFlipped(false)
+  }
 
   // دەنگی دەستپێکردنی یاری — یەک جار لە سەرەتای یاری
   useEffect(() => {
@@ -25,10 +34,6 @@ export default function LocalReveal() {
   const isUndercover = !!game.decoyWord
   const isLast = game.revealIndex === game.players.length - 1
   const allies = game.players.filter((p) => p.role === 'impostor' && p.id !== player.id)
-
-  useEffect(() => {
-    setFlipped(false)
-  }, [game.revealIndex])
 
   // شاردنەوەی خۆکار بۆ دەستەی کەشتی
   useEffect(() => {
