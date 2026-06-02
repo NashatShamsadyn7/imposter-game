@@ -9,6 +9,7 @@ import { useAuth } from '../state/AuthContext'
 import { useEconomy } from '../state/EconomyContext'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
+import FrameFx from '../components/FrameFx'
 import { levelInfo } from '../lib/achievements'
 import {
   FRAMES, NAME_COLORS, TITLES, CHEST_SKINS,
@@ -29,8 +30,11 @@ function Swatch({ item }) {
   if (item.type === 'frame') {
     const spins = (item.anim || '').includes('cos-spin')
     return (
-      <div className={`grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br ${item.ring} ${item.glow} ${item.anim || ''}`}>
-        <div className={`h-8 w-8 rounded-full bg-surface ${spins ? 'cos-spin-rev' : ''}`} />
+      <div className="relative h-12 w-12">
+        <div className={`grid h-full w-full place-items-center rounded-full bg-gradient-to-br ${item.ring} ${item.glow} ${item.anim || ''}`}>
+          <div className={`h-8 w-8 rounded-full bg-surface ${spins ? 'cos-spin-rev' : ''}`} />
+        </div>
+        {item.fx && <FrameFx fx={item.fx} size={48} />}
       </div>
     )
   }

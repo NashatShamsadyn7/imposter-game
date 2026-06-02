@@ -1,4 +1,5 @@
 import { levelFrame } from '../lib/achievements'
+import FrameFx from './FrameFx'
 
 // ئەڤاتاری یاریزان — وێنەی پرۆفایل یان یەکەم پیتی ناو
 // ئەگەر level بدرێت و ئاستەکە بەرز بێت، چوارچێوەیەکی ڕەنگاوڕەنگ پیشان دەدرێت.
@@ -29,13 +30,18 @@ export default function Avatar({ url, name, size = 40, ring = false, ringColor =
     const pad = Math.max(2, Math.round(size * 0.07))
     const anim = frame.anim || ''
     const spins = anim.includes('cos-spin')
+    const total = size + pad * 2
     return (
-      <div
-        className={`shrink-0 rounded-full bg-gradient-to-br ${frame.ring} ${frame.glow} ${anim}`}
-        style={{ width: size + pad * 2, height: size + pad * 2, padding: pad }}
-      >
-        {/* وێنە بەرەو سەرەوە دەمێنێتەوە کاتێک چوارچێوەکە دەسوڕێتەوە */}
-        <div className={spins ? 'cos-spin-rev' : ''} style={{ width: size, height: size }}>{inner}</div>
+      <div className="relative shrink-0" style={{ width: total, height: total }}>
+        <div
+          className={`h-full w-full rounded-full bg-gradient-to-br ${frame.ring} ${frame.glow} ${anim}`}
+          style={{ padding: pad }}
+        >
+          {/* وێنە بەرەو سەرەوە دەمێنێتەوە کاتێک چوارچێوەکە دەسوڕێتەوە */}
+          <div className={spins ? 'cos-spin-rev' : ''} style={{ width: size, height: size }}>{inner}</div>
+        </div>
+        {/* کاریگەری بزواو (نار/ثلج/...) — سەرووی چوارچێوە، بەبێ سووڕانەوە */}
+        {frame.fx && <FrameFx fx={frame.fx} size={total} />}
       </div>
     )
   }
