@@ -4,6 +4,7 @@ import { useLocal } from '../../state/LocalContext'
 import { Button, Panel } from '../../components/ui'
 import WordImage from '../../components/WordImage'
 import Confetti from '../../components/Confetti'
+import MysteryReward from '../../components/MysteryReward'
 import { useT } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
 
@@ -31,6 +32,9 @@ export default function LocalResults() {
           {impostorWin ? t('ساختەکارەکان سەرکەوتن!') : t('دەستەی کەشتی سەرکەوتن!')}
         </h1>
       </div>
+
+      {/* سندووقی خەڵات — بینراو (لە دۆخی ناوخۆیی هەژمار نییە) */}
+      <MysteryReward streak={0} />
 
       <Panel className="mb-5 text-center">
         <p className="mb-1 text-xs text-muted">{t('وشەی نهێنی')} ({game.category.name})</p>

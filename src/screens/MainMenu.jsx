@@ -1,4 +1,4 @@
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare } from 'lucide-react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare, Crown } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import { Panel } from '../components/ui'
@@ -9,7 +9,7 @@ import { useT } from '../lib/i18n'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // مێنیوی سەرەکی دوای چوونەژوورەوە
-export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements, onProfile, onFriends, onGroups }) {
+export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements, onLeaderboard, onProfile, onFriends, onGroups }) {
   const { profile, signOut } = useAuth()
   const { totalUnread, incoming } = useFriends()
   const { level } = levelInfo(profile?.total_points)
@@ -64,6 +64,13 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
             title={t('گرووپەکان')}
           >
             <MessagesSquare className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => go(onLeaderboard)}
+            className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-amber-500 shadow-card hover:brightness-110"
+            title={t('لیدەربۆرد')}
+          >
+            <Crown className="h-5 w-5" />
           </button>
           <button
             onClick={() => go(onAchievements)}
