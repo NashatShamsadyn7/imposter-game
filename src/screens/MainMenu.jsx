@@ -1,4 +1,4 @@
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare, Brain } from 'lucide-react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import { Panel } from '../components/ui'
@@ -9,7 +9,7 @@ import { useT } from '../lib/i18n'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // مێنیوی سەرەکی دوای چوونەژوورەوە
-export default function MainMenu({ onOnline, onLocal, onIQ, onSettings, onAchievements, onProfile, onFriends, onGroups }) {
+export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements, onProfile, onFriends, onGroups }) {
   const { profile, signOut } = useAuth()
   const { totalUnread, incoming } = useFriends()
   const { level } = levelInfo(profile?.total_points)
@@ -118,20 +118,6 @@ export default function MainMenu({ onOnline, onLocal, onIQ, onSettings, onAchiev
             <div className="flex-1">
               <p className="text-lg font-black text-ink">{t('یاریکردنی ناوخۆیی')}</p>
               <p className="text-sm text-muted">{t('یەک ئامێر — Pass and Play')}</p>
-            </div>
-            <ChevronLeft className="h-5 w-5 text-muted" />
-          </Panel>
-        </button>
-
-        {/* یاری IQ */}
-        <button onClick={() => go(onIQ)} className="btn-press block w-full text-right">
-          <Panel className="flex items-center gap-4 !p-4 transition hover:border-amber-400">
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-amber-400/15 text-amber-500">
-              <Brain className="h-7 w-7" />
-            </div>
-            <div className="flex-1">
-              <p className="text-lg font-black text-ink">{t('یاری IQ')}</p>
-              <p className="text-sm text-muted">{t('تاقیکردنەوەی زیرەکی — ئۆنلاین و ناوخۆیی')}</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
           </Panel>

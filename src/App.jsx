@@ -5,7 +5,6 @@ import { RoomProvider, useRoom } from './state/RoomContext'
 import { VoiceProvider } from './state/VoiceContext'
 import { ProfileViewerProvider } from './state/ProfileViewer'
 import { LocalProvider, useLocal } from './state/LocalContext'
-import { IQRoomProvider, useIQRoom } from './state/IQRoomContext'
 import { FriendsProvider } from './state/FriendsContext'
 import { NotificationProvider } from './state/NotificationContext'
 import { LanguageProvider } from './lib/i18n'
@@ -32,12 +31,6 @@ const LocalReveal = lazy(() => import('./screens/local/LocalReveal'))
 const LocalDiscussion = lazy(() => import('./screens/local/LocalDiscussion'))
 const LocalVoting = lazy(() => import('./screens/local/LocalVoting'))
 const LocalResults = lazy(() => import('./screens/local/LocalResults'))
-const IQModeSelect = lazy(() => import('./screens/iq/IQModeSelect'))
-const IQLocal = lazy(() => import('./screens/iq/IQLocal'))
-const IQOnlineHome = lazy(() => import('./screens/iq/online/IQOnlineHome'))
-const IQLobby = lazy(() => import('./screens/iq/online/IQLobby'))
-const IQPlay = lazy(() => import('./screens/iq/online/IQPlay'))
-const IQResults = lazy(() => import('./screens/iq/online/IQResults'))
 import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled } from './lib/sound'
 
 function FullLoader() {
@@ -100,18 +93,6 @@ function LocalRouter({ onExit }) {
   }
 }
 
-// ───── ڕێڕەوی IQ ئۆنلاین ─────
-function IQOnlineRouter({ onExit }) {
-  const { room } = useIQRoom()
-  if (!room) return <IQOnlineHome onExit={onExit} />
-  switch (room.status) {
-    case 'playing':
-    case 'reveal': return <IQPlay />
-    case 'results': return <IQResults />
-    default: return <IQLobby />
-  }
-}
-
 // ───── ناوەوەی دوای چوونەژوورەوە ─────
 function Shell({ ui }) {
   const { user, profile, loading, isSupabaseEnabled } = useAuth()
@@ -158,24 +139,6 @@ function Shell({ ui }) {
         </LocalProvider>
       )
       break
-    case 'iq':
-      inner = (
-        <IQModeSelect
-          onBack={toMenu}
-          onSelect={(mode) => setView(mode === 'local' ? 'iq-local' : 'iq-online')}
-        />
-      )
-      break
-    case 'iq-local':
-      inner = <IQLocal onExit={toMenu} />
-      break
-    case 'iq-online':
-      inner = (
-        <IQRoomProvider>
-          <IQOnlineRouter onExit={toMenu} />
-        </IQRoomProvider>
-      )
-      break
     case 'settings':
       inner = <SettingsScreen ui={ui} onBack={toMenu} />
       break
@@ -196,7 +159,6 @@ function Shell({ ui }) {
         <MainMenu
           onOnline={() => setView('online')}
           onLocal={() => setView('local')}
-          onIQ={() => setView('iq')}
           onSettings={() => setView('settings')}
           onAchievements={() => setView('achievements')}
           onProfile={() => setView('profile')}
