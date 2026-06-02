@@ -90,6 +90,12 @@ export function EconomyProvider({ children }) {
     } catch { /* noop */ }
   }, [uid, coins, owned, equipped])
 
+  // ref ـەکان بۆ خوێندنەوەی نوێترین بەها لە ناو callback ـەکان (بەبێ closure ـی کۆن)
+  const ownedRef = useRef(owned)
+  const equippedRef = useRef(equipped)
+  useEffect(() => { ownedRef.current = owned }, [owned])
+  useEffect(() => { equippedRef.current = equipped }, [equipped])
+
   // ───── زیادکردنی دراو ─────
   const addCoins = useCallback((n) => {
     const amt = Math.round(n || 0)
@@ -122,8 +128,11 @@ export function EconomyProvider({ children }) {
         })
         if (error || !data?.ok) return false
         if (typeof data.coins === 'number') setCoins(data.coins)
-        if (Array.isArray(data.owned)) setOwned(new Set(data.owned))
-        else setOwned((s) => new Set(s).add(cos.id))
+        const nextOwned = Array.isArray(data.owned)
+          ? new Set(data.owned)
+          : new Set(ownedRef.current).add(cos.id)
+        ownedRef.current = nextOwned // یەکسەر نوێ بکەرەوە بۆ equip ـی دوای کڕین
+        setOwned(nextOwned)
         return true
       } catch {
         return false
@@ -133,24 +142,26 @@ export function EconomyProvider({ children }) {
     // دۆخی local
     if (coins < cos.price) return false
     setCoins((c) => c - cos.price)
-    setOwned((s) => new Set(s).add(cos.id))
+    const nextOwned = new Set(ownedRef.current).add(cos.id)
+    ownedRef.current = nextOwned
+    setOwned(nextOwned)
     return true
-  }, [mode, owned, coins])
+  }, [mode, coins])
 
   // ───── بەرکردن/لابردن (toggle) ─────
   const equip = useCallback((item) => {
     const cos = typeof item === 'string' ? getCosmetic(item) : item
-    if (!cos || !owned.has(cos.id)) return
-    setEquipped((e) => {
-      const next = { ...e }
-      if (next[cos.type] === cos.id) delete next[cos.type]
-      else next[cos.type] = cos.id
-      if (mode === 'db' && supabase) {
-        supabase.rpc('set_equipped', { equipped: next }).catch(() => {})
-      }
-      return next
-    })
-  }, [mode, owned])
+    if (!cos || !ownedRef.current.has(cos.id)) return
+    const cur = equippedRef.current
+    const next = { ...cur }
+    if (next[cos.type] === cos.id) delete next[cos.type] // لابردن ئەگەر هەمان شت بەرکراوە
+    else next[cos.type] = cos.id
+    equippedRef.current = next
+    setEquipped(next)
+    if (mode === 'db' && supabase) {
+      supabase.rpc('set_equipped', { equipped: next }).catch(() => {})
+    }
+  }, [mode])
 
   const value = useMemo(
     () => ({ coins, owned, equipped, addCoins, buy, equip, isOwned }),
