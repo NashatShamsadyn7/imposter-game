@@ -190,10 +190,18 @@ export function EconomyProvider({ children }) {
     else next[cos.type] = cos.id
     equippedRef.current = next
     setEquipped(next)
-    if (mode === 'db' && supabase) {
-      supabase.rpc('set_equipped', { equipped: next }).catch(() => {})
+    if (mode === 'db' && supabase && user?.id) {
+      // نوێکردنەوەی ڕاستەوخۆ (RLS ڕێگە دەدات بۆ پرۆفایلی خۆت) — جێگیرتر لە RPC.
+      // ئەگەر سەرکەوتوو نەبوو، یەدەگ بۆ RPC.
+      supabase
+        .from('profiles')
+        .update({ equipped_cosmetics: next })
+        .eq('id', user.id)
+        .then(({ error }) => {
+          if (error) supabase.rpc('set_equipped', { equipped: next }).catch(() => {})
+        })
     }
-  }, [mode])
+  }, [mode, user?.id])
 
   const value = useMemo(
     () => ({ coins, owned, equipped, addCoins, buy, equip, isOwned }),
