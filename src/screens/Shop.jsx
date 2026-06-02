@@ -61,14 +61,23 @@ export default function Shop({ onBack }) {
 
   const items = TABS.find((x) => x.id === tab).items
 
-  const onBuy = (item) => {
-    if (buy(item)) {
-      sfx.chest()
-      setFlash(item.id)
-      setTimeout(() => setFlash(null), 700)
-      equip(item) // خۆکار بەری بکە دوای کڕین
-    } else {
-      sfx.lose()
+  const [busy, setBusy] = useState(false) // ڕێگری لە دووجار کلیک لە کاتی کڕینی سێرڤەر
+
+  const onBuy = async (item) => {
+    if (busy) return
+    setBusy(true)
+    try {
+      const ok = await buy(item)
+      if (ok) {
+        sfx.chest()
+        setFlash(item.id)
+        setTimeout(() => setFlash(null), 700)
+        equip(item) // خۆکار بەری بکە دوای کڕین
+      } else {
+        sfx.lose()
+      }
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -142,9 +151,9 @@ export default function Shop({ onBack }) {
               ) : (
                 <button
                   onClick={() => onBuy(item)}
-                  disabled={!affordable}
+                  disabled={!affordable || busy}
                   className={`btn-press flex w-full items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-black ${
-                    affordable ? 'bg-amber-500 text-white' : 'cursor-not-allowed bg-ink/10 text-muted'
+                    affordable && !busy ? 'bg-amber-500 text-white' : 'cursor-not-allowed bg-ink/10 text-muted'
                   }`}
                 >
                   {affordable ? <Coins className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
