@@ -54,6 +54,9 @@ export function EconomyProvider({ children }) {
   // 'db' یان 'local' — دوای seed دیاری دەکرێت
   const [mode, setMode] = useState('local')
   const seededRef = useRef(null) // کلیلی ئەو دۆخەی seed کراوە (uid:mode)
+  // ref ـەکان بۆ خوێندنەوەی نوێترین بەها لە ناو callback/effect (بەبێ closure ـی کۆن)
+  const ownedRef = useRef(owned)
+  const equippedRef = useRef(equipped)
 
   // ───── seed ـی یەکجارەیی بەپێی سەرچاوەی بەردەست ─────
   useEffect(() => {
@@ -64,14 +67,45 @@ export function EconomyProvider({ children }) {
       if (seededRef.current === tag) return
       seededRef.current = tag
       setMode('db')
+      const dbOwned = Array.isArray(profile.owned_cosmetics) ? profile.owned_cosmetics : []
+      const dbEquipped = profile.equipped_cosmetics && typeof profile.equipped_cosmetics === 'object' ? profile.equipped_cosmetics : {}
+      const local = loadLocal(uid)
+      // یەکجارە: db بەتاڵە بەڵام داتای ناوخۆیی هەیە → بیگوازەوە بۆ سێرڤەر (نەک ون بێت)
+      if (dbOwned.length === 0 && local.owned.length > 0 && supabase) {
+        setCoins(Math.max(local.coins, profile.coins || 0)) // یەکسەر پیشان بدە
+        setOwned(new Set(local.owned))
+        setEquipped(local.equipped)
+        ownedRef.current = new Set(local.owned)
+        equippedRef.current = local.equipped
+        supabase.rpc('restore_economy', { p_coins: local.coins, p_owned: local.owned, p_equipped: local.equipped })
+          .then(({ data, error }) => {
+            if (error || !data?.ok) return
+            if (typeof data.coins === 'number') setCoins(data.coins)
+            if (Array.isArray(data.owned)) { setOwned(new Set(data.owned)); ownedRef.current = new Set(data.owned) }
+            if (data.equipped && typeof data.equipped === 'object') { setEquipped(data.equipped); equippedRef.current = data.equipped }
+          })
+          .catch(() => {})
+        return
+      }
       setCoins(Math.max(0, profile.coins || 0))
-      setOwned(new Set(Array.isArray(profile.owned_cosmetics) ? profile.owned_cosmetics : []))
-      setEquipped(profile.equipped_cosmetics && typeof profile.equipped_cosmetics === 'object' ? profile.equipped_cosmetics : {})
+      setOwned(new Set(dbOwned))
+      setEquipped(dbEquipped)
+      ownedRef.current = new Set(dbOwned)
+      equippedRef.current = dbEquipped
       return
     }
-    // ئەگەر Supabase هەیە بەڵام profile هێشتا نەهاتووە، چاوەڕێ بکە
-    if (isSupabaseEnabled && user?.id && !profile) return
-    // دۆخی local
+    // Supabase هەیە بەڵام profile هێشتا نەهاتووە → لە کاش پیشان بدە (بەبێ flash/ون بوون)
+    if (isSupabaseEnabled && user?.id && !profile) {
+      const tag = `${uid}:pending`
+      if (seededRef.current === tag || seededRef.current === `${uid}:db`) return
+      seededRef.current = tag
+      const d = loadLocal(uid)
+      setCoins(d.coins)
+      setOwned(new Set(d.owned))
+      setEquipped(d.equipped)
+      return
+    }
+    // دۆخی local (بەبێ Supabase)
     const tag = `${uid}:local`
     if (seededRef.current === tag) return
     seededRef.current = tag
@@ -82,17 +116,15 @@ export function EconomyProvider({ children }) {
     setEquipped(d.equipped)
   }, [uid, user?.id, profile])
 
-  // پاشەکەوتی localStorage — هەمیشە وەک کاش (لە db دۆخیشدا بێ زیان)
+  // پاشەکەوتی localStorage — تەنها دوای seed بۆ ئەم uid ـە (پێشگری لە سڕینەوەی کاش)
   useEffect(() => {
     if (typeof localStorage === 'undefined') return
+    if (!seededRef.current || !seededRef.current.startsWith(`${uid}:`)) return
     try {
       localStorage.setItem(keyFor(uid), JSON.stringify({ coins, owned: [...owned], equipped }))
     } catch { /* noop */ }
   }, [uid, coins, owned, equipped])
 
-  // ref ـەکان بۆ خوێندنەوەی نوێترین بەها لە ناو callback ـەکان (بەبێ closure ـی کۆن)
-  const ownedRef = useRef(owned)
-  const equippedRef = useRef(equipped)
   useEffect(() => { ownedRef.current = owned }, [owned])
   useEffect(() => { equippedRef.current = equipped }, [equipped])
 

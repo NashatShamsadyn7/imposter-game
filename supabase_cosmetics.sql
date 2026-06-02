@@ -83,7 +83,44 @@ begin
 end;
 $$;
 
+-- ───── گواستنەوەی داتای ناوخۆیی (localStorage) بۆ سێرڤەر — یەکجارە ─────
+-- تەنها کاتێک کارگەری دەکات کە owned ـی db بەتاڵ بێت (بۆ ئەوەی داتای
+-- مەوجود نەسڕێتەوە). coins ـی گەورەتر دەپارێزرێت.
+create or replace function public.restore_economy(p_coins integer, p_owned text[], p_equipped jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  cur_coins integer;
+  cur_owned text[];
+  cur_equipped jsonb;
+begin
+  select coins, owned_cosmetics into cur_coins, cur_owned
+    from profiles where id = auth.uid() for update;
+  if cur_owned is null then
+    return jsonb_build_object('ok', false, 'reason', 'no_profile');
+  end if;
+  -- db پێشتر داتای هەیە → دەستی لێ مەدە
+  if array_length(cur_owned, 1) is not null and array_length(cur_owned, 1) > 0 then
+    return jsonb_build_object('ok', false, 'reason', 'has_data',
+      'coins', cur_coins, 'owned', to_jsonb(cur_owned));
+  end if;
+  update profiles
+     set owned_cosmetics = coalesce(p_owned, '{}'),
+         equipped_cosmetics = coalesce(p_equipped, '{}'::jsonb),
+         coins = greatest(coalesce(coins, 0), coalesce(p_coins, 0))
+   where id = auth.uid()
+   returning coins, owned_cosmetics, equipped_cosmetics
+        into cur_coins, cur_owned, cur_equipped;
+  return jsonb_build_object('ok', true, 'coins', cur_coins,
+    'owned', to_jsonb(cur_owned), 'equipped', cur_equipped);
+end;
+$$;
+
 -- ───── ڕێگەپێدان بۆ بەکارهێنەرە چوونەژوورەوەکان ─────
 grant execute on function public.add_coins(integer) to authenticated;
 grant execute on function public.purchase_cosmetic(text, integer) to authenticated;
 grant execute on function public.set_equipped(jsonb) to authenticated;
+grant execute on function public.restore_economy(integer, text[], jsonb) to authenticated;
