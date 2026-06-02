@@ -5,6 +5,7 @@ import { RoomProvider, useRoom } from './state/RoomContext'
 import { ProfileViewerProvider } from './state/ProfileViewer'
 import { LocalProvider, useLocal } from './state/LocalContext'
 import { FriendsProvider } from './state/FriendsContext'
+import { EconomyProvider } from './state/EconomyContext'
 import { NotificationProvider } from './state/NotificationContext'
 import { LanguageProvider } from './lib/i18n'
 import Background from './components/Background'
@@ -30,6 +31,7 @@ const LocalReveal = lazy(() => import('./screens/local/LocalReveal'))
 const LocalDiscussion = lazy(() => import('./screens/local/LocalDiscussion'))
 const LocalVoting = lazy(() => import('./screens/local/LocalVoting'))
 const LocalResults = lazy(() => import('./screens/local/LocalResults'))
+const Shop = lazy(() => import('./screens/Shop'))
 // چینی دەنگ بە درەنگ — livekit-client لە بەستەی سەرەکی دادەبڕێت
 const VoiceLayer = lazy(() => import('./state/VoiceLayer'))
 import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled } from './lib/sound'
@@ -161,6 +163,9 @@ function Shell({ ui }) {
     case 'groups':
       inner = <Groups onBack={toMenu} />
       break
+    case 'shop':
+      inner = <Shop onBack={toMenu} />
+      break
     default:
       inner = (
         <MainMenu
@@ -172,21 +177,24 @@ function Shell({ ui }) {
           onProfile={() => setView('profile')}
           onFriends={() => setView('friends')}
           onGroups={() => setView('groups')}
+          onShop={() => setView('shop')}
         />
       )
   }
 
   return (
-    <NotificationProvider>
-      <FriendsProvider>
-        <ProfileViewerProvider>
-          <ErrorBoundary onReset={toMenu}>
-            <Suspense fallback={<FullLoader />}>{inner}</Suspense>
-          </ErrorBoundary>
-        </ProfileViewerProvider>
-        <LevelUpOverlay />
-      </FriendsProvider>
-    </NotificationProvider>
+    <EconomyProvider>
+      <NotificationProvider>
+        <FriendsProvider>
+          <ProfileViewerProvider>
+            <ErrorBoundary onReset={toMenu}>
+              <Suspense fallback={<FullLoader />}>{inner}</Suspense>
+            </ErrorBoundary>
+          </ProfileViewerProvider>
+          <LevelUpOverlay />
+        </FriendsProvider>
+      </NotificationProvider>
+    </EconomyProvider>
   )
 }
 

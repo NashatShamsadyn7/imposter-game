@@ -1,8 +1,9 @@
 import { levelFrame } from '../lib/achievements'
 
 // ئەڤاتاری یاریزان — وێنەی پرۆفایل یان یەکەم پیتی ناو
-// ئەگەر level بدرێت و ئاستەکە بەرز بێت، چوارچێوەیەکی ڕەنگاوڕەنگ پیشان دەدرێت
-export default function Avatar({ url, name, size = 40, ring = false, ringColor = 'crew', level = null }) {
+// ئەگەر level بدرێت و ئاستەکە بەرز بێت، چوارچێوەیەکی ڕەنگاوڕەنگ پیشان دەدرێت.
+// cosmeticFrame (لە دوکانەوە) سەرووی چوارچێوەی ئاست دەگرێت ئەگەر هەبوو.
+export default function Avatar({ url, name, size = 40, ring = false, ringColor = 'crew', level = null, cosmeticFrame = null }) {
   const initial = (name || '?').trim().charAt(0).toUpperCase()
 
   const inner = (
@@ -22,8 +23,8 @@ export default function Avatar({ url, name, size = 40, ring = false, ringColor =
     </div>
   )
 
-  // چوارچێوەی ئاست (پاشایەتی نوێ) — کاتێک level دەدرێت
-  const frame = level != null ? levelFrame(level) : null
+  // چوارچێوە: یەکەم کۆمەتیکی بەرکراو، ئەگەرنا چوارچێوەی ئاست
+  const frame = cosmeticFrame || (level != null ? levelFrame(level) : null)
   if (frame) {
     const pad = Math.max(2, Math.round(size * 0.07))
     return (

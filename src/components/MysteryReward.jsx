@@ -6,12 +6,14 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useRef } from 'react'
-import { Gift, Sparkles, Flame } from 'lucide-react'
+import { Gift, Sparkles, Flame, Coins } from 'lucide-react'
 import { Panel } from './ui'
 import Confetti from './Confetti'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 import { streakMultiplier } from '../lib/streak'
+import { useEconomy } from '../state/EconomyContext'
+import { equippedChestSkin } from '../lib/cosmetics'
 
 // ───── خشتەی خەڵات (بەشە، کەمترین، زۆرترین) — کۆی بەشەکان = ١٠٠ ─────
 const TIERS = [
@@ -45,6 +47,8 @@ const TIER_STYLE = {
 // streak: زنجیرەی بردنەوەی ئێستا · onGrant(amount): بۆ زیادکردنی XP ـی ڕاستەقینە (ئۆنلاین)
 export default function MysteryReward({ claimKey, streak = 0, onGrant }) {
   const t = useT()
+  const { addCoins, equipped } = useEconomy()
+  const skin = equippedChestSkin(equipped)
   const storeKey = claimKey ? `imposter:chest:${claimKey}` : null
   const claimedRef = useRef(false)
 
@@ -74,7 +78,8 @@ export default function MysteryReward({ claimKey, streak = 0, onGrant }) {
       setConfetti(true)
       setTimeout(() => setConfetti(false), 4000)
     }
-    onGrant?.(res.amount)
+    addCoins(res.amount) // دراو بۆ دوکان
+    onGrant?.(res.amount) // XP بۆ ئاست (ئۆنلاین)
   }
 
   const style = reward ? TIER_STYLE[reward.tier] : null
@@ -92,7 +97,9 @@ export default function MysteryReward({ claimKey, streak = 0, onGrant }) {
             className="btn-press mx-auto block"
             aria-label={t('کردنەوەی سندووق')}
           >
-            <div className="mx-auto grid h-24 w-24 animate-chest-shake place-items-center rounded-3xl border-2 border-amber-400/60 bg-gradient-to-br from-amber-400/25 to-amber-600/10 text-amber-400 shadow-[0_0_28px_rgba(251,191,36,0.4)]">
+            <div className={`mx-auto grid h-24 w-24 animate-chest-shake place-items-center rounded-3xl border-2 bg-gradient-to-br ${
+              skin ? `${skin.ring} ${skin.iconColor} ${skin.glow}` : 'border-amber-400/60 from-amber-400/25 to-amber-600/10 text-amber-400 shadow-[0_0_28px_rgba(251,191,36,0.4)]'
+            }`}>
               <Gift className="h-12 w-12" />
             </div>
           </button>
@@ -112,7 +119,10 @@ export default function MysteryReward({ claimKey, streak = 0, onGrant }) {
           {isJackpot && (
             <p className="mt-3 text-xl font-black text-amber-400">{t('جاکپۆت! 🎉')}</p>
           )}
-          <p className={`mt-2 text-4xl font-black ${style.text}`}>+{reward.amount} XP</p>
+          <p className={`mt-2 flex items-center justify-center gap-1.5 text-4xl font-black ${style.text}`}>
+            <Coins className="h-7 w-7" /> +{reward.amount}
+          </p>
+          {onGrant && <p className="mt-1 text-xs text-muted">+{reward.amount} XP</p>}
           {streak >= 2 && (
             <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-3 py-1 text-xs font-bold text-amber-500">
               <Flame className="h-3.5 w-3.5" /> {t('زنجیرەی بردنەوە')} ×{streak}

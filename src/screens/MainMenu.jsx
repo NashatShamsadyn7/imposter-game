@@ -1,20 +1,26 @@
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare, Crown } from 'lucide-react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare, Crown, ShoppingBag, Coins } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
+import { useEconomy } from '../state/EconomyContext'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import DailyPanel from '../components/DailyPanel'
 import { levelInfo } from '../lib/achievements'
+import { equippedFrameStyle, equippedNameColor, equippedTitle } from '../lib/cosmetics'
 import { useT } from '../lib/i18n'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // مێنیوی سەرەکی دوای چوونەژوورەوە
-export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements, onLeaderboard, onProfile, onFriends, onGroups }) {
+export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements, onLeaderboard, onProfile, onFriends, onGroups, onShop }) {
   const { profile, signOut } = useAuth()
   const { totalUnread, incoming } = useFriends()
+  const { coins, equipped } = useEconomy()
   const { level } = levelInfo(profile?.total_points)
   const t = useT()
   const friendBadge = totalUnread + incoming.length
+  const frameStyle = equippedFrameStyle(equipped)
+  const nameColor = equippedNameColor(equipped)
+  const title = equippedTitle(equipped)
 
   const go = (fn) => {
     unlockAudio()
@@ -32,16 +38,17 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
           title={t('پرۆفایلی من')}
         >
           <div className="relative">
-            <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} level={level} ring />
+            <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} level={level} cosmeticFrame={frameStyle} ring />
             <span className="absolute -bottom-1 -left-1 grid h-5 min-w-5 place-items-center rounded-full bg-crew px-1 text-[10px] font-black text-white">
               {level}
             </span>
           </div>
           <div className="text-right leading-tight">
-            <p className="text-sm font-bold text-ink">{profile?.display_name}</p>
-            <p className="flex items-center gap-1 text-xs text-crew">
-              <Star className="h-3 w-3 fill-crew" />
-              {profile?.total_points ?? 0} {t('خاڵ')}
+            <p className={`text-sm font-bold ${nameColor || 'text-ink'}`}>{profile?.display_name}</p>
+            {title && <p className="text-[11px] font-bold text-muted">{title}</p>}
+            <p className="flex items-center gap-2 text-xs text-crew">
+              <span className="flex items-center gap-1"><Star className="h-3 w-3 fill-crew" />{profile?.total_points ?? 0}</span>
+              <span className="flex items-center gap-1 text-amber-500"><Coins className="h-3 w-3" />{coins}</span>
             </p>
           </div>
         </button>
@@ -127,6 +134,22 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
               <p className="text-sm text-muted">{t('یەک ئامێر — Pass and Play')}</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
+          </Panel>
+        </button>
+
+        {/* دوکان */}
+        <button onClick={() => go(onShop)} className="btn-press block w-full text-right">
+          <Panel className="flex items-center gap-4 !p-4 transition hover:border-amber-400">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-amber-400/12 text-amber-500">
+              <ShoppingBag className="h-7 w-7" />
+            </div>
+            <div className="flex-1">
+              <p className="text-lg font-black text-ink">{t('دوکان')}</p>
+              <p className="text-sm text-muted">{t('چوارچێوە، ڕەنگی ناو و ناونیشان بکڕە')}</p>
+            </div>
+            <span className="flex items-center gap-1 rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-black text-amber-500">
+              <Coins className="h-3.5 w-3.5" />{coins}
+            </span>
           </Panel>
         </button>
 
