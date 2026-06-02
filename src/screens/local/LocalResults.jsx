@@ -3,6 +3,7 @@ import { Trophy, Skull, ShieldCheck, RotateCcw, Star, UserX } from 'lucide-react
 import { useLocal } from '../../state/LocalContext'
 import { Button, Panel } from '../../components/ui'
 import WordImage from '../../components/WordImage'
+import Confetti from '../../components/Confetti'
 import { useT } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
 
@@ -20,7 +21,8 @@ export default function LocalResults() {
   const ranked = [...results].sort((a, b) => b.points - a.points)
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6 pb-24">
+    <div className={`mx-auto max-w-md px-4 py-6 pb-24 ${impostorWin ? 'animate-shake' : ''}`}>
+      {!impostorWin && <Confetti count={90} />}
       <div className="text-center animate-scale-in">
         <div className={`mb-4 inline-flex rounded-full border-2 p-5 ${impostorWin ? 'border-impostor bg-impostor/12 animate-pulse-glow-red' : 'border-crew bg-crew/12 animate-pulse-glow'}`}>
           {impostorWin ? <Skull className="h-14 w-14 text-impostor" /> : <Trophy className="h-14 w-14 text-crew" />}

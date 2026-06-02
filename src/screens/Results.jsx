@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Trophy, Skull, ShieldCheck, RotateCcw, LogOut, Star, UserX } from 'lucide-react'
 import { useRoom } from '../state/RoomContext'
 import { useAuth } from '../state/AuthContext'
@@ -7,21 +7,48 @@ import { CATEGORIES, findWord } from '../data/words'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import WordImage from '../components/WordImage'
+import Confetti from '../components/Confetti'
+import MysteryReward from '../components/MysteryReward'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
+import { addPoints } from '../lib/supabase'
+import { updateStreak } from '../lib/streak'
 
 export default function Results() {
-  const { room, players, isHost, playAgain, leaveRoom } = useRoom()
-  const { refreshProfile } = useAuth()
+  const { room, players, me, isHost, playAgain, leaveRoom } = useRoom()
+  const { user, refreshProfile } = useAuth()
   const { openProfile } = useProfileViewer() || {}
   const t = useT()
   const impostorWin = room.winner_side === 'impostor'
   const category = CATEGORIES.find((c) => c.id === room.category_id)
 
+  // بردنەوەی منی ئێستا (بەپێی ڕۆڵ) — بینەران ناژمێردرێن
+  const isPlayer = me && !me.is_spectator
+  const myWin = isPlayer && (me.role === 'impostor' ? impostorWin : !impostorWin)
+
+  // زنجیرەی بردنەوە — یەک جار نوێ دەکرێتەوە لە کاتی هاتنە ئەم شاشە
+  const [streak, setStreak] = useState(0)
+  const streakDone = useRef(false)
+  useEffect(() => {
+    if (!isPlayer || streakDone.current) return
+    streakDone.current = true
+    setStreak(updateStreak(myWin))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlayer])
+
   useEffect(() => {
     if (impostorWin) sfx.lose()
     else sfx.win()
   }, [impostorWin])
+
+  // زیادکردنی XPـی سندووق بۆ خۆم (هەمان شێوازی add_points ـی ئامادە)
+  const grantBonus = async (amount) => {
+    if (!user) return
+    try {
+      await addPoints(user.id, amount, false)
+      setTimeout(() => refreshProfile?.(), 600)
+    } catch { /* migration هێشتا نەکراوە */ }
+  }
 
   // نوێکردنەوەی خاڵەکانی پرۆفایلی خۆم — بۆ ئەنیمەیشنی بەرزبوونەوەی ئاست
   useEffect(() => {
@@ -35,7 +62,8 @@ export default function Results() {
     .sort((a, b) => b.points_this_game - a.points_this_game)
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6 pb-24">
+    <div className={`mx-auto max-w-md px-4 py-6 pb-24 ${impostorWin ? 'animate-shake' : ''}`}>
+      {myWin && <Confetti count={90} />}
       <div className="animate-scale-in text-center">
         <div
           className={`mb-4 inline-flex rounded-full border-2 p-5 ${
@@ -54,6 +82,15 @@ export default function Results() {
           {impostorWin ? t('ساختەکارەکان سەرکەوتن!') : t('دەستەی کەشتی سەرکەوتن!')}
         </h1>
       </div>
+
+      {/* سندووقی خەڵاتی نهێنی — خەڵاتی گۆڕاو + زنجیرە */}
+      {isPlayer && (
+        <MysteryReward
+          claimKey={`${room.id}:${room.secret_word_ku}`}
+          streak={streak}
+          onGrant={grantBonus}
+        />
+      )}
 
       {/* وشەی نهێنی */}
       <Panel className="mb-5 text-center">
