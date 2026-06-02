@@ -2,7 +2,6 @@ import { useEffect, useState, lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 import { AuthProvider, useAuth } from './state/AuthContext'
 import { RoomProvider, useRoom } from './state/RoomContext'
-import { VoiceProvider } from './state/VoiceContext'
 import { ProfileViewerProvider } from './state/ProfileViewer'
 import { LocalProvider, useLocal } from './state/LocalContext'
 import { FriendsProvider } from './state/FriendsContext'
@@ -10,7 +9,6 @@ import { NotificationProvider } from './state/NotificationContext'
 import { LanguageProvider } from './lib/i18n'
 import Background from './components/Background'
 import ErrorBoundary from './components/ErrorBoundary'
-import VoiceBar from './components/VoiceBar'
 import LevelUpOverlay from './components/LevelUpOverlay'
 import Login from './screens/Login'
 import MainMenu from './screens/MainMenu'
@@ -32,6 +30,8 @@ const LocalReveal = lazy(() => import('./screens/local/LocalReveal'))
 const LocalDiscussion = lazy(() => import('./screens/local/LocalDiscussion'))
 const LocalVoting = lazy(() => import('./screens/local/LocalVoting'))
 const LocalResults = lazy(() => import('./screens/local/LocalResults'))
+// چینی دەنگ بە درەنگ — livekit-client لە بەستەی سەرەکی دادەبڕێت
+const VoiceLayer = lazy(() => import('./state/VoiceLayer'))
 import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled } from './lib/sound'
 
 function FullLoader() {
@@ -68,17 +68,20 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
   }
 
   // دەنگی ڕاستەوخۆ لە تەواوی ژوور (لۆبی → ئەنجام)
-  // ProfileViewer لە ئاستی Shell دابین کراوە، بۆیە لێرە پێویست نییە
+  // شاشە لە دەرەوەی چینی دەنگ دەمێنێتەوە، بۆیە دواخستنی LiveKit
+  // ناکاتە هۆی دووبارە-سواربوونی شاشە یان لەدەستدانی دۆخ.
   return (
-    <VoiceProvider
-      roomId={room.id}
-      identity={user?.id}
-      name={profile?.display_name}
-      canSpeak={!!me?.can_speak}
-    >
+    <>
       {screen}
-      <VoiceBar />
-    </VoiceProvider>
+      <Suspense fallback={null}>
+        <VoiceLayer
+          roomId={room.id}
+          identity={user?.id}
+          name={profile?.display_name}
+          canSpeak={!!me?.can_speak}
+        />
+      </Suspense>
+    </>
   )
 }
 

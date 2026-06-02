@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { ChevronRight, Send, Gamepad2, LogIn, Film, Phone } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
-import { VoiceProvider } from '../state/VoiceContext'
 import Avatar from '../components/Avatar'
 import GifPicker from '../components/GifPicker'
-import DirectVoiceBar from '../components/DirectVoiceBar'
+// چینی دەنگ بە درەنگ — livekit-client تەنها لەکاتی پەیوەندیدا دادەبەزرێت
+const DirectVoiceLayer = lazy(() => import('../state/DirectVoiceLayer'))
 import { isGifEnabled } from '../lib/gif'
 import {
   fetchDirectMessages,
@@ -109,13 +109,16 @@ export default function DirectChat({ friend, onBack, onJoinRoom }) {
 
       {/* شریتی پەیوەندیی دەنگی */}
       {callActive && (
-        <VoiceProvider roomId={voiceRoomId} identity={user.id} name={profile?.display_name} canSpeak>
-          <DirectVoiceBar
+        <Suspense fallback={null}>
+          <DirectVoiceLayer
+            roomId={voiceRoomId}
+            identity={user.id}
+            name={profile?.display_name}
             onEnd={() => setCallActive(false)}
             otherIdentity={friend.id}
             other={other}
           />
-        </VoiceProvider>
+        </Suspense>
       )}
 
       {error && (

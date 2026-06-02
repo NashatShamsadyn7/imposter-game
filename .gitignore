@@ -5,6 +5,9 @@ node_modules
 dist
 dist-ssr
 
+# graphify knowledge-graph artifacts (regenerable)
+graphify-out
+
 # Supabase CLI local state
 supabase/.temp
 supabase/.branches
@@ -17,6 +20,9 @@ supabase/.branches
 # Claude Code local config (may contain tokens)
 .claude/settings.json
 .claude/settings.local.json
+
+# Codex / MCP local config (contains live access tokens)
+.codex
 
 # Logs
 *.log
