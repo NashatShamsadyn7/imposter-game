@@ -22,18 +22,18 @@
 /* ───── دۆخی تاریک (بنەڕەت) ───── */
 :root,
 [data-theme='dark'] {
-  --c-space: 11 15 28;
-  --c-surface: 22 28 46;
-  --c-surface2: 31 39 62;
-  --c-ink: 230 235 246;
-  --c-muted: 150 160 182;
-  --c-line: 44 53 78;
-  --c-crew: 45 212 191;
-  --c-impostor: 240 113 109;
-  --aurora-1: 45 212 191;
-  --aurora-2: 240 113 109;
-  --aurora-3: 120 150 240;
-  --shadow: rgba(0, 0, 0, 0.35);
+  --c-space: 9 11 26;
+  --c-surface: 22 26 48;
+  --c-surface2: 31 37 66;
+  --c-ink: 232 237 250;
+  --c-muted: 150 160 188;
+  --c-line: 48 56 92;
+  --c-crew: 45 224 200;
+  --c-impostor: 244 113 120;
+  --aurora-1: 45 224 200;
+  --aurora-2: 190 100 245;
+  --aurora-3: 96 140 250;
+  --shadow: rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
 
@@ -52,6 +52,72 @@
   --aurora-3: 99 132 220;
   --shadow: rgba(42, 51, 70, 0.08);
   color-scheme: light;
+}
+
+/* ───── ثیمە کڕدراوەکان (purchasable themes) ───── */
+/* گەلەکسی — مۆر/سماوی قووڵ */
+[data-theme='galaxy'] {
+  --c-space: 13 8 30;
+  --c-surface: 30 20 56;
+  --c-surface2: 42 28 76;
+  --c-ink: 235 230 252;
+  --c-muted: 168 156 200;
+  --c-line: 60 44 104;
+  --c-crew: 110 231 255;
+  --c-impostor: 244 114 182;
+  --aurora-1: 168 85 247;
+  --aurora-2: 110 231 255;
+  --aurora-3: 236 72 153;
+  --shadow: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+/* ئاوابوون — پرتەقاڵی/پەمەیی */
+[data-theme='sunset'] {
+  --c-space: 28 14 22;
+  --c-surface: 48 26 38;
+  --c-surface2: 64 34 48;
+  --c-ink: 252 235 240;
+  --c-muted: 206 168 178;
+  --c-line: 96 50 64;
+  --c-crew: 251 146 60;
+  --c-impostor: 244 63 94;
+  --aurora-1: 251 146 60;
+  --aurora-2: 244 63 94;
+  --aurora-3: 217 70 160;
+  --shadow: rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+/* سایبەر — ماگەنتا/سماوی */
+[data-theme='cyber'] {
+  --c-space: 6 10 24;
+  --c-surface: 16 22 44;
+  --c-surface2: 24 32 60;
+  --c-ink: 224 248 255;
+  --c-muted: 140 168 196;
+  --c-line: 36 56 92;
+  --c-crew: 34 230 255;
+  --c-impostor: 255 60 172;
+  --aurora-1: 34 230 255;
+  --aurora-2: 255 60 172;
+  --aurora-3: 99 102 241;
+  --shadow: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+/* دارستان — سەوز قووڵ */
+[data-theme='forest'] {
+  --c-space: 7 22 17;
+  --c-surface: 16 38 30;
+  --c-surface2: 22 50 40;
+  --c-ink: 224 248 238;
+  --c-muted: 150 184 168;
+  --c-line: 34 70 56;
+  --c-crew: 52 211 153;
+  --c-impostor: 251 146 60;
+  --aurora-1: 52 211 153;
+  --aurora-2: 16 185 129;
+  --aurora-3: 132 204 22;
+  --shadow: rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
 }
 
 * {
@@ -75,7 +141,7 @@ body {
   z-index: 1;
 }
 
-/* پاشبنەی نەرم */
+/* پاشبنەی نەرم — galaxy aurora */
 .aurora {
   position: fixed;
   inset: 0;
@@ -83,23 +149,75 @@ body {
   pointer-events: none;
   overflow: hidden;
   background:
-    radial-gradient(60% 50% at 15% 10%, rgb(var(--aurora-1) / 0.12), transparent 70%),
-    radial-gradient(55% 45% at 90% 20%, rgb(var(--aurora-2) / 0.10), transparent 70%),
-    radial-gradient(60% 55% at 50% 100%, rgb(var(--aurora-3) / 0.10), transparent 70%);
+    radial-gradient(65% 55% at 12% 8%, rgb(var(--aurora-1) / 0.16), transparent 70%),
+    radial-gradient(60% 50% at 92% 18%, rgb(var(--aurora-2) / 0.14), transparent 70%),
+    radial-gradient(65% 60% at 50% 102%, rgb(var(--aurora-3) / 0.14), transparent 72%);
+}
+
+/* ئاسمانی ئەستێرە — خاڵە بچووکەکانی ڕووناک (تەنها لە دۆخی تاریک) */
+.aurora::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgb(var(--c-ink) / 0.7), transparent),
+    radial-gradient(1px 1px at 75% 15%, rgb(var(--c-ink) / 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 40% 70%, rgb(var(--aurora-1) / 0.8), transparent),
+    radial-gradient(1px 1px at 88% 60%, rgb(var(--c-ink) / 0.6), transparent),
+    radial-gradient(1px 1px at 60% 85%, rgb(var(--aurora-3) / 0.8), transparent),
+    radial-gradient(1.5px 1.5px at 10% 80%, rgb(var(--c-ink) / 0.5), transparent),
+    radial-gradient(1px 1px at 33% 12%, rgb(var(--aurora-2) / 0.7), transparent),
+    radial-gradient(1px 1px at 95% 40%, rgb(var(--c-ink) / 0.5), transparent);
+  background-repeat: repeat;
+  background-size: 320px 320px;
+  opacity: 0.5;
+  animation: stars-twinkle 6s ease-in-out infinite;
+}
+[data-theme='light'] .aurora::after { opacity: 0; }
+
+@keyframes stars-twinkle {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.22; }
 }
 
 .blob {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(60px);
+  filter: blur(70px);
 }
 
-/* کارت */
+/* کارت زجاجي (glassmorphism) لەگەڵ کەناری نیۆن */
 .panel {
-  background: rgb(var(--c-surface));
-  border: 1px solid rgb(var(--c-line));
-  border-radius: 1rem;
-  box-shadow: 0 4px 24px var(--shadow);
+  position: relative;
+  background: rgb(var(--c-surface) / 0.66);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgb(var(--c-crew) / 0.16);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 8px 32px -8px var(--shadow),
+    inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+[data-theme='light'] .panel {
+  background: rgb(var(--c-surface) / 0.85);
+  border-color: rgb(var(--c-line));
+}
+
+/* وەشانی توهج — کارتی گرنگ (هەڵبژاردە) */
+.panel-glow {
+  border-color: rgb(var(--c-crew) / 0.4);
+  box-shadow:
+    0 8px 32px -8px var(--shadow),
+    0 0 22px -6px rgb(var(--c-crew) / 0.5),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+/* یارمەتیدەری توهج بۆ دەق و کەنار */
+.neon-text {
+  text-shadow: 0 0 12px rgb(var(--c-crew) / 0.55);
+}
+.neon-ring {
+  box-shadow: 0 0 0 1px rgb(var(--c-crew) / 0.4), 0 0 18px -4px rgb(var(--c-crew) / 0.55);
 }
 
 .btn-press {

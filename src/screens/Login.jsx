@@ -20,14 +20,18 @@ export default function Login({ onExit }) {
         </button>
       )}
       <div className="animate-scale-in w-full">
-        <div className="animate-pulse-glow-red mb-6 inline-flex rounded-full border-2 border-impostor bg-impostor/15 p-6">
-          <Rocket className="h-16 w-16 text-impostor" />
+        <div className="relative mb-6 inline-flex">
+          {/* هاڵەی توهج لە پشتەوە */}
+          <span className="absolute inset-0 -z-10 rounded-full bg-crew/30 blur-2xl" />
+          <div className="animate-pulse-glow inline-flex rounded-full border-2 border-crew/70 bg-gradient-to-br from-crew/25 to-impostor/20 p-6 neon-ring">
+            <Rocket className="h-16 w-16 text-crew" />
+          </div>
         </div>
-        <h1 className="text-4xl font-black text-ink mb-2">{t('ساختەکار')}</h1>
-        <p className="text-ink/60 mb-10">{t('یاری گرووپیی فەزایی — ئۆنلاین لەگەڵ هاوڕێکانت')}</p>
+        <h1 className="mb-2 text-5xl font-black tracking-tight text-ink neon-text">{t('ساختەکار')}</h1>
+        <p className="mb-10 text-ink/60">{t('یاری گرووپیی فەزایی — ئۆنلاین لەگەڵ هاوڕێکانت')}</p>
 
         {isSupabaseEnabled ? (
-          <Panel>
+          <Panel className="panel-glow">
             <p className="text-ink/70 mb-5 text-sm leading-relaxed">
               {t('بۆ یاریکردن پێویستە بچیتە ژوورەوە. ئەمە وێنەی پرۆفایل و کۆکردنەوەی خاڵەکانت پاشەکەوت دەکات.')}
             </p>

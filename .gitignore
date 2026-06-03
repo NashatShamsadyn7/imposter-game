@@ -8,6 +8,10 @@ dist-ssr
 # graphify knowledge-graph artifacts (regenerable)
 graphify-out
 
+# Stitch design mockups (reference only, large binaries)
+stitch.zip
+stitch_extracted
+
 # Supabase CLI local state
 supabase/.temp
 supabase/.branches

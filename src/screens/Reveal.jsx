@@ -88,7 +88,7 @@ export default function Reveal() {
 
           <button
             onClick={handleFlip}
-            className="btn-press animate-pulse-glow group mx-auto flex h-52 w-52 flex-col items-center justify-center gap-3 rounded-3xl border-2 border-crew/40 bg-surface/60"
+            className="btn-press animate-pulse-glow neon-ring group mx-auto flex h-52 w-52 flex-col items-center justify-center gap-3 rounded-3xl border-2 border-crew/40 bg-surface/60 backdrop-blur"
           >
             <Eye className="h-14 w-14 text-crew transition group-hover:scale-110" />
             <span className="font-bold text-crew">{t('بینینی ڕۆڵ')}</span>
@@ -150,7 +150,7 @@ export default function Reveal() {
             <span className="text-sm font-bold">{t('دەستەی کەشتی')}</span>
           </div>
           <p className="mb-1 text-xs text-ink/50">هاوپۆل: {category?.name}</p>
-          <h1 className="mb-4 text-4xl font-black text-ink">{room.secret_word_ku}</h1>
+          <h1 className="mb-4 text-4xl font-black text-ink neon-text">{room.secret_word_ku}</h1>
 
           <div className="mb-4 flex justify-center">
             <WordImage englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={220} />

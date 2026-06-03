@@ -78,7 +78,7 @@ export default function Results() {
             <Trophy className="h-14 w-14 text-crew" />
           )}
         </div>
-        <h1 className={`mb-4 text-3xl font-black ${impostorWin ? 'text-impostor' : 'text-crew'}`}>
+        <h1 className={`mb-4 text-3xl font-black neon-text ${impostorWin ? 'text-impostor' : 'text-crew'}`}>
           {impostorWin ? t('ساختەکارەکان سەرکەوتن!') : t('دەستەی کەشتی سەرکەوتن!')}
         </h1>
       </div>

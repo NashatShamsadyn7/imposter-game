@@ -24,8 +24,8 @@ export default function Background() {
           height: '45vw',
           maxWidth: 460,
           maxHeight: 460,
-          background: '#e15b57',
-          opacity: 0.14,
+          background: '#be64f5',
+          opacity: 0.16,
           animationDelay: '3s',
         }}
       />
@@ -34,12 +34,12 @@ export default function Background() {
         style={{
           top: '40%',
           left: '55%',
-          width: '30vw',
-          height: '30vw',
-          maxWidth: 320,
-          maxHeight: 320,
-          background: '#6384dc',
-          opacity: 0.12,
+          width: '32vw',
+          height: '32vw',
+          maxWidth: 340,
+          maxHeight: 340,
+          background: '#608cfa',
+          opacity: 0.14,
           animationDelay: '5s',
         }}
       />

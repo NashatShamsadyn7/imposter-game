@@ -7,7 +7,7 @@ import Avatar from '../components/Avatar'
 import DailyPanel from '../components/DailyPanel'
 import ShareApp from '../components/ShareApp'
 import { levelInfo } from '../lib/achievements'
-import { equippedFrameStyle, equippedNameColor, equippedTitle } from '../lib/cosmetics'
+import { equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar } from '../lib/cosmetics'
 import { useT } from '../lib/i18n'
 import { sfx, unlockAudio } from '../lib/sound'
 
@@ -22,6 +22,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
   const frameStyle = equippedFrameStyle(equipped)
   const nameColor = equippedNameColor(equipped)
   const title = equippedTitle(equipped)
+  const avatarChar = equippedAvatar(equipped)
 
   const go = (fn) => {
     unlockAudio()
@@ -39,7 +40,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
           title={t('پرۆفایلی من')}
         >
           <div className="relative">
-            <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} level={level} cosmeticFrame={frameStyle} ring />
+            <Avatar url={profile?.avatar_url} name={profile?.display_name} size={40} level={level} cosmeticFrame={frameStyle} avatarChar={avatarChar} ring />
             <span className="absolute -bottom-1 -left-1 grid h-5 min-w-5 place-items-center rounded-full bg-crew px-1 text-[10px] font-black text-white">
               {level}
             </span>
@@ -99,10 +100,13 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
 
       {/* هیرۆ */}
       <div className="mb-8 flex flex-col items-center text-center">
-        <div className="mb-3 grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-impostor to-crew shadow-soft">
-          <Rocket className="h-10 w-10 text-white" />
+        <div className="relative mb-3">
+          <span className="absolute inset-0 -z-10 rounded-3xl bg-crew/30 blur-xl" />
+          <div className="grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-impostor to-crew shadow-soft neon-ring">
+            <Rocket className="h-10 w-10 text-white" />
+          </div>
         </div>
-        <h1 className="text-4xl font-black tracking-tight text-ink">{t('ساختەکار')}</h1>
+        <h1 className="text-4xl font-black tracking-tight text-ink neon-text">{t('ساختەکار')}</h1>
         <p className="mt-1 text-sm text-muted">{t('شێوازی یاری هەڵبژێرە')}</p>
       </div>
 
@@ -115,8 +119,8 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
       <div className="flex flex-1 flex-col justify-center gap-4">
         {/* ئۆنلاین */}
         <button onClick={() => go(onOnline)} className="btn-press block w-full text-right">
-          <Panel className="flex items-center gap-4 !p-4 transition hover:border-crew">
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-crew/12 text-crew">
+          <Panel className="panel-glow flex items-center gap-4 !p-4 transition hover:border-crew">
+            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-crew/15 text-crew neon-ring">
               <Wifi className="h-7 w-7" />
             </div>
             <div className="flex-1">

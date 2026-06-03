@@ -83,18 +83,29 @@ export default function Leaderboard({ onBack }) {
       ) : rows.length === 0 ? (
         <Panel className="py-12 text-center text-muted">{t('هێشتا ئەنجامێک نییە')}</Panel>
       ) : (
-        <div className="space-y-2">
-          {rows.map((r, i) => (
-            <Row
-              key={r.id}
-              rank={i + 1}
-              row={r}
-              isMe={r.id === user?.id}
-              onClick={() => openProfile?.(r.id, r.display_name, r.avatar_url)}
+        <>
+          {/* منصّة التتويج — الثلاثة الأوائل */}
+          {rows.length >= 3 && (
+            <Podium
+              top={rows.slice(0, 3)}
+              meId={user?.id}
+              onOpen={(r) => openProfile?.(r.id, r.display_name, r.avatar_url)}
               t={t}
             />
-          ))}
-        </div>
+          )}
+          <div className="space-y-2">
+            {rows.slice(rows.length >= 3 ? 3 : 0).map((r, i) => (
+              <Row
+                key={r.id}
+                rank={(rows.length >= 3 ? 3 : 0) + i + 1}
+                row={r}
+                isMe={r.id === user?.id}
+                onClick={() => openProfile?.(r.id, r.display_name, r.avatar_url)}
+                t={t}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {/* پلەی من ئەگەر لە لیستدا نەبووم */}
@@ -111,6 +122,41 @@ const MEDAL = {
   1: { icon: Crown, cls: 'text-amber-400 bg-amber-400/15' },
   2: { icon: Medal, cls: 'text-slate-300 bg-slate-300/15' },
   3: { icon: Medal, cls: 'text-orange-400 bg-orange-400/15' },
+}
+
+// منصّة التتويج — ٢ | ١ | ٣
+function Podium({ top, meId, onOpen, t }) {
+  // ڕیزبەندی پیشاندان: دووەم، یەکەم (بەرز)، سێیەم
+  const order = [
+    { r: top[1], rank: 2, h: 'h-20', glow: 'shadow-[0_0_22px_-6px_rgba(203,213,225,0.7)]', ring: 'ring-slate-300', size: 56 },
+    { r: top[0], rank: 1, h: 'h-28', glow: 'shadow-[0_0_30px_-6px_rgba(251,191,36,0.85)]', ring: 'ring-amber-400', size: 72 },
+    { r: top[2], rank: 3, h: 'h-16', glow: 'shadow-[0_0_22px_-6px_rgba(251,146,60,0.7)]', ring: 'ring-orange-400', size: 56 },
+  ]
+  return (
+    <div className="mb-5 grid grid-cols-3 items-end gap-2">
+      {order.map(({ r, rank, h, glow, ring, size }) => {
+        const { level } = levelInfo(r.total_points)
+        return (
+          <button
+            key={r.id}
+            onClick={() => onOpen(r)}
+            className="btn-press flex flex-col items-center"
+          >
+            <div className={`relative mb-2 rounded-full ring-2 ${ring} ${glow}`}>
+              {rank === 1 && <Crown className="absolute -top-5 left-1/2 h-6 w-6 -translate-x-1/2 text-amber-400" />}
+              <Avatar url={r.avatar_url} name={r.display_name} size={size} level={level} />
+              <span className="absolute -bottom-1 left-1/2 grid h-6 w-6 -translate-x-1/2 place-items-center rounded-full bg-surface text-xs font-black text-ink shadow-card">
+                {rank}
+              </span>
+            </div>
+            <p className="max-w-full truncate px-1 text-xs font-bold text-ink">{r.display_name}</p>
+            <span className="text-xs font-black text-crew">{r.season_points}</span>
+            <div className={`mt-1 w-full rounded-t-xl bg-gradient-to-t from-crew/5 to-crew/25 ${h} ${r.id === meId ? 'ring-1 ring-crew' : ''}`} />
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
 function Row({ rank, row, isMe, onClick, t }) {

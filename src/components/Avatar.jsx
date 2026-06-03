@@ -4,14 +4,22 @@ import FrameFx from './FrameFx'
 // ئەڤاتاری یاریزان — وێنەی پرۆفایل یان یەکەم پیتی ناو
 // ئەگەر level بدرێت و ئاستەکە بەرز بێت، چوارچێوەیەکی ڕەنگاوڕەنگ پیشان دەدرێت.
 // cosmeticFrame (لە دوکانەوە) سەرووی چوارچێوەی ئاست دەگرێت ئەگەر هەبوو.
-export default function Avatar({ url, name, size = 40, ring = false, ringColor = 'crew', level = null, cosmeticFrame = null }) {
+export default function Avatar({ url, name, size = 40, ring = false, ringColor = 'crew', level = null, cosmeticFrame = null, avatarChar = null }) {
   const initial = (name || '?').trim().charAt(0).toUpperCase()
 
   const inner = (
     <div
       className="h-full w-full overflow-hidden rounded-full bg-surface"
     >
-      {url ? (
+      {avatarChar ? (
+        // ئەڤاتاری کەسایەتی — ئیمۆجی لەسەر پاشبنەی تدرّج
+        <div
+          className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${avatarChar.bg}`}
+          style={{ fontSize: size * 0.55, lineHeight: 1 }}
+        >
+          <span>{avatarChar.emoji}</span>
+        </div>
+      ) : url ? (
         <img src={url} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
       ) : (
         <div

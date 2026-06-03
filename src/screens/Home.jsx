@@ -80,10 +80,13 @@ export default function Home({ onExit }) {
 
       {/* هیرۆ */}
       <div className="mb-8 flex flex-col items-center text-center animate-scale-in">
-        <div className="mb-3 grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-impostor to-crew shadow-soft">
-          <Rocket className="h-10 w-10 text-white" />
+        <div className="relative mb-3">
+          <span className="absolute inset-0 -z-10 rounded-3xl bg-crew/30 blur-xl" />
+          <div className="grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-impostor to-crew shadow-soft neon-ring">
+            <Rocket className="h-10 w-10 text-white" />
+          </div>
         </div>
-        <h1 className="text-4xl font-black tracking-tight text-ink">{t('ساختەکار')}</h1>
+        <h1 className="text-4xl font-black tracking-tight text-ink neon-text">{t('ساختەکار')}</h1>
         <p className="mt-1 text-sm text-muted">{t('ژوورێک دروست بکە یان بەشداربە')}</p>
       </div>
 

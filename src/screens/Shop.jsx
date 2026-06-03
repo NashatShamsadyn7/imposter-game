@@ -12,21 +12,37 @@ import Avatar from '../components/Avatar'
 import FrameFx from '../components/FrameFx'
 import { levelInfo } from '../lib/achievements'
 import {
-  FRAMES, NAME_COLORS, TITLES, CHEST_SKINS,
-  equippedFrameStyle, equippedNameColor, equippedTitle,
+  AVATARS, FRAMES, NAME_COLORS, TITLES, CHEST_SKINS,
+  equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar,
 } from '../lib/cosmetics'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 const TABS = [
+  { id: 'avatar',    label: 'ئەڤاتار',   items: AVATARS },
   { id: 'frame',     label: 'چوارچێوە',  items: FRAMES },
   { id: 'nameColor', label: 'ڕەنگی ناو', items: NAME_COLORS },
   { id: 'title',     label: 'ناونیشان',  items: TITLES },
   { id: 'chestSkin', label: 'سندووق',    items: CHEST_SKINS },
 ]
 
+// ئاستی دەگمەنی بەپێی نرخ → ڕەنگی توهج
+function rarity(price) {
+  if (price >= 280) return { ring: 'shadow-[0_0_18px_-4px_rgba(251,191,36,0.7)]', border: 'border-amber-400/50', label: 'ئەفسانەیی', color: 'text-amber-400' }
+  if (price >= 200) return { ring: 'shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]', border: 'border-violet-400/45', label: 'ئیپیک', color: 'text-violet-400' }
+  if (price >= 120) return { ring: 'shadow-[0_0_14px_-4px_rgba(56,189,248,0.55)]', border: 'border-sky-400/40', label: 'دەگمەن', color: 'text-sky-400' }
+  return { ring: '', border: 'border-line', label: 'ئاسایی', color: 'text-muted' }
+}
+
 // نموونەی بچووکی هەر شتومەکێک بەپێی جۆر
 function Swatch({ item }) {
+  if (item.type === 'avatar') {
+    return (
+      <div className={`grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br ${item.bg} text-2xl shadow-card`}>
+        <span>{item.emoji}</span>
+      </div>
+    )
+  }
   if (item.type === 'frame') {
     const spins = (item.anim || '').includes('cos-spin')
     return (
@@ -63,6 +79,7 @@ export default function Shop({ onBack }) {
   const frameStyle = equippedFrameStyle(equipped)
   const nameColor = equippedNameColor(equipped)
   const title = equippedTitle(equipped)
+  const avatarChar = equippedAvatar(equipped)
 
   const items = TABS.find((x) => x.id === tab).items
 
@@ -101,7 +118,7 @@ export default function Shop({ onBack }) {
 
       {/* پێشبینینی زیندوو */}
       <Panel className="mb-5 flex items-center gap-4 !p-4">
-        <Avatar url={profile?.avatar_url} name={profile?.display_name} size={56} level={level} cosmeticFrame={frameStyle} />
+        <Avatar url={profile?.avatar_url} name={profile?.display_name} size={56} level={level} cosmeticFrame={frameStyle} avatarChar={avatarChar} />
         <div className="min-w-0">
           <p className={`truncate text-lg font-black ${nameColor || 'text-ink'}`}>
             {profile?.display_name || t('یاریزان')}
@@ -132,8 +149,12 @@ export default function Shop({ onBack }) {
           const owned = isOwned(item.id)
           const isEquipped = equipped[item.type] === item.id
           const affordable = coins >= item.price
+          const r = rarity(item.price)
           return (
-            <Panel key={item.id} className={`!p-4 text-center transition ${flash === item.id ? 'animate-reward-pop' : ''} ${isEquipped ? 'border-crew' : ''}`}>
+            <Panel key={item.id} className={`!p-4 text-center transition ${r.ring} ${flash === item.id ? 'animate-reward-pop' : ''} ${isEquipped ? '!border-crew panel-glow' : r.border}`}>
+              <div className="mb-1 flex justify-center">
+                <span className={`text-[10px] font-black ${r.color}`}>{t(r.label)}</span>
+              </div>
               <div className="mb-3 flex h-14 items-center justify-center">
                 <Swatch item={item} />
               </div>

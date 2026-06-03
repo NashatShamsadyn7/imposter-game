@@ -6,10 +6,28 @@
 // ═══════════════════════════════════════════════════════════
 
 // جۆرەکان
-export const COSMETIC_TYPES = ['frame', 'nameColor', 'title', 'chestSkin']
+export const COSMETIC_TYPES = ['avatar', 'frame', 'nameColor', 'title', 'chestSkin']
 
 // نرخی نموونەیی بەپێی دەگمەنی
 // common 60 · rare 120 · epic 220 · legendary 380
+
+// ───── ئەڤاتاری کەسایەتی (avatar characters) ─────
+// شوێنی وێنەی پرۆفایل دەگرنەوە: ئیمۆجی لەسەر پاشبنەی تدرّج.
+// bg: کلاسی tailwind بۆ تدرّج · emoji: ڕووی کەسایەتییەکە.
+export const AVATARS = [
+  { id: 'av_phoenix',   type: 'avatar', name: 'سیمورغ',   price: 150, emoji: '🦅', bg: 'from-orange-500 via-red-500 to-amber-600' },
+  { id: 'av_void',      type: 'avatar', name: 'تاریکی',   price: 150, emoji: '🌌', bg: 'from-indigo-600 via-purple-700 to-slate-900' },
+  { id: 'av_ninja',     type: 'avatar', name: 'نینجا',    price: 150, emoji: '🥷', bg: 'from-slate-700 via-zinc-800 to-black' },
+  { id: 'av_alien',     type: 'avatar', name: 'بیانی',    price: 150, emoji: '👽', bg: 'from-lime-400 via-green-500 to-emerald-700' },
+  { id: 'av_robot',     type: 'avatar', name: 'ڕۆبۆت',    price: 150, emoji: '🤖', bg: 'from-sky-400 via-cyan-500 to-blue-700' },
+  { id: 'av_ghost',     type: 'avatar', name: 'دروو',     price: 150, emoji: '👻', bg: 'from-slate-300 via-indigo-300 to-violet-400' },
+  { id: 'av_devil',     type: 'avatar', name: 'شەیتان',   price: 220, emoji: '😈', bg: 'from-red-500 via-rose-600 to-purple-700' },
+  { id: 'av_skull',     type: 'avatar', name: 'کاسەسەر',  price: 220, emoji: '💀', bg: 'from-zinc-400 via-slate-600 to-zinc-900' },
+  { id: 'av_dragon',    type: 'avatar', name: 'ئەژدیها',  price: 280, emoji: '🐉', bg: 'from-emerald-500 via-teal-600 to-cyan-700' },
+  { id: 'av_wizard',    type: 'avatar', name: 'جادووگەر', price: 280, emoji: '🧙', bg: 'from-violet-500 via-purple-600 to-indigo-800' },
+  { id: 'av_crown',     type: 'avatar', name: 'پاشا',     price: 380, emoji: '🤴', bg: 'from-amber-300 via-yellow-500 to-amber-700' },
+  { id: 'av_unicorn',   type: 'avatar', name: 'یەکشاخ',   price: 380, emoji: '🦄', bg: 'from-pink-400 via-fuchsia-500 to-violet-600' },
+]
 
 // ───── چوارچێوەکانی ئەڤاتار ─────
 // هاوشێوەی levelFrame: { ring: 'from-… to-…', glow: 'shadow-[…]' }
@@ -114,7 +132,19 @@ export const CHEST_SKINS = [
   { id: 'skin_diamond', type: 'chestSkin', name: 'ئەڵماس', price: 380, ring: 'border-sky-200/60 from-sky-200/30 to-cyan-300/10',    iconColor: 'text-sky-200', glow: 'shadow-[0_0_30px_rgba(186,230,253,0.55)]' },
 ]
 
-export const CATALOG = [...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS]
+// ───── ثیمەکانی ڕووکار (purchasable themes) ─────
+// id = بەهای data-theme . dark/light بەخۆڕایین (price 0).
+// swatch: ڕەنگەکانی پێشبینین (tailwind classes).
+export const THEMES = [
+  { id: 'dark',   type: 'theme', name: 'تاریک',    price: 0,   swatch: ['bg-slate-900', 'bg-teal-400', 'bg-rose-400'], free: true },
+  { id: 'light',  type: 'theme', name: 'ڕووناک',   price: 0,   swatch: ['bg-slate-100', 'bg-teal-500', 'bg-rose-500'], free: true },
+  { id: 'galaxy', type: 'theme', name: 'گەلەکسی',  price: 300, swatch: ['bg-violet-900', 'bg-cyan-300', 'bg-pink-400'] },
+  { id: 'sunset', type: 'theme', name: 'ئاوابوون', price: 300, swatch: ['bg-rose-900', 'bg-orange-400', 'bg-rose-500'] },
+  { id: 'cyber',  type: 'theme', name: 'سایبەر',   price: 380, swatch: ['bg-slate-900', 'bg-cyan-300', 'bg-pink-500'] },
+  { id: 'forest', type: 'theme', name: 'دارستان',  price: 300, swatch: ['bg-emerald-950', 'bg-emerald-400', 'bg-lime-400'] },
+]
+
+export const CATALOG = [...AVATARS, ...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS, ...THEMES.filter((th) => !th.free)]
 
 const BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]))
 export function getCosmetic(id) {
@@ -141,4 +171,9 @@ export function equippedTitle(equipped) {
 // شێوەی سندووق → کۆمەتیک یان null
 export function equippedChestSkin(equipped) {
   return getCosmetic(equipped?.chestSkin) || null
+}
+
+// ئەڤاتاری کەسایەتی بەرکراو → کۆمەتیک یان null
+export function equippedAvatar(equipped) {
+  return getCosmetic(equipped?.avatar) || null
 }

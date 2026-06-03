@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Volume2, Music, Sun, Moon, Settings as SettingsIcon, Ban, Languages } from 'lucide-react'
+import { ChevronRight, Volume2, Music, Settings as SettingsIcon, Ban, Languages, Coins, Check, Lock, Palette } from 'lucide-react'
 import { Panel } from '../components/ui'
 import PushToggle from '../components/PushToggle'
 import Avatar from '../components/Avatar'
 import { useFriends } from '../state/FriendsContext'
+import { useEconomy } from '../state/EconomyContext'
 import { useLang } from '../lib/i18n'
 import { fetchProfilesByIds } from '../lib/supabase'
+import { THEMES } from '../lib/cosmetics'
 import { sfx } from '../lib/sound'
 
 function Toggle({ on }) {
@@ -97,32 +99,80 @@ export default function Settings({ ui, onBack }) {
         <PushToggle />
       </Panel>
 
-      {/* ڕووکار */}
-      <Panel className="!p-2">
-        <p className="px-3 pb-1 pt-2 text-sm font-bold text-ink">{t('ڕووکار')}</p>
-        <div className="flex gap-2 p-2">
-          <button
-            onClick={() => { sfx.tap(); setTheme('dark') }}
-            className={`btn-press flex flex-1 items-center justify-center gap-2 rounded-xl border py-3 font-bold ${
-              theme === 'dark' ? 'border-crew bg-crew/12 text-crew' : 'border-line bg-surface2 text-muted'
-            }`}
-          >
-            <Moon className="h-5 w-5" /> {t('تاریک')}
-          </button>
-          <button
-            onClick={() => { sfx.tap(); setTheme('light') }}
-            className={`btn-press flex flex-1 items-center justify-center gap-2 rounded-xl border py-3 font-bold ${
-              theme === 'light' ? 'border-crew bg-crew/12 text-crew' : 'border-line bg-surface2 text-muted'
-            }`}
-          >
-            <Sun className="h-5 w-5" /> {t('ڕووناک')}
-          </button>
-        </div>
-      </Panel>
+      {/* ڕووکار — ثیمەکان */}
+      <ThemePicker theme={theme} setTheme={setTheme} t={t} />
 
       {/* کەسە بلۆککراوەکان */}
       <BlockedList />
     </div>
+  )
+}
+
+// هەڵبژاردنی ثیم — بەخۆڕایی (dark/light) + کڕدراوەکان بە دراو
+function ThemePicker({ theme, setTheme, t }) {
+  const { coins, isOwned, buy } = useEconomy()
+  const [busy, setBusy] = useState(false)
+
+  const onPick = async (th) => {
+    const unlocked = th.free || isOwned(th.id)
+    if (unlocked) {
+      sfx.tap()
+      setTheme(th.id)
+      return
+    }
+    if (busy || coins < th.price) { sfx.lose?.(); return }
+    setBusy(true)
+    try {
+      const ok = await buy(th)
+      if (ok) { sfx.chest?.(); setTheme(th.id) }
+      else sfx.lose?.()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Panel className="!p-3">
+      <p className="mb-2 flex items-center gap-1.5 px-1 text-sm font-bold text-ink">
+        <Palette className="h-4 w-4 text-crew" /> {t('ڕووکار')}
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {THEMES.map((th) => {
+          const active = theme === th.id
+          const unlocked = th.free || isOwned(th.id)
+          const affordable = coins >= th.price
+          return (
+            <button
+              key={th.id}
+              onClick={() => onPick(th)}
+              disabled={busy}
+              className={`btn-press relative overflow-hidden rounded-2xl border p-2 text-center transition ${
+                active ? 'border-crew panel-glow' : 'border-line bg-surface2'
+              }`}
+            >
+              {/* پێشبینینی ڕەنگ */}
+              <div className="mb-2 flex h-10 items-center justify-center gap-1 rounded-xl">
+                {th.swatch.map((c, i) => (
+                  <span key={i} className={`h-7 w-3 rounded-full ${c}`} />
+                ))}
+              </div>
+              <p className="truncate text-xs font-bold text-ink">{t(th.name)}</p>
+              {active ? (
+                <span className="mt-1 flex items-center justify-center gap-0.5 text-[11px] font-black text-crew">
+                  <Check className="h-3 w-3" /> {t('چالاک')}
+                </span>
+              ) : unlocked ? (
+                <span className="mt-1 block text-[11px] font-bold text-muted">{t('بەرکردن')}</span>
+              ) : (
+                <span className={`mt-1 flex items-center justify-center gap-0.5 text-[11px] font-black ${affordable ? 'text-amber-500' : 'text-muted'}`}>
+                  {affordable ? <Coins className="h-3 w-3" /> : <Lock className="h-3 w-3" />} {th.price}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
+    </Panel>
   )
 }
 
