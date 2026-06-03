@@ -11,6 +11,8 @@ import {
   fetchProfilesByIds,
   fetchUnreadCounts,
   findProfileByCode,
+  findProfileByUsername,
+  searchProfiles,
   sendFriendRequest,
   respondFriendRequest,
   removeFriendship,
@@ -139,6 +141,35 @@ export function FriendsProvider({ children }) {
     [user, friendships, load]
   )
 
+  // زیادکردنی هاوڕێ بە یوزەرنەیم
+  const addFriendByUsername = useCallback(
+    async (username) => {
+      if (!user) return { error: 'چوونەژوورەوە پێویستە' }
+      const target = await findProfileByUsername(username)
+      if (!target) return { error: 'بەکارهێنەر نەدۆزرایەوە' }
+      if (target.id === user.id) return { error: 'ناتوانیت خۆت زیاد بکەیت' }
+      const exists = friendships.find(
+        (f) => f.requester_id === target.id || f.addressee_id === target.id
+      )
+      if (exists) return { error: 'پێشتر داواکاری/هاوڕێیەتی هەیە' }
+      try {
+        await sendFriendRequest(user.id, target.id)
+        await load()
+        return { ok: true, name: target.display_name }
+      } catch (e) {
+        return { error: e.message }
+      }
+    },
+    [user, friendships, load]
+  )
+
+  // گەڕان بەپێی یوزەرنەیم — لیستی پرۆفایل (بۆ ڕووکاری گەڕان)
+  const searchUsers = useCallback(async (q) => {
+    if (!user) return []
+    const rows = await searchProfiles(q)
+    return rows.filter((r) => r.id !== user.id)
+  }, [user])
+
   // ناردنی داواکاری بە id (لە ناو ژوور/گرووپ)
   const addFriendById = useCallback(
     async (targetId) => {
@@ -228,6 +259,8 @@ export function FriendsProvider({ children }) {
     unread,
     totalUnread,
     addFriendByCode,
+    addFriendByUsername,
+    searchUsers,
     addFriendById,
     friendStatusWith,
     accept,

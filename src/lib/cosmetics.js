@@ -34,6 +34,17 @@ export const FRAMES = [
   { id: 'frame_storm',   type: 'frame', name: 'بروسکە',      price: 220, ring: 'from-sky-300 via-indigo-400 to-violet-600', glow: 'shadow-[0_0_18px_rgba(99,102,241,0.6)]', anim: 'cos-shimmer cos-pulse', fx: 'electric' },
   { id: 'frame_phoenix', type: 'frame', name: 'سیمورغ',      price: 380, ring: 'from-yellow-300 via-orange-500 to-red-600', glow: 'shadow-[0_0_22px_rgba(249,115,22,0.65)]', anim: 'cos-shimmer cos-pulse', fx: 'fire' },
   { id: 'frame_forest',  type: 'frame', name: 'دارستان',     price: 120, ring: 'from-green-400 to-emerald-700',      glow: 'shadow-[0_0_14px_rgba(34,197,94,0.5)]',    anim: 'cos-shimmer', fx: 'leaves' },
+  // ───── چوارچێوەی نوێ ─────
+  { id: 'frame_candy',   type: 'frame', name: 'شیرینی',      price: 80,  ring: 'from-pink-300 via-rose-300 to-red-400',     glow: '',                                         anim: 'cos-shimmer', fx: 'hearts' },
+  { id: 'frame_lagoon',  type: 'frame', name: 'لاگوون',      price: 120, ring: 'from-cyan-300 via-teal-400 to-emerald-500', glow: 'shadow-[0_0_14px_rgba(45,212,191,0.5)]',   anim: 'cos-shimmer', fx: 'bubbles' },
+  { id: 'frame_lava',    type: 'frame', name: 'لاڤا',        price: 220, ring: 'from-red-500 via-orange-600 to-amber-700',  glow: 'shadow-[0_0_18px_rgba(239,68,68,0.6)]',    anim: 'cos-shimmer cos-pulse', fx: 'fire' },
+  { id: 'frame_glacier', type: 'frame', name: 'سەهۆڵ',       price: 220, ring: 'from-cyan-100 via-sky-300 to-indigo-400',  glow: 'shadow-[0_0_18px_rgba(125,211,252,0.6)]',  anim: 'cos-shimmer cos-pulse', fx: 'ice' },
+  { id: 'frame_midnight',type: 'frame', name: 'نیوەشەو',     price: 220, ring: 'from-indigo-700 via-blue-900 to-slate-900', glow: 'shadow-[0_0_18px_rgba(67,56,202,0.6)]',    anim: 'cos-shimmer', fx: 'stars' },
+  { id: 'frame_sakura',  type: 'frame', name: 'ساکورا',      price: 220, ring: 'from-pink-300 via-fuchsia-400 to-rose-500', glow: 'shadow-[0_0_18px_rgba(244,114,182,0.6)]',  anim: 'cos-spin', fx: 'hearts' },
+  { id: 'frame_thunder', type: 'frame', name: 'هەورەترووسکە', price: 380, ring: 'from-yellow-300 via-amber-400 to-indigo-600', glow: 'shadow-[0_0_22px_rgba(250,204,21,0.65)]', anim: 'cos-spin', fx: 'electric' },
+  { id: 'frame_cosmos',  type: 'frame', name: 'کۆزمۆس',      price: 380, ring: 'from-violet-600 via-fuchsia-600 to-cyan-500',  glow: 'shadow-[0_0_24px_rgba(168,85,247,0.65)]', anim: 'cos-spin', fx: 'stars' },
+  { id: 'frame_diamond', type: 'frame', name: 'ئەڵماس',      price: 380, ring: 'from-sky-200 via-white to-cyan-200',         glow: 'shadow-[0_0_24px_rgba(186,230,253,0.7)]', anim: 'cos-shimmer cos-pulse', fx: 'stars' },
+  { id: 'frame_venom',   type: 'frame', name: 'ژەهر',        price: 220, ring: 'from-emerald-400 via-lime-500 to-green-700',  glow: 'shadow-[0_0_18px_rgba(132,204,22,0.6)]',  anim: 'cos-shimmer cos-pulse', fx: 'bubbles' },
 ]
 
 // ───── ڕەنگی ناو ─────
@@ -50,6 +61,15 @@ export const NAME_COLORS = [
   { id: 'color_gradient', type: 'nameColor', name: 'ڕەنگاوڕەنگ', price: 200, className: 'cos-shimmer bg-gradient-to-r from-fuchsia-500 via-amber-400 to-crew bg-clip-text text-transparent' },
   { id: 'color_fire',     type: 'nameColor', name: 'گڕی ئاگر', price: 200, className: 'cos-shimmer bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 bg-clip-text text-transparent' },
   { id: 'color_gold2',    type: 'nameColor', name: 'زێڕی شاهانە', price: 200, className: 'cos-shimmer bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-600 bg-clip-text text-transparent' },
+  // ───── ڕەنگی ناوی نوێ ─────
+  { id: 'color_pink',     type: 'nameColor', name: 'پەمەیی',    price: 60,  className: 'text-pink-500' },
+  { id: 'color_indigo',   type: 'nameColor', name: 'نیلی',      price: 60,  className: 'text-indigo-500' },
+  { id: 'color_orange',   type: 'nameColor', name: 'پرتەقاڵی',  price: 60,  className: 'text-orange-500' },
+  { id: 'color_cyan',     type: 'nameColor', name: 'مووسی',     price: 60,  className: 'text-cyan-500' },
+  { id: 'color_ocean',    type: 'nameColor', name: 'دەریایی',   price: 200, className: 'cos-shimmer bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 bg-clip-text text-transparent' },
+  { id: 'color_aurora',   type: 'nameColor', name: 'شەفەقی',    price: 200, className: 'cos-shimmer bg-gradient-to-r from-teal-300 via-emerald-400 to-violet-500 bg-clip-text text-transparent' },
+  { id: 'color_candy',    type: 'nameColor', name: 'شیرینی',    price: 200, className: 'cos-shimmer bg-gradient-to-r from-pink-400 via-fuchsia-400 to-purple-500 bg-clip-text text-transparent' },
+  { id: 'color_galaxy',   type: 'nameColor', name: 'گەلەکسی',   price: 280, className: 'cos-shimmer bg-gradient-to-r from-indigo-400 via-purple-500 to-fuchsia-600 bg-clip-text text-transparent' },
 ]
 
 // ───── ناونیشانەکان (لەژێر ناو پیشان دەدرێن) ─────
@@ -66,6 +86,15 @@ export const TITLES = [
   { id: 'title_mastermind',type: 'title', name: 'مێشکی پیلان', price: 300, text: 'مێشکی پیلان' },
   { id: 'title_champion',  type: 'title', name: 'پاڵەوان',  price: 300, text: 'پاڵەوان' },
   { id: 'title_immortal',  type: 'title', name: 'نەمر',     price: 380, text: 'نەمر' },
+  // ───── ناونیشانی نوێ ─────
+  { id: 'title_spy',       type: 'title', name: 'سیخوڕ',    price: 100, text: 'سیخوڕ' },
+  { id: 'title_ghost',     type: 'title', name: 'دروو',     price: 100, text: 'دروو' },
+  { id: 'title_genius',    type: 'title', name: 'زیرەک',    price: 150, text: 'زیرەک' },
+  { id: 'title_wolf',      type: 'title', name: 'گورگ',     price: 150, text: 'گورگ' },
+  { id: 'title_assassin',  type: 'title', name: 'تیرۆریست', price: 300, text: 'تیرۆریست' },
+  { id: 'title_warlord',   type: 'title', name: 'سەرکردە',  price: 300, text: 'سەرکردە' },
+  { id: 'title_emperor',   type: 'title', name: 'ئیمپراتۆر', price: 380, text: 'ئیمپراتۆر' },
+  { id: 'title_god',       type: 'title', name: 'خواوەند',  price: 380, text: 'خواوەند' },
 ]
 
 // ───── شێوەی سندووقی خەڵات ─────
@@ -77,6 +106,12 @@ export const CHEST_SKINS = [
   { id: 'skin_crystal', type: 'chestSkin', name: 'بلور',   price: 120, ring: 'border-sky-300/60 from-sky-300/25 to-cyan-500/10',     iconColor: 'text-sky-300',   glow: 'shadow-[0_0_28px_rgba(125,211,252,0.4)]' },
   { id: 'skin_inferno', type: 'chestSkin', name: 'دۆزەخ',  price: 220, ring: 'border-orange-400/60 from-orange-400/25 to-red-600/10', iconColor: 'text-orange-400', glow: 'shadow-[0_0_28px_rgba(249,115,22,0.45)]' },
   { id: 'skin_gold',    type: 'chestSkin', name: 'زێڕین',  price: 380, ring: 'border-amber-300/60 from-amber-300/30 to-yellow-600/10', iconColor: 'text-amber-300', glow: 'shadow-[0_0_30px_rgba(251,191,36,0.5)]' },
+  // ───── شێوەی سندووقی نوێ ─────
+  { id: 'skin_rose',    type: 'chestSkin', name: 'گوڵی',   price: 120, ring: 'border-pink-400/60 from-pink-400/25 to-fuchsia-600/10', iconColor: 'text-pink-400', glow: 'shadow-[0_0_28px_rgba(244,114,182,0.4)]' },
+  { id: 'skin_ocean',   type: 'chestSkin', name: 'دەریا',  price: 120, ring: 'border-cyan-400/60 from-cyan-400/25 to-blue-600/10',   iconColor: 'text-cyan-400', glow: 'shadow-[0_0_28px_rgba(34,211,238,0.4)]' },
+  { id: 'skin_toxic',   type: 'chestSkin', name: 'ژەهراوی', price: 220, ring: 'border-lime-400/60 from-lime-400/25 to-green-700/10',  iconColor: 'text-lime-400', glow: 'shadow-[0_0_28px_rgba(163,230,53,0.45)]' },
+  { id: 'skin_galaxy',  type: 'chestSkin', name: 'گەلەکسی', price: 380, ring: 'border-violet-400/60 from-indigo-500/25 to-fuchsia-700/10', iconColor: 'text-violet-300', glow: 'shadow-[0_0_30px_rgba(168,85,247,0.5)]' },
+  { id: 'skin_diamond', type: 'chestSkin', name: 'ئەڵماس', price: 380, ring: 'border-sky-200/60 from-sky-200/30 to-cyan-300/10',    iconColor: 'text-sky-200', glow: 'shadow-[0_0_30px_rgba(186,230,253,0.55)]' },
 ]
 
 export const CATALOG = [...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS]

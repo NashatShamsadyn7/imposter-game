@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ChevronRight,
   UserPlus,
@@ -8,6 +8,8 @@ import {
   Users,
   Loader2,
   Trash2,
+  Search,
+  AtSign,
 } from 'lucide-react'
 import { useFriends } from '../state/FriendsContext'
 import { useProfileViewer } from '../state/ProfileViewer'
@@ -20,14 +22,35 @@ import { sfx } from '../lib/sound'
 
 // شاشەی هاوڕێیان
 export default function Friends({ onBack, onJoinRoom }) {
-  const { friends, incoming, outgoing, unread, addFriendByCode, accept, reject, remove } =
+  const { friends, incoming, outgoing, unread, searchUsers, addFriendByUsername, accept, reject, remove } =
     useFriends()
   const { openProfile } = useProfileViewer() || {}
   const t = useT()
-  const [code, setCode] = useState('')
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [searching, setSearching] = useState(false)
   const [msg, setMsg] = useState(null)
-  const [adding, setAdding] = useState(false)
+  const [sentTo, setSentTo] = useState({}) // id -> true
   const [chatWith, setChatWith] = useState(null)
+
+  // گەڕانی خۆکار (debounce) — کاتێک ٢ پیت یان زیاتر بنووسرێت
+  useEffect(() => {
+    const q = query.trim()
+    if (q.length < 2) {
+      setResults([])
+      return
+    }
+    let cancelled = false
+    setSearching(true)
+    const id = setTimeout(async () => {
+      const rows = await searchUsers(q)
+      if (!cancelled) {
+        setResults(rows)
+        setSearching(false)
+      }
+    }, 350)
+    return () => { cancelled = true; clearTimeout(id) }
+  }, [query, searchUsers])
 
   if (chatWith) {
     return (
@@ -35,17 +58,14 @@ export default function Friends({ onBack, onJoinRoom }) {
     )
   }
 
-  const submitAdd = async () => {
-    if (!code.trim()) return
-    setAdding(true)
+  const sendRequest = async (username, id) => {
     setMsg(null)
-    const res = await addFriendByCode(code)
-    setAdding(false)
+    const res = await addFriendByUsername(username)
     if (res.error) {
       setMsg({ type: 'error', text: res.error })
     } else {
+      setSentTo((p) => ({ ...p, [id]: true }))
       setMsg({ type: 'ok', text: `داواکاری نێردرا بۆ ${res.name}` })
-      setCode('')
       sfx.tap()
     }
   }
@@ -70,22 +90,53 @@ export default function Friends({ onBack, onJoinRoom }) {
         </div>
       </header>
 
-      {/* زیادکردن بە کۆد */}
+      {/* گەڕان بەپێی یوزەرنەیم */}
       <Panel className="mb-5 !p-4">
-        <p className="mb-3 text-sm font-bold text-ink">{t('زیادکردنی هاوڕێ بە کۆد')}</p>
-        <div className="flex gap-2">
+        <p className="mb-3 text-sm font-bold text-ink">{t('گەڕان بۆ هاوڕێ بە ناوی بەکارهێنەر')}</p>
+        <div className="flex items-center rounded-2xl border border-line bg-surface2 px-3 focus-within:border-crew">
+          <Search className="h-4 w-4 shrink-0 text-muted" />
           <input
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            onKeyDown={(e) => e.key === 'Enter' && submitAdd()}
-            placeholder={t('کۆدی هاوڕێ')}
-            maxLength={6}
-            className="min-w-0 flex-1 rounded-2xl border border-line bg-surface2 px-4 py-3 text-center font-mono text-lg font-black tracking-widest text-ink placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-muted/60 outline-none focus:border-crew"
+            value={query}
+            onChange={(e) => setQuery(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+            placeholder={t('ناوی بەکارهێنەر بنووسە')}
+            dir="ltr"
+            className="min-w-0 flex-1 bg-transparent px-2 py-3 text-left font-mono text-ink outline-none placeholder:font-sans placeholder:text-muted/60"
           />
-          <Button onClick={submitAdd} disabled={adding || !code.trim()} className="!px-4">
-            {adding ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5" />}
-          </Button>
+          {searching && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted" />}
         </div>
+
+        {/* ئەنجامەکانی گەڕان */}
+        {results.length > 0 && (
+          <div className="mt-3 space-y-2">
+            {results.map((r) => {
+              const sent = sentTo[r.id]
+              return (
+                <div key={r.id} className="flex items-center gap-3 rounded-2xl bg-ink/5 px-3 py-2">
+                  <Avatar url={r.avatar_url} name={r.display_name} size={38} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-bold text-ink">{r.display_name}</p>
+                    <p dir="ltr" className="flex items-center gap-0.5 truncate text-right text-xs text-muted">
+                      <AtSign className="h-3 w-3" />{r.username}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => sendRequest(r.username, r.id)}
+                    disabled={sent}
+                    className={`btn-press flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold ${
+                      sent ? 'bg-crew/15 text-crew' : 'bg-crew text-white'
+                    }`}
+                  >
+                    {sent ? <Check className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                    {sent ? t('نێردرا') : t('زیادکردن')}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {query.trim().length >= 2 && !searching && results.length === 0 && (
+          <p className="mt-3 text-center text-sm text-muted">{t('بەکارهێنەر نەدۆزرایەوە')}</p>
+        )}
         {msg && (
           <p
             className={`mt-2 text-center text-sm font-medium ${

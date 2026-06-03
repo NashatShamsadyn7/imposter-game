@@ -1,22 +1,39 @@
 import { useState, useRef } from 'react'
-import { ChevronRight, Camera, Check, Copy, Loader2, IdCard } from 'lucide-react'
+import { ChevronRight, Camera, Check, Copy, Loader2, AtSign, Share2 } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
-import { uploadAvatar, updateMyProfile } from '../lib/supabase'
+import { uploadAvatar, updateMyProfile, setUsername as saveUsername } from '../lib/supabase'
 import { sfx } from '../lib/sound'
 
-// شاشەی دەستکاریکردنی پرۆفایل — ناو + وێنە + کۆدی هاوڕێیەتی
+// نووسینی هۆکاری شکستی یوزەرنەیم
+const USERNAME_ERR = {
+  invalid: 'ناو دەبێت ٣–٢٠ پیت بێت (a-z، 0-9، _ )',
+  taken: 'ئەم ناوە وەرگیراوە',
+  reserved: 'ئەم ناوە ڕێگەپێدراو نییە',
+  error: 'هەڵەیەک ڕوویدا',
+}
+
+// شاشەی دەستکاریکردنی پرۆفایل — ناو + وێنە + یوزەرنەیم + لینکی بانگهێشت
 export default function ProfileEdit({ onBack }) {
-  const { user, profile, setProfile } = useAuth()
+  const { user, profile, setProfile, refreshProfile } = useAuth()
   const [name, setName] = useState(profile?.display_name || '')
+  const [username, setUsername] = useState(profile?.username || '')
   const [avatar, setAvatar] = useState(profile?.avatar_url || null)
   const [saving, setSaving] = useState(false)
+  const [savingU, setSavingU] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [done, setDone] = useState(false)
+  const [uDone, setUDone] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState(null)
+  const [uError, setUError] = useState(null)
   const fileRef = useRef(null)
+
+  const hasUsername = !!profile?.username
+  const shareLink = profile?.username
+    ? `${window.location.origin}/?ref=${profile.username}`
+    : null
 
   const pickFile = () => fileRef.current?.click()
 
@@ -59,12 +76,45 @@ export default function ProfileEdit({ onBack }) {
     }
   }
 
-  const copyCode = () => {
-    if (!profile?.friend_code) return
-    navigator.clipboard?.writeText(profile.friend_code)
+  const saveUname = async () => {
+    const clean = username.trim().toLowerCase()
+    if (!clean) return setUError(USERNAME_ERR.invalid)
+    setSavingU(true)
+    setUError(null)
+    try {
+      const res = await saveUsername(clean)
+      if (res?.ok) {
+        sfx.win()
+        setUDone(true)
+        setTimeout(() => setUDone(false), 1500)
+        await refreshProfile?.()
+      } else {
+        setUError(USERNAME_ERR[res?.reason] || USERNAME_ERR.error)
+      }
+    } catch {
+      setUError(USERNAME_ERR.error)
+    } finally {
+      setSavingU(false)
+    }
+  }
+
+  const copyLink = () => {
+    if (!shareLink) return
+    navigator.clipboard?.writeText(shareLink)
     sfx.tap()
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  const shareInvite = async () => {
+    if (!shareLink) return
+    sfx.tap()
+    const text = `یاری ساختەکار بکە لەگەڵم! 🚀\n${shareLink}`
+    if (navigator.share) {
+      try { await navigator.share({ title: 'ساختەکار', text, url: shareLink }) } catch { /* لابردن */ }
+    } else {
+      copyLink()
+    }
   }
 
   return (
@@ -91,7 +141,7 @@ export default function ProfileEdit({ onBack }) {
         <p className="mt-2 text-xs text-muted">کرتە بکە بۆ گۆڕینی وێنە</p>
       </div>
 
-      {/* ناو */}
+      {/* ناوی پیشاندان */}
       <Panel className="mb-4 !p-4">
         <label className="mb-2 block text-sm font-bold text-ink">ناوی پیشاندان</label>
         <input
@@ -103,27 +153,84 @@ export default function ProfileEdit({ onBack }) {
         />
       </Panel>
 
-      {/* کۆدی هاوڕێیەتی */}
-      <Panel className="mb-6 !p-4">
-        <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-crew/12 text-crew">
-            <IdCard className="h-5 w-5" />
+      {/* یوزەرنەیم — هاوڕێیان بەمە دەتدۆزنەوە */}
+      <Panel className="mb-4 !p-4">
+        <label className="mb-2 block text-sm font-bold text-ink">
+          ناوی بەکارهێنەر (username)
+        </label>
+        <div className="flex gap-2">
+          <div className="flex min-w-0 flex-1 items-center rounded-2xl border border-line bg-surface2 px-3 focus-within:border-crew">
+            <AtSign className="h-4 w-4 shrink-0 text-muted" />
+            <input
+              value={username}
+              onChange={(e) =>
+                setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 20))
+              }
+              onKeyDown={(e) => e.key === 'Enter' && saveUname()}
+              placeholder="username"
+              dir="ltr"
+              className="min-w-0 flex-1 bg-transparent px-2 py-3 text-left font-mono text-ink outline-none"
+            />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-bold text-ink">کۆدی هاوڕێیەتی</p>
-            <p className="font-mono text-lg font-black tracking-widest text-crew">
-              {profile?.friend_code || '—'}
+          <Button
+            onClick={saveUname}
+            disabled={savingU || !username.trim() || username === profile?.username}
+            className="!px-4"
+          >
+            {savingU ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : uDone ? (
+              <Check className="h-5 w-5" />
+            ) : (
+              'پاشەکەوت'
+            )}
+          </Button>
+        </div>
+        {uError ? (
+          <p className="mt-2 text-xs font-medium text-impostor">{uError}</p>
+        ) : (
+          <p className="mt-2 text-xs text-muted">
+            ٣–٢٠ پیت. تەنها پیتی ئینگلیزی بچووک، ژمارە و _ . هاوڕێیان بەمە دەتدۆزنەوە.
+          </p>
+        )}
+      </Panel>
+
+      {/* لینکی بانگهێشت — دراو بۆ تۆ و هاوڕێکەت */}
+      <Panel className="mb-6 !p-4">
+        <div className="mb-3 flex items-center gap-3">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-400/15 text-amber-500">
+            <Share2 className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-bold text-ink">لینکی بانگهێشتی هاوڕێیان</p>
+            <p className="text-xs text-muted">
+              هەرکەسێک بەم لینکە بچێتە ژوورەوە، هەردووکتان دراو وەردەگرن
             </p>
           </div>
-          <button
-            onClick={copyCode}
-            className="btn-press grid h-10 w-10 place-items-center rounded-xl bg-ink/5 text-ink hover:bg-ink/10"
-            title="کۆپیکردن"
-          >
-            {copied ? <Check className="h-5 w-5 text-crew" /> : <Copy className="h-5 w-5" />}
-          </button>
         </div>
-        <p className="mt-2 text-xs text-muted">ئەم کۆدە بدە بە هاوڕێیەکانت بۆ زیادکردنت</p>
+        {hasUsername ? (
+          <>
+            <div className="flex items-center gap-2 rounded-2xl bg-surface2 px-3 py-2.5">
+              <span dir="ltr" className="min-w-0 flex-1 truncate text-left font-mono text-xs text-crew">
+                {shareLink}
+              </span>
+              <button
+                onClick={copyLink}
+                className="btn-press grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ink/5 text-ink hover:bg-ink/10"
+                title="کۆپیکردن"
+              >
+                {copied ? <Check className="h-5 w-5 text-crew" /> : <Copy className="h-5 w-5" />}
+              </button>
+            </div>
+            <Button onClick={shareInvite} className="mt-3 w-full">
+              <Share2 className="h-5 w-5" /> هاوبەشکردنی لینک
+            </Button>
+          </>
+        ) : (
+          <p className="rounded-2xl bg-ink/5 px-3 py-3 text-center text-xs text-muted">
+            سەرەتا ناوی بەکارهێنەرێک دابنێ بۆ دروستکردنی لینکی بانگهێشت
+          </p>
+        )}
       </Panel>
 
       {error && (

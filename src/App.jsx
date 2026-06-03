@@ -11,7 +11,9 @@ import { LanguageProvider } from './lib/i18n'
 import Background from './components/Background'
 import ErrorBoundary from './components/ErrorBoundary'
 import LevelUpOverlay from './components/LevelUpOverlay'
+import ReferralHandler, { REF_KEY } from './components/ReferralHandler'
 import Login from './screens/Login'
+import UsernamePrompt from './screens/UsernamePrompt'
 import MainMenu from './screens/MainMenu'
 // ───── بارکردنی درەنگ (code-splitting) — هەر شاشە بە پێویست دادەبەزرێت ─────
 const SettingsScreen = lazy(() => import('./screens/Settings'))
@@ -125,7 +127,14 @@ function Shell({ ui }) {
     setView('online')
   }
 
+  // بۆردی ناچاری یوزەرنەیم — بەبێ ناوی بەکارهێنەر ناتوانرێت بەردەوام بێت.
+  // لەناو دارەکەی provider ـەکان دەمێنێتەوە تاکو ReferralHandler کار بکات.
+  const needsUsername = !profile.username
+
   let inner
+  if (needsUsername) {
+    inner = <UsernamePrompt />
+  } else {
   switch (view) {
     case 'online':
       inner = (
@@ -181,6 +190,7 @@ function Shell({ ui }) {
         />
       )
   }
+  }
 
   return (
     <EconomyProvider>
@@ -192,6 +202,7 @@ function Shell({ ui }) {
             </ErrorBoundary>
           </ProfileViewerProvider>
           <LevelUpOverlay />
+          <ReferralHandler />
         </FriendsProvider>
       </NotificationProvider>
     </EconomyProvider>
@@ -217,6 +228,18 @@ export default function App() {
     setMusicEnabled(musicOn)
     localStorage.setItem('imposter:music', musicOn ? 'on' : 'off')
   }, [musicOn])
+
+  // گرتنی کۆدی بانگهێشت (?ref=username) لە یەکەم سەرداندا و پاشەکەوتی لە
+  // localStorage — چونکە چوونەژوورەوەی Google URL ـەکە دەشوات. پاکیشی دەکەینەوە.
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get('ref')
+    if (ref) {
+      try { localStorage.setItem(REF_KEY, ref.toLowerCase()) } catch { /* noop */ }
+      const url = new URL(window.location.href)
+      url.searchParams.delete('ref')
+      window.history.replaceState({}, '', url.pathname + url.search)
+    }
+  }, [])
 
   // چالاککردنی ئۆدیۆ لەدوای یەکەم کرتە
   useEffect(() => {

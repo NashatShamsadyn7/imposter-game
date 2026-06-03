@@ -3,9 +3,10 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useState } from 'react'
-import { Gift, Flame, Target, Check, Loader2 } from 'lucide-react'
+import { Gift, Flame, Target, Check, Loader2, Coins } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
-import { claimDaily, claimDailyQuest, todayGameCount } from '../lib/supabase'
+import { useEconomy } from '../state/EconomyContext'
+import { claimDaily, claimDailyQuest, claimDailyCoins, todayGameCount } from '../lib/supabase'
 import { Panel } from './ui'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
@@ -14,14 +15,18 @@ const QUEST_GOAL = 3
 
 export default function DailyPanel() {
   const { profile, user, refreshProfile } = useAuth()
+  const { syncCoins } = useEconomy()
   const t = useT()
   const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD بە UTC
   const [games, setGames] = useState(0)
   const [busy, setBusy] = useState(false)
   const [reward, setReward] = useState(null)
+  const [coinReward, setCoinReward] = useState(null)
+  const [coinsClaimedLocal, setCoinsClaimedLocal] = useState(false)
 
   const dailyClaimed = profile?.last_daily === today
   const questClaimed = profile?.quest_day === today
+  const coinsClaimed = profile?.last_daily_coins === today || coinsClaimedLocal
   const streak = profile?.login_streak || 0
   const questDone = games >= QUEST_GOAL
 
@@ -38,6 +43,23 @@ export default function DailyPanel() {
         sfx.win()
         setReward(res.reward)
         setTimeout(() => setReward(null), 2500)
+        await refreshProfile?.()
+      }
+    } catch { /* migration هێشتا جێبەجێ نەکراوە */ } finally {
+      setBusy(false)
+    }
+  }
+
+  const doClaimCoins = async () => {
+    setBusy(true)
+    try {
+      const res = await claimDailyCoins()
+      if (res?.ok) {
+        sfx.win()
+        if (typeof res.coins === 'number') syncCoins(res.coins)
+        setCoinReward(res.reward)
+        setCoinsClaimedLocal(true)
+        setTimeout(() => setCoinReward(null), 2500)
         await refreshProfile?.()
       }
     } catch { /* migration هێشتا جێبەجێ نەکراوە */ } finally {
@@ -80,6 +102,34 @@ export default function DailyPanel() {
         ) : (
           <button
             onClick={doClaimDaily}
+            disabled={busy}
+            className="btn-press rounded-xl bg-amber-500 px-4 py-1.5 text-sm font-black text-white disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : t('وەرگرتن')}
+          </button>
+        )}
+      </div>
+
+      {/* دراوی ڕۆژانە */}
+      <div className="mt-3 flex items-center gap-3 border-t border-line/60 pt-3">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-400/15 text-amber-500">
+          <Coins className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-ink">{t('دراوی ڕۆژانە')}</p>
+          <p className="text-xs text-muted">{t('هەر ڕۆژێک دراوی بەخۆڕایی — لەگەڵ سلسلە زیاد دەبێت')}</p>
+        </div>
+        {coinReward ? (
+          <span className="flex items-center gap-1 rounded-xl bg-amber-400/20 px-3 py-1.5 text-sm font-black text-amber-500">
+            +{coinReward} <Coins className="h-4 w-4" />
+          </span>
+        ) : coinsClaimed ? (
+          <span className="flex items-center gap-1 rounded-xl bg-crew/15 px-3 py-1.5 text-sm font-bold text-crew">
+            <Check className="h-4 w-4" /> {t('وەرگیرا')}
+          </span>
+        ) : (
+          <button
+            onClick={doClaimCoins}
             disabled={busy}
             className="btn-press rounded-xl bg-amber-500 px-4 py-1.5 text-sm font-black text-white disabled:opacity-50"
           >

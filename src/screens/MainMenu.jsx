@@ -5,6 +5,7 @@ import { useEconomy } from '../state/EconomyContext'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import DailyPanel from '../components/DailyPanel'
+import ShareApp from '../components/ShareApp'
 import { levelInfo } from '../lib/achievements'
 import { equippedFrameStyle, equippedNameColor, equippedTitle } from '../lib/cosmetics'
 import { useT } from '../lib/i18n'
@@ -107,6 +108,9 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
 
       {/* پاداشتی ڕۆژانە + مەرج */}
       <DailyPanel />
+
+      {/* بانگهێشتی هاوڕێیان + پاداشتی هاوبەشکردن */}
+      <ShareApp />
 
       <div className="flex flex-1 flex-col justify-center gap-4">
         {/* ئۆنلاین */}

@@ -21,6 +21,7 @@ const FALLBACK = {
   owned: new Set(),
   equipped: {},
   addCoins: () => {},
+  syncCoins: () => {},
   buy: async () => false,
   equip: () => {},
   isOwned: () => false,
@@ -145,6 +146,13 @@ export function EconomyProvider({ children }) {
     }
   }, [mode])
 
+  // ───── هاوکاتکردنی باڵانس لەگەڵ سێرڤەر ─────
+  // بۆ پاداشتە سێرڤەرییەکان (بانگهێشت/هاوبەشکردن/ڕۆژانە) کە
+  // ڕاستەوخۆ coins لە بنکەی دراوەدا نوێ دەکەنەوە و باڵانسی نوێ دەگەڕێننەوە.
+  const syncCoins = useCallback((n) => {
+    if (typeof n === 'number' && n >= 0) setCoins(n)
+  }, [])
+
   const isOwned = useCallback((id) => owned.has(id), [owned])
 
   // ───── کڕین (async) — true ئەگەر سەرکەوتوو بوو ─────
@@ -204,8 +212,8 @@ export function EconomyProvider({ children }) {
   }, [mode, user?.id])
 
   const value = useMemo(
-    () => ({ coins, owned, equipped, addCoins, buy, equip, isOwned }),
-    [coins, owned, equipped, addCoins, buy, equip, isOwned],
+    () => ({ coins, owned, equipped, addCoins, syncCoins, buy, equip, isOwned }),
+    [coins, owned, equipped, addCoins, syncCoins, buy, equip, isOwned],
   )
 
   return <EconomyContext.Provider value={value}>{children}</EconomyContext.Provider>

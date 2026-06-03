@@ -110,6 +110,53 @@ export async function getProfile(userId) {
   return data
 }
 
+// ═══════════════ یوزەرنەیم + بانگهێشت (referral) ═══════════════
+// دانانی یوزەرنەیم — { ok, username } یان { ok:false, reason }
+export async function setUsername(name) {
+  need()
+  const { data, error } = await supabase.rpc('set_username', { p_username: name })
+  if (error) return { ok: false, reason: 'error' }
+  return data
+}
+
+// گەڕان بەپێی سەرەتای یوزەرنەیم — لیستی پرۆفایل
+export async function searchProfiles(q) {
+  if (!supabase || !q || q.trim().length < 2) return []
+  const { data } = await supabase.rpc('search_profiles', { p_q: q.trim() })
+  return data || []
+}
+
+// دۆزینەوەی یەک پرۆفایل بە یوزەرنەیمی تەواو
+export async function findProfileByUsername(username) {
+  need()
+  const { data } = await supabase.rpc('profile_by_username', { p_username: username })
+  return (data && data[0]) || null
+}
+
+// وەرگرتنی پاداشتی بانگهێشت (تەنها یەک جار بۆ بەکارهێنەری نوێ)
+export async function claimReferral(refUsername) {
+  if (!supabase) return { ok: false }
+  const { data, error } = await supabase.rpc('claim_referral', { p_ref_username: refUsername })
+  if (error) return { ok: false, reason: 'error' }
+  return data
+}
+
+// وەرگرتنی پاداشتی هاوبەشکردنی ئەپ (ڕۆژانە)
+export async function claimShareReward() {
+  if (!supabase) return { ok: false }
+  const { data, error } = await supabase.rpc('claim_share_reward')
+  if (error) return { ok: false, reason: 'error' }
+  return data
+}
+
+// وەرگرتنی پاداشتی دراوی ڕۆژانە
+export async function claimDailyCoins() {
+  if (!supabase) return { ok: false }
+  const { data, error } = await supabase.rpc('claim_daily_coins')
+  if (error) return { ok: false, reason: 'error' }
+  return data
+}
+
 export async function getLeaderboard(limit = 10) {
   if (!supabase) return []
   const { data } = await supabase
