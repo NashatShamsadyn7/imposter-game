@@ -66,7 +66,7 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm rounded-3xl border border-line bg-surface p-5 shadow-soft animate-scale-in"
+        className="w-full max-w-sm rounded-3xl border border-crew/25 bg-surface/80 p-5 shadow-soft backdrop-blur-xl animate-scale-in shadow-[0_0_30px_-8px_rgb(var(--c-crew)/0.4)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* سەرپەڕە */}

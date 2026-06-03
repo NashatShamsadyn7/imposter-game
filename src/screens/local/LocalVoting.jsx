@@ -56,7 +56,7 @@ export default function LocalVoting() {
           <p className="mb-10 text-sm text-muted">{t('دەنگدەر')} {voterIndex + 1} {t('لە')} {voters.length}</p>
           <button
             onClick={() => { sfx.click(); setHanded(true) }}
-            className="btn-press animate-pulse-glow mx-auto flex h-44 w-44 flex-col items-center justify-center gap-3 rounded-full border-2 border-crew/40 bg-surface shadow-soft"
+            className="btn-press animate-pulse-glow neon-ring mx-auto flex h-44 w-44 flex-col items-center justify-center gap-3 rounded-full border-2 border-crew/40 bg-surface shadow-soft"
           >
             <Vote className="h-12 w-12 text-crew" />
             <span className="font-bold text-crew">{t('دەنگدان')}</span>

@@ -78,13 +78,13 @@ export default function Discussion() {
           </div>
 
           {/* تایمەر */}
-          <Panel className="flex flex-col items-center py-6">
+          <Panel className={`flex flex-col items-center py-6 ${urgent ? '' : 'panel-glow'}`}>
             <div className="mb-2 flex items-center gap-2 text-ink/60">
               <Clock className="h-4 w-4" />
               <span className="text-sm">{t('کاتی گفتوگۆ')}</span>
             </div>
             <p
-              className={`text-5xl font-black tabular-nums ${
+              className={`text-5xl font-black tabular-nums neon-text ${
                 urgent ? 'animate-pulse text-impostor' : 'text-ink'
               }`}
             >

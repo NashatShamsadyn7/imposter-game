@@ -39,11 +39,11 @@ export default function RulesModal({ onClose }) {
       onClick={onClose}
     >
       <div
-        className="panel max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 animate-scale-in"
+        className="panel panel-glow max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-black text-crew">{t('چۆنیەتی یاری کردن')}</h2>
+          <h2 className="text-xl font-black text-crew neon-text">{t('چۆنیەتی یاری کردن')}</h2>
           <button
             onClick={onClose}
             className="btn-press rounded-full p-2 bg-ink/5 hover:bg-ink/10 text-ink/70"
