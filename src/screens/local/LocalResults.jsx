@@ -28,7 +28,7 @@ export default function LocalResults() {
         <div className={`mb-4 inline-flex rounded-full border-2 p-5 ${impostorWin ? 'border-impostor bg-impostor/12 animate-pulse-glow-red' : 'border-crew bg-crew/12 animate-pulse-glow'}`}>
           {impostorWin ? <Skull className="h-14 w-14 text-impostor" /> : <Trophy className="h-14 w-14 text-crew" />}
         </div>
-        <h1 className={`mb-4 text-3xl font-black ${impostorWin ? 'text-impostor' : 'text-crew'}`}>
+        <h1 className={`mb-4 text-3xl font-black neon-text ${impostorWin ? 'text-impostor' : 'text-crew'}`}>
           {impostorWin ? t('ساختەکارەکان سەرکەوتن!') : t('دەستەی کەشتی سەرکەوتن!')}
         </h1>
       </div>

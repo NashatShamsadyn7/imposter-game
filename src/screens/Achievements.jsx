@@ -28,7 +28,7 @@ export default function Achievements({ onBack }) {
       </header>
 
       {/* کارتی ئاست */}
-      <Panel className="mb-5 animate-scale-in">
+      <Panel className="panel-glow mb-5 animate-scale-in">
         <div className="flex items-center gap-4">
           <div className="relative">
             <Avatar url={stats.avatar_url} name={stats.display_name} size={64} level={level} ring />

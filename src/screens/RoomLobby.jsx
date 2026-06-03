@@ -108,10 +108,10 @@ export default function RoomLobby() {
         </div>
         <button
           onClick={copyCode}
-          className="btn-press flex items-center gap-2 rounded-xl border border-crew/40 bg-crew/10 px-4 py-2"
+          className="btn-press neon-ring flex items-center gap-2 rounded-xl border border-crew/40 bg-crew/10 px-4 py-2"
         >
           <span className="text-xs text-ink/60">{t('کۆد')}</span>
-          <span className="text-lg font-black tracking-widest text-crew">{room.code}</span>
+          <span className="text-lg font-black tracking-widest text-crew neon-text">{room.code}</span>
           {copied ? (
             <Check className="h-4 w-4 text-crew" />
           ) : (

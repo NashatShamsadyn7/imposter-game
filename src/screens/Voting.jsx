@@ -95,7 +95,7 @@ export default function Voting() {
     <div className="mx-auto max-w-md px-4 py-6 pb-28">
       <div className="mb-5 text-center animate-fade-in">
         <Vote className="mx-auto mb-2 h-10 w-10 text-impostor" />
-        <h1 className="text-2xl font-black text-ink">{t('دەنگدانی نهێنی')}</h1>
+        <h1 className="text-2xl font-black text-ink neon-text">{t('دەنگدانی نهێنی')}</h1>
         <p className="mt-1 text-sm text-ink/60">
           {need === 1 ? t('یەک کەس هەڵبژێرە کە گومانی لێ دەکەیت') : `${need} ${t('کەس هەڵبژێرە کە گومانیان لێ دەکەیت')}`}
         </p>

@@ -65,7 +65,7 @@ export default function LocalReveal() {
           <p className="mb-10 text-sm text-muted">{t('یاریزانی')} {game.revealIndex + 1} {t('لە')} {game.players.length}</p>
           <button
             onClick={handleFlip}
-            className="btn-press animate-pulse-glow group mx-auto flex h-48 w-48 flex-col items-center justify-center gap-3 rounded-full border-2 border-crew/40 bg-surface shadow-soft"
+            className="btn-press animate-pulse-glow neon-ring group mx-auto flex h-48 w-48 flex-col items-center justify-center gap-3 rounded-full border-2 border-crew/40 bg-surface shadow-soft"
           >
             <Eye className="h-12 w-12 text-crew transition group-hover:scale-110" />
             <span className="font-bold text-crew">{t('پیشاندانی ڕۆڵ')}</span>
@@ -133,7 +133,7 @@ export default function LocalReveal() {
           <span className="text-sm font-bold">{t('دەستەی کەشتی')}</span>
         </div>
         <p className="mb-1 text-xs text-muted">{t('هاوپۆل:')} {game.category.name}</p>
-        <h1 className="mb-4 text-4xl font-black text-ink">{game.secretWord.ku}</h1>
+        <h1 className="mb-4 text-4xl font-black text-ink neon-text">{game.secretWord.ku}</h1>
         <div className="mb-5 flex justify-center">
           <WordImage englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={210} />
         </div>
