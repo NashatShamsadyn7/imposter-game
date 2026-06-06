@@ -41,3 +41,27 @@ end;
 $$ language plpgsql security definer;
 
 grant execute on function public.cast_bot_votes(uuid, uuid, uuid[]) to authenticated;
+
+-- ٤. زیادکردنی بۆت — RLS ـی "rp insert self" ڕێگە نادات خانەخوێ ڕیزی بۆت
+--    دابنێت (چونکە user_id ـی بۆت ≠ auth.uid()). بۆیە بە فەنکشنی
+--    security definer دەیکەین، کە تەنها خانەخوێ بۆ ژوورەکەی خۆی.
+create or replace function public.add_bot(p_room uuid, p_name text, p_order int)
+returns uuid as $$
+declare
+  v_id uuid := gen_random_uuid();
+begin
+  if auth.uid() <> (select host_id from public.rooms where id = p_room) then
+    raise exception 'تەنها خانەخوێ دەتوانێت بۆت زیاد بکات';
+  end if;
+  insert into public.room_players (
+    room_id, user_id, display_name, avatar_url, is_host, order_index,
+    role, ejected, points_this_game, can_speak, mic_requested, is_spectator, is_bot
+  ) values (
+    p_room, v_id, p_name, null, false, p_order,
+    null, false, 0, false, false, false, true
+  );
+  return v_id;
+end;
+$$ language plpgsql security definer;
+
+grant execute on function public.add_bot(uuid, text, int) to authenticated;

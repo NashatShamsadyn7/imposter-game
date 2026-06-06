@@ -216,10 +216,14 @@ export function RoomProvider({ children }) {
   )
 
   // زیادکردنی بۆت (تەنها خانەخوێ، تەنها لە لۆبی)
-  const addBotPlayer = useCallback(() => {
+  const addBotPlayer = useCallback(async () => {
     if (!isHost) return
     const botCount = players.filter((p) => p.is_bot).length
-    apiAddBot(roomId, players.length, botCount + 1)
+    try {
+      await apiAddBot(roomId, players.length, botCount + 1)
+    } catch (e) {
+      setError(e.message)
+    }
   }, [isHost, players, roomId])
 
   // ───── دەنگدانی بۆتەکان (خانەخوێ بەڕێوەی دەبات) ─────

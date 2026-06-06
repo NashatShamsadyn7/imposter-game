@@ -273,25 +273,16 @@ export async function leaveRoom(roomId, userId) {
 }
 
 // ───── بۆتەکان ─────
-// زیادکردنی بۆتێک بۆ ژوور (تەنها خانەخوێ) — id ـی دەستکرد
+// زیادکردنی بۆتێک بۆ ژوور (تەنها خانەخوێ) — بە فەنکشنی security definer
+// (RLS ـی "rp insert self" ڕێگە بە دانانی ڕاستەوخۆی ڕیزی بۆت نادات)
 export async function addBot(roomId, orderIndex, botNumber) {
   need()
-  const botId = (crypto.randomUUID?.() || `bot-${Date.now()}-${Math.random().toString(36).slice(2)}`)
-  await supabase.from('room_players').insert({
-    room_id: roomId,
-    user_id: botId,
-    display_name: `بۆت ${botNumber}`,
-    avatar_url: null,
-    is_host: false,
-    order_index: orderIndex,
-    role: null,
-    ejected: false,
-    points_this_game: 0,
-    can_speak: false,
-    mic_requested: false,
-    is_spectator: false,
-    is_bot: true,
+  const { error } = await supabase.rpc('add_bot', {
+    p_room: roomId,
+    p_name: `بۆت ${botNumber}`,
+    p_order: orderIndex,
   })
+  if (error) throw error
 }
 
 // دەنگدانی بۆت (لە لای خانەخوێوە) — لیستی ئامانج
