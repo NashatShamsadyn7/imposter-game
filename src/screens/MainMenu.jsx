@@ -1,4 +1,4 @@
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare, Crown, ShoppingBag, Coins, BarChart3 } from 'lucide-react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, MessagesSquare, Coins, BarChart3 } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import { useEconomy } from '../state/EconomyContext'
@@ -135,21 +135,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
           </Panel>
         </button>
 
-        {/* دوکان */}
-        <button onClick={() => go(onShop)} className="btn-press block w-full text-right">
-          <Panel className="flex items-center gap-4 !p-4 transition hover:border-amber-400">
-            <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-amber-400/12 text-amber-500">
-              <ShoppingBag className="h-7 w-7" />
-            </div>
-            <div className="flex-1">
-              <p className="text-lg font-black text-ink">{t('دوکان')}</p>
-              <p className="text-sm text-muted">{t('چوارچێوە، ڕەنگی ناو و ناونیشان بکڕە')}</p>
-            </div>
-            <span className="flex items-center gap-1 rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-black text-amber-500">
-              <Coins className="h-3.5 w-3.5" />{coins}
-            </span>
-          </Panel>
-        </button>
+        {/* دوکان لێرە لابرا — لە شریتی خوارەوە/لاتەنیشت بەردەستە */}
 
         {/* ڕێکخستن */}
         <button onClick={() => go(onSettings)} className="btn-press block w-full text-right">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Volume2, Music, Settings as SettingsIcon, Ban, Languages, Coins, Check, Lock, Palette } from 'lucide-react'
+import { ChevronRight, Volume2, Music, Settings as SettingsIcon, Ban, Languages, Coins, Check, Lock, Palette, Play, Pause } from 'lucide-react'
 import { Panel } from '../components/ui'
 import PushToggle from '../components/PushToggle'
 import Avatar from '../components/Avatar'
@@ -8,7 +8,7 @@ import { useEconomy } from '../state/EconomyContext'
 import { useLang, LANGS } from '../lib/i18n'
 import { fetchProfilesByIds } from '../lib/supabase'
 import { THEMES } from '../lib/cosmetics'
-import { sfx } from '../lib/sound'
+import { sfx, MUSIC_TRACKS, isTrackEnabled, setTrackEnabled, previewTrack, stopPreview } from '../lib/sound'
 
 function Toggle({ on }) {
   return (
@@ -94,12 +94,81 @@ export default function Settings({ ui, onBack }) {
         <PushToggle />
       </Panel>
 
+      {/* تایبەتکردنی ئاوازەکان — تەنها ئەگەر مۆسیقا کارا بێت */}
+      {musicOn && <MusicPlaylist t={t} />}
+
       {/* ڕووکار — ثیمەکان */}
       <ThemePicker theme={theme} setTheme={setTheme} t={t} />
 
       {/* کەسە بلۆککراوەکان */}
       <BlockedList />
     </div>
+  )
+}
+
+// لیستی ئاوازەکان — بەکارهێنەر پێشبینین دەکات و دیاری دەکات کامیان لێبدرێن
+function MusicPlaylist({ t }) {
+  // map ـی چالاکی هەر ئاوازێک + ئاوازی ئێستای پێشبینین
+  const [enabled, setEnabled] = useState(() =>
+    Object.fromEntries(MUSIC_TRACKS.map((tk) => [tk.id, isTrackEnabled(tk.id)]))
+  )
+  const [playing, setPlaying] = useState(null)
+
+  // وەستاندنی پێشبینین کاتێک ڕێکخستن دادەخرێت
+  useEffect(() => () => stopPreview(), [])
+
+  const toggle = (id) => {
+    sfx.tap()
+    const next = !enabled[id]
+    setTrackEnabled(id, next)
+    setEnabled((e) => ({ ...e, [id]: next }))
+  }
+  const preview = (id) => {
+    if (playing === id) {
+      stopPreview()
+      setPlaying(null)
+    } else {
+      previewTrack(id)
+      setPlaying(id)
+    }
+  }
+
+  return (
+    <Panel className="mb-5 !p-3">
+      <div className="mb-2 flex items-center gap-2 px-1">
+        <Music className="h-4 w-4 text-crew" />
+        <p className="font-bold text-ink">{t('ئاوازەکان')}</p>
+        <span className="text-xs text-muted">{t('پێشبینین بکە و ئەوانەی ناتەوێت لایان ببە')}</span>
+      </div>
+      <div className="space-y-1">
+        {MUSIC_TRACKS.map((tk) => {
+          const on = enabled[tk.id]
+          return (
+            <div key={tk.id} className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-surface2">
+              <button
+                onClick={() => preview(tk.id)}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-crew/12 text-crew hover:brightness-110"
+                title={t('پێشبینین')}
+              >
+                {playing === tk.id ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </button>
+              <span className={`flex-1 truncate text-sm font-medium ${on ? 'text-ink' : 'text-muted line-through'}`}>
+                {tk.name}
+              </span>
+              <button
+                onClick={() => toggle(tk.id)}
+                className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border transition ${
+                  on ? 'border-crew bg-crew/15 text-crew' : 'border-line text-muted'
+                }`}
+                title={on ? t('کارایە') : t('لابراوە')}
+              >
+                {on && <Check className="h-4 w-4" />}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+    </Panel>
   )
 }
 

@@ -38,7 +38,7 @@ const LocalResults = lazy(() => import('./screens/local/LocalResults'))
 const Shop = lazy(() => import('./screens/Shop'))
 // چینی دەنگ بە درەنگ — livekit-client لە بەستەی سەرەکی دادەبڕێت
 const VoiceLayer = lazy(() => import('./state/VoiceLayer'))
-import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled } from './lib/sound'
+import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled, setRoomActive } from './lib/sound'
 
 function FullLoader() {
   return (
@@ -49,7 +49,7 @@ function FullLoader() {
 }
 
 // ───── ڕێڕەوی ئۆنلاین ─────
-function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
+function OnlineRoomRouter({ onExit, joinCode, onJoinHandled, onRoomActiveChange }) {
   const { room, joinRoom, me } = useRoom()
   const { user, profile } = useAuth()
 
@@ -61,6 +61,18 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinCode])
+
+  // مۆسیقای پاشبنە لە ناو ژوور دەوەستێت (لە هۆڵی ئۆنلاین بەردەوامە)
+  // هەروەها شریتی ناڤیگەیشن لە هۆڵدا دەردەکەوێت، بەڵام لە ناو ژووردا دەشاردرێتەوە.
+  const inRoom = !!room
+  useEffect(() => {
+    setRoomActive(inRoom)
+    onRoomActiveChange?.(inRoom)
+    return () => {
+      setRoomActive(false)
+      onRoomActiveChange?.(false)
+    }
+  }, [inRoom, onRoomActiveChange])
 
   if (!room) return <Home onExit={onExit} />
 
@@ -116,6 +128,8 @@ function Shell({ ui }) {
     return null
   })
   const [view, setView] = useState(pendingJoin ? 'online' : 'menu') // menu | online | local | settings | achievements | profile | friends
+  // ئایا لە ناو ژوورێکی ئۆنلاینداین؟ (نەک تەنها هۆڵی ئۆنلاین) — بۆ شاردنەوەی شریت
+  const [inOnlineRoom, setInOnlineRoom] = useState(false)
 
   if (!isSupabaseEnabled) return <Login />
   if (loading) return <FullLoader />
@@ -145,6 +159,7 @@ function Shell({ ui }) {
             onExit={toMenu}
             joinCode={pendingJoin}
             onJoinHandled={() => setPendingJoin(null)}
+            onRoomActiveChange={setInOnlineRoom}
           />
         </RoomProvider>
       )
@@ -198,8 +213,9 @@ function Shell({ ui }) {
   }
   }
 
-  // شریتی ناڤیگەیشن تەنها لە شاشە سەرەکییەکان (نەک لە یاری ئۆنلاین/ناوخۆیی)
-  const showSidebar = !needsUsername && view !== 'online' && view !== 'local'
+  // شریتی ناڤیگەیشن لە هەموو شاشە سەرەکییەکان + هۆڵی ئۆنلاین دەردەکەوێت،
+  // بەڵام لە ناو یاری ئۆنلاین/ناوخۆیی دەشاردرێتەوە.
+  const showSidebar = !needsUsername && view !== 'local' && !(view === 'online' && inOnlineRoom)
 
   return (
     <EconomyProvider>
