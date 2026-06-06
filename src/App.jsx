@@ -9,6 +9,7 @@ import { EconomyProvider } from './state/EconomyContext'
 import { NotificationProvider } from './state/NotificationContext'
 import { LanguageProvider } from './lib/i18n'
 import Background from './components/Background'
+import Sidebar from './components/Sidebar'
 import ErrorBoundary from './components/ErrorBoundary'
 import LevelUpOverlay from './components/LevelUpOverlay'
 import ReferralHandler, { REF_KEY } from './components/ReferralHandler'
@@ -104,7 +105,7 @@ function LocalRouter({ onExit }) {
 
 // ───── ناوەوەی دوای چوونەژوورەوە ─────
 function Shell({ ui }) {
-  const { user, profile, loading, isSupabaseEnabled } = useAuth()
+  const { user, profile, loading, isSupabaseEnabled, signOut } = useAuth()
   // کۆدی بانگهێشت لە لینکی هاوبەشکراو (?join=CODE) — پاکی دەکەینەوە لە URL
   const [pendingJoin, setPendingJoin] = useState(() => {
     const c = new URLSearchParams(window.location.search).get('join')
@@ -197,14 +198,23 @@ function Shell({ ui }) {
   }
   }
 
+  // شریتی ناڤیگەیشن تەنها لە شاشە سەرەکییەکان (نەک لە یاری ئۆنلاین/ناوخۆیی)
+  const showSidebar = !needsUsername && view !== 'online' && view !== 'local'
+
   return (
     <EconomyProvider>
       <NotificationProvider>
         <FriendsProvider>
           <ProfileViewerProvider>
-            <ErrorBoundary onReset={toMenu}>
-              <Suspense fallback={<FullLoader />}>{inner}</Suspense>
-            </ErrorBoundary>
+            {/* md:pr-16 شوێن بۆ شریتی باریک · pb-16 شوێن بۆ شریتی خوارەوەی مۆبایل */}
+            <div className={showSidebar ? 'md:pr-16 pb-16 md:pb-0' : ''}>
+              <ErrorBoundary onReset={toMenu}>
+                <Suspense fallback={<FullLoader />}>{inner}</Suspense>
+              </ErrorBoundary>
+            </div>
+            {showSidebar && (
+              <Sidebar view={view} onNavigate={setView} onSignOut={signOut} />
+            )}
           </ProfileViewerProvider>
           <LevelUpOverlay />
           <ReferralHandler />
