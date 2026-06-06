@@ -304,6 +304,32 @@ export async function castBotVotes(roomId, voterId, targetIds) {
   })
 }
 
+// بانگکردنی مێشکی بۆتی زیرەک (Edge Function) — وەسف یان دەنگدان
+// ئەگەر هەر هۆکارێک شکستی هێنا (API ڕێکنەخراوە/سنوور)، null دەگەڕێنێتەوە
+export async function botTurn(payload) {
+  if (!supabase) return null
+  try {
+    const { data, error } = await supabase.functions.invoke('bot-turn', { body: payload })
+    if (error) return null
+    return data
+  } catch {
+    return null
+  }
+}
+
+// ناردنی نامەی بۆت بۆ چات (لە لای خانەخوێوە)
+export async function postBotMessage(roomId, botId, name, avatar, content, kind = 'chat') {
+  need()
+  await supabase.rpc('post_bot_message', {
+    p_room: roomId,
+    p_user: botId,
+    p_name: name,
+    p_avatar: avatar,
+    p_content: content,
+    p_kind: kind,
+  })
+}
+
 export async function updateRoom(roomId, patch) {
   need()
   await supabase.from('rooms').update(patch).eq('id', roomId)

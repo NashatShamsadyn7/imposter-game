@@ -13,6 +13,8 @@ import {
   quickMatch as apiQuickMatch,
   addBot as apiAddBot,
   castBotVotes as apiCastBotVotes,
+  botTurn as apiBotTurn,
+  postBotMessage as apiPostBotMessage,
   leaveRoom as apiLeaveRoom,
   updateRoom,
   updatePlayer,
@@ -46,6 +48,7 @@ export function RoomProvider({ children }) {
   const resultsRef = useRef(false)
   const prevStatusRef = useRef(null)
   const botVoteRef = useRef(new Set()) // بۆتانی ئەم جۆلەیان دەنگیان داوە
+  const botCluedRef = useRef(new Set()) // بۆتانی ئەم جۆلە وەسفیان کردووە
 
   // ───── هاوکاتکردنی ڕاستەوخۆ ─────
   const refreshAll = useCallback(async (rid) => {
@@ -220,7 +223,9 @@ export function RoomProvider({ children }) {
   }, [isHost, players, roomId])
 
   // ───── دەنگدانی بۆتەکان (خانەخوێ بەڕێوەی دەبات) ─────
-  // کاتێک قۆناغی دەنگدان دەستپێدەکات، خانەخوێ بۆ هەر بۆتێک دەنگی هەرەمەکی دەنێرێت
+  // کاتێک قۆناغی دەنگدان دەستپێدەکات، خانەخوێ بۆ هەر بۆتێک دەنگ دەنێرێت:
+  //  • بە یارمەتی مێشکی زیرەک (bot-turn) بەپێی ئاماژەکانی گفتوگۆ
+  //  • ئەگەر API بەردەست نەبوو → دەنگی هەرەمەکی (fallback)
   useEffect(() => {
     if (room?.status !== 'voting') {
       botVoteRef.current = new Set()
@@ -228,19 +233,37 @@ export function RoomProvider({ children }) {
     }
     if (!isHost) return
     const active = players.filter((p) => !p.is_spectator)
+    const lang = localStorage.getItem('imposter:lang') || 'ku'
+    const clues = messages
+      .filter((m) => m.kind === 'chat' || m.kind === 'clue')
+      .slice(-20)
+      .map((m) => ({ name: m.display_name, text: m.content }))
     active
       .filter((p) => p.is_bot)
       .forEach((bot) => {
         if (botVoteRef.current.has(bot.user_id)) return
         botVoteRef.current.add(bot.user_id)
-        const targets = active.filter((p) => p.user_id !== bot.user_id)
-        const picks = [...targets]
-          .sort(() => Math.random() - 0.5)
-          .slice(0, room.impostor_count)
-          .map((p) => p.user_id)
-        if (picks.length) apiCastBotVotes(roomId, bot.user_id, picks).catch(() => {})
+        const candidates = active
+          .filter((p) => p.user_id !== bot.user_id)
+          .map((p) => ({ id: p.user_id, name: p.display_name }))
+        if (!candidates.length) return
+        const randomPicks = () =>
+          [...candidates].sort(() => Math.random() - 0.5).slice(0, room.impostor_count).map((c) => c.id)
+        ;(async () => {
+          const res = await apiBotTurn({
+            action: 'vote',
+            role: bot.role,
+            lang,
+            clues,
+            candidates,
+            impostorCount: room.impostor_count,
+            botName: bot.display_name,
+          })
+          const picks = res?.targetIds?.length ? res.targetIds : randomPicks()
+          apiCastBotVotes(roomId, bot.user_id, picks).catch(() => {})
+        })()
       })
-  }, [isHost, room?.status, room?.impostor_count, players, roomId])
+  }, [isHost, room?.status, room?.impostor_count, players, messages, roomId])
 
   // ───── دەستپێکردنی یاری (خانەخوێ) ─────
   const startGame = useCallback(async () => {
@@ -315,6 +338,45 @@ export function RoomProvider({ children }) {
     const next = ordered[idx + 1]
     await updateRoom(roomId, { turn_player_id: next?.user_id || null })
   }, [isHost, players, room, roomId])
+
+  // ───── وەسفکردنی بۆتەکان لە گفتوگۆ (خانەخوێ بەڕێوەی دەبات) ─────
+  // کاتێک نۆرەی بۆتێک دێت، خانەخوێ وەسفێکی زیرەک دروستدەکات، دەینێرێت،
+  // پاشان نۆرە دەگوازێتەوە. ئەگەر API نەبوو، تەنها نۆرە دەگوازێتەوە.
+  useEffect(() => {
+    if (room?.status !== 'discussion') {
+      botCluedRef.current = new Set()
+      return
+    }
+    if (!isHost) return
+    const turnId = room?.turn_player_id
+    if (!turnId || botCluedRef.current.has(turnId)) return
+    const bot = players.find((p) => p.user_id === turnId && p.is_bot)
+    if (!bot) return
+    botCluedRef.current.add(turnId)
+    ;(async () => {
+      const lang = localStorage.getItem('imposter:lang') || 'ku'
+      const clues = messages
+        .filter((m) => m.kind === 'chat' || m.kind === 'clue')
+        .slice(-12)
+        .map((m) => ({ name: m.display_name, text: m.content }))
+      const res = await apiBotTurn({
+        action: 'describe',
+        role: bot.role,
+        word: bot.role === 'impostor' ? null : room.secret_word_ku,
+        category: resolveCategory(room.category_id)?.name,
+        lang,
+        clues,
+        botName: bot.display_name,
+      })
+      if (res?.text) {
+        try {
+          await apiPostBotMessage(roomId, bot.user_id, bot.display_name, bot.avatar_url, res.text)
+        } catch { /* noop */ }
+      }
+      // دوای ماوەیەکی کورت نۆرە بگوازەوە (تەنانەت ئەگەر وەسف نەنێردرا)
+      setTimeout(() => { nextTurn() }, 1600)
+    })()
+  }, [isHost, room?.status, room?.turn_player_id, players, messages, roomId, nextTurn, room])
 
   // دەستپێکردنی دەنگدان
   const beginVoting = useCallback(async () => {
