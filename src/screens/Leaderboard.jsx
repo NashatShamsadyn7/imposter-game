@@ -6,6 +6,7 @@
 import { useEffect, useState } from 'react'
 import { ChevronRight, Crown, Medal, Loader2, Trophy } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
+import { useFriends } from '../state/FriendsContext'
 import { useProfileViewer } from '../state/ProfileViewer'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
@@ -16,14 +17,17 @@ import { useT } from '../lib/i18n'
 const DAY = 86400000
 
 // ماوەکان — since بە ISO دەنێردرێت بۆ فلتەرکردنی ئەنجامەکان
+// 'friends' تایبەتە: لۆکاڵی لە لیستی هاوڕێیانەوە دروستدەکرێت (بەبێ بانگکردنی سێرڤەر)
 const RANGES = [
   { id: 'week', label: 'هەفتە', days: 7 },
   { id: 'month', label: 'مانگ', days: 30 },
   { id: 'all', label: 'هەمیشە', days: null },
+  { id: 'friends', label: 'هاوڕێیان' },
 ]
 
 export default function Leaderboard({ onBack }) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
+  const { friends } = useFriends() || { friends: [] }
   const { openProfile } = useProfileViewer() || {}
   const t = useT()
   const [range, setRange] = useState('week')
@@ -31,6 +35,22 @@ export default function Leaderboard({ onBack }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // تابی هاوڕێیان — لۆکاڵی: من + هاوڕێیان بەپێی کۆی خاڵ
+    if (range === 'friends') {
+      const me = profile
+        ? [{ id: user.id, display_name: profile.display_name, avatar_url: profile.avatar_url, total_points: profile.total_points || 0 }]
+        : []
+      const fr = friends
+        .filter((f) => f.profile)
+        .map((f) => ({ id: f.id, display_name: f.profile.display_name, avatar_url: f.profile.avatar_url, total_points: f.profile.total_points || 0 }))
+      const merged = [...me, ...fr]
+        .sort((a, b) => b.total_points - a.total_points)
+        .map((r) => ({ ...r, season_points: r.total_points }))
+      setRows(merged)
+      setLoading(false)
+      return
+    }
+
     let active = true
     setLoading(true)
     const cfg = RANGES.find((r) => r.id === range)
@@ -42,7 +62,7 @@ export default function Leaderboard({ onBack }) {
       .catch(() => { if (active) setRows([]) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [range])
+  }, [range, friends, profile, user?.id])
 
   const myRank = rows.findIndex((r) => r.id === user?.id)
 

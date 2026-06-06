@@ -19,6 +19,7 @@ import MainMenu from './screens/MainMenu'
 const SettingsScreen = lazy(() => import('./screens/Settings'))
 const Home = lazy(() => import('./screens/Home'))
 const Achievements = lazy(() => import('./screens/Achievements'))
+const Stats = lazy(() => import('./screens/Stats'))
 const Leaderboard = lazy(() => import('./screens/Leaderboard'))
 const ProfileEdit = lazy(() => import('./screens/ProfileEdit'))
 const Friends = lazy(() => import('./screens/Friends'))
@@ -160,6 +161,9 @@ function Shell({ ui }) {
     case 'achievements':
       inner = <Achievements onBack={toMenu} />
       break
+    case 'stats':
+      inner = <Stats onBack={toMenu} />
+      break
     case 'leaderboard':
       inner = <Leaderboard onBack={toMenu} />
       break
@@ -182,6 +186,7 @@ function Shell({ ui }) {
           onLocal={() => setView('local')}
           onSettings={() => setView('settings')}
           onAchievements={() => setView('achievements')}
+          onStats={() => setView('stats')}
           onLeaderboard={() => setView('leaderboard')}
           onProfile={() => setView('profile')}
           onFriends={() => setView('friends')}

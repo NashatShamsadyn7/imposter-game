@@ -15,6 +15,12 @@ import {
   Tag,
   Share2,
   VenetianMask,
+  Eye,
+  Lock,
+  Unlock,
+  LogIn,
+  Bot,
+  Plus,
 } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
@@ -36,6 +42,7 @@ export default function RoomLobby() {
     setSettings,
     reorderPlayers,
     kickPlayer,
+    addBotPlayer,
     startGame,
   } = useRoom()
   const [copied, setCopied] = useState(false)
@@ -144,6 +151,7 @@ export default function RoomLobby() {
                   {p.user_id === user.id && <span className="text-xs text-crew"> ({t('تۆ')})</span>}
                 </span>
               </button>
+              {p.is_bot && <Bot className="h-4 w-4 text-impostor/70" title={t('بۆت')} />}
               {p.is_host && <Crown className="h-4 w-4 text-amber-500" title={t('خانەخوێ')} />}
 
               {isHost && p.user_id !== user.id && (
@@ -175,6 +183,18 @@ export default function RoomLobby() {
           <p className="mt-3 text-center text-sm text-ink/40">
             {t('چاوەڕێی یاریزانی زیاتر… (لانیکەم ٣)')}
           </p>
+        )}
+
+        {/* زیادکردنی بۆت — بۆ پڕکردنەوەی ژوور */}
+        {isHost && players.length < 10 && (
+          <button
+            onClick={() => { sfx.tap(); addBotPlayer() }}
+            className="btn-press mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-impostor/40 bg-impostor/5 py-2.5 text-sm font-bold text-impostor/80 hover:bg-impostor/10"
+          >
+            <Plus className="h-4 w-4" />
+            <Bot className="h-4 w-4" />
+            {t('زیادکردنی بۆت')}
+          </button>
         )}
       </Panel>
 
@@ -225,6 +245,7 @@ export default function RoomLobby() {
             {[
               { id: 'classic', label: t('کلاسیک'), desc: t('ساختەکار هیچ نازانێت') },
               { id: 'undercover', label: t('شاراوە'), desc: t('ساختەکار وشەیەکی نزیک وەردەگرێت') },
+              { id: 'detective', label: t('لێکۆڵەر'), desc: t('یەک یاریزان ناسنامەی ساختەکارێک دەزانێت') },
             ].map((m) => {
               const active = (room.mode || 'classic') === m.id
               return (
@@ -299,6 +320,61 @@ export default function RoomLobby() {
             onChange={(e) => setSettings({ discussionSeconds: Number(e.target.value) })}
             className="w-full accent-crew disabled:opacity-60"
           />
+        </div>
+
+        {/* کاتی بینینی ڕۆڵ (شاردنەوەی کارتی دەستەی کەشتی) */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4 text-crew" />
+              <span className="text-sm font-bold text-ink">{t('کاتی بینینی ڕۆڵ')}</span>
+            </div>
+            <span className="font-bold text-crew">{room.reveal_seconds ?? 10}{t('چ')}</span>
+          </div>
+          <input
+            type="range"
+            min="5"
+            max="30"
+            step="5"
+            disabled={!isHost}
+            value={room.reveal_seconds ?? 10}
+            onChange={(e) => setSettings({ revealSeconds: Number(e.target.value) })}
+            className="w-full accent-crew disabled:opacity-60"
+          />
+        </div>
+
+        {/* ژوور داخراو + بەشداربوونی درەنگ */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            disabled={!isHost}
+            onClick={() => { sfx.tap(); setSettings({ locked: !room.locked }) }}
+            className={`btn-press flex items-center justify-between rounded-xl border px-3 py-2.5 disabled:opacity-60 ${
+              room.locked ? 'border-impostor bg-impostor/15' : 'border-ink/10 bg-ink/5'
+            }`}
+          >
+            <span className="flex items-center gap-2 text-sm font-bold text-ink">
+              {room.locked ? <Lock className="h-4 w-4 text-impostor" /> : <Unlock className="h-4 w-4 text-ink/50" />}
+              {t('ژووری داخراو')}
+            </span>
+            <span className={`text-xs font-bold ${room.locked ? 'text-impostor' : 'text-ink/40'}`}>
+              {room.locked ? t('بەڵێ') : t('نا')}
+            </span>
+          </button>
+          <button
+            disabled={!isHost}
+            onClick={() => { sfx.tap(); setSettings({ allowLateJoin: !(room.allow_late_join ?? true) }) }}
+            className={`btn-press flex items-center justify-between rounded-xl border px-3 py-2.5 disabled:opacity-60 ${
+              (room.allow_late_join ?? true) ? 'border-crew bg-crew/15' : 'border-ink/10 bg-ink/5'
+            }`}
+          >
+            <span className="flex items-center gap-2 text-sm font-bold text-ink">
+              <LogIn className="h-4 w-4 text-crew" />
+              {t('بەشداربوونی درەنگ')}
+            </span>
+            <span className={`text-xs font-bold ${(room.allow_late_join ?? true) ? 'text-crew' : 'text-ink/40'}`}>
+              {(room.allow_late_join ?? true) ? t('بەڵێ') : t('نا')}
+            </span>
+          </button>
         </div>
 
         {/* Multiplier */}

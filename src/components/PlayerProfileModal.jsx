@@ -3,8 +3,8 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useState } from 'react'
-import { X, Loader2, Star, Trophy, Gamepad2, Percent, UserPlus, Check, Clock, UserCheck, Skull, ShieldCheck, Ban, History } from 'lucide-react'
-import { fetchPublicProfile, fetchMatchHistory } from '../lib/supabase'
+import { X, Loader2, Star, Trophy, Gamepad2, Percent, UserPlus, Check, Clock, UserCheck, Skull, ShieldCheck, Ban, History, Flag } from 'lucide-react'
+import { fetchPublicProfile, fetchMatchHistory, reportUser } from '../lib/supabase'
 import { levelInfo, levelTitle, winRate } from '../lib/achievements'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
@@ -20,6 +20,8 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   const [sent, setSent] = useState(false)
+  const [reported, setReported] = useState(false)
+  const [reporting, setReporting] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -58,6 +60,17 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
     sfx.tap()
     if (blocked) await friends?.unblock?.(userId)
     else await friends?.block?.(userId)
+  }
+
+  // ڕاپۆرتکردنی یاریزان (هۆکارێکی سادە)
+  const handleReport = async () => {
+    if (reporting || reported) return
+    sfx.tap()
+    setReporting(true)
+    const res = await reportUser(userId, 'inappropriate')
+    setReporting(false)
+    // 'duplicate' = پێشتر ڕاپۆرتکراوە — هەر وەک سەرکەوتوو نیشانی دەدەین
+    if (res?.ok || res?.reason === 'duplicate') setReported(true)
   }
 
   return (
@@ -181,12 +194,29 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
                         <UserPlus className="h-5 w-5" /> {t('داوای هاوڕێیەتی')}
                       </button>
                     )}
-                    <button
-                      onClick={toggleBlock}
-                      className="btn-press flex w-full items-center justify-center gap-1.5 rounded-2xl bg-ink/5 py-2.5 text-sm font-bold text-muted hover:text-impostor"
-                    >
-                      <Ban className="h-4 w-4" /> {t('بلۆککردن')}
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={toggleBlock}
+                        className="btn-press flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-ink/5 py-2.5 text-sm font-bold text-muted hover:text-impostor"
+                      >
+                        <Ban className="h-4 w-4" /> {t('بلۆککردن')}
+                      </button>
+                      <button
+                        onClick={handleReport}
+                        disabled={reported || reporting}
+                        className={`btn-press flex flex-1 items-center justify-center gap-1.5 rounded-2xl py-2.5 text-sm font-bold ${
+                          reported ? 'bg-amber-500/15 text-amber-500' : 'bg-ink/5 text-muted hover:text-amber-500'
+                        }`}
+                      >
+                        {reporting ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : reported ? (
+                          <><Check className="h-4 w-4" /> {t('ڕاپۆرتکرا')}</>
+                        ) : (
+                          <><Flag className="h-4 w-4" /> {t('ڕاپۆرتکردن')}</>
+                        )}
+                      </button>
+                    </div>
                   </>
                 )}
               </div>

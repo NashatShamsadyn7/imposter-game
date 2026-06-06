@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Rocket, ChevronRight, Plus, LogIn, Trophy, Crown, Loader2, Star } from 'lucide-react'
+import { Rocket, ChevronRight, Plus, LogIn, Trophy, Crown, Loader2, Star, Zap } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { useFriends } from '../state/FriendsContext'
@@ -12,7 +12,7 @@ import Avatar from '../components/Avatar'
 
 export default function Home({ onExit }) {
   const { profile } = useAuth()
-  const { createRoom, joinRoom, busy, error } = useRoom()
+  const { createRoom, joinRoom, quickPlay, busy, error } = useRoom()
   const { friends } = useFriends()
   const { openProfile } = useProfileViewer() || {}
   const t = useT()
@@ -95,6 +95,16 @@ export default function Home({ onExit }) {
           {error}
         </p>
       )}
+
+      {/* یاری خێرا — بەشداربوونی هەرەمەکی خێرا */}
+      <Button
+        onClick={() => quickPlay()}
+        disabled={busy}
+        className="mb-3 w-full !py-4 !text-lg !bg-gradient-to-r !from-amber-500 !to-impostor"
+      >
+        {busy ? <Loader2 className="h-6 w-6 animate-spin" /> : <Zap className="h-6 w-6" />}
+        {t('یاری خێرا')}
+      </Button>
 
       {/* دروستکردنی ژوور */}
       <Button

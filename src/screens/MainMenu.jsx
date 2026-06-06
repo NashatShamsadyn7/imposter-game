@@ -1,4 +1,4 @@
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare, Crown, ShoppingBag, Coins } from 'lucide-react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, Users, MessagesSquare, Crown, ShoppingBag, Coins, BarChart3 } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import { useEconomy } from '../state/EconomyContext'
@@ -12,7 +12,7 @@ import { useT } from '../lib/i18n'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // مێنیوی سەرەکی دوای چوونەژوورەوە
-export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements, onLeaderboard, onProfile, onFriends, onGroups, onShop }) {
+export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements, onStats, onLeaderboard, onProfile, onFriends, onGroups, onShop }) {
   const { profile, signOut } = useAuth()
   const { totalUnread, incoming } = useFriends()
   const { coins, equipped } = useEconomy()
@@ -87,6 +87,13 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
             title={t('دەستکەوت و ئاست')}
           >
             <Trophy className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => go(onStats)}
+            className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
+            title={t('ئامار')}
+          >
+            <BarChart3 className="h-5 w-5" />
           </button>
           <button
             onClick={() => signOut()}

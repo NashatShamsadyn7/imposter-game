@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Eye, Skull, ShieldCheck, EyeOff, MessageSquare, Users, Loader2 } from 'lucide-react'
+import { Eye, Skull, ShieldCheck, EyeOff, MessageSquare, Users, Loader2, Search } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { CATEGORIES, findWord } from '../data/words'
@@ -9,14 +9,16 @@ import WordImage from '../components/WordImage'
 import { useT } from '../lib/i18n'
 import { sfx, playGameStart } from '../lib/sound'
 
-const REVEAL_SECONDS = 10
+const DEFAULT_REVEAL_SECONDS = 10
 
 export default function Reveal() {
   const { user } = useAuth()
   const { room, players, me, isHost, beginDiscussion } = useRoom()
   const t = useT()
+  // ماوەی شاردنەوەی کارت — ڕێکخراوی خانەخوێ (یەدەگ: ١٠ چرکە)
+  const revealSeconds = room.reveal_seconds || DEFAULT_REVEAL_SECONDS
   const [flipped, setFlipped] = useState(false)
-  const [countdown, setCountdown] = useState(REVEAL_SECONDS)
+  const [countdown, setCountdown] = useState(revealSeconds)
   const timerRef = useRef(null)
 
   // دەنگی دەستپێکردنی یاری — یەک جار کاتێک قۆناغی ئاشکراکردن دەستپێدەکات
@@ -25,6 +27,11 @@ export default function Reveal() {
   }, [])
 
   const isImpostor = me?.role === 'impostor'
+  // لێکۆڵەر: یاریزانی دەستەی کەشتی کە ناسنامەی ساختەکارێک دەزانێت
+  const isDetective = me?.role === 'detective'
+  const knownImpostor = isDetective
+    ? [...players].filter((p) => p.role === 'impostor').sort((a, b) => a.order_index - b.order_index)[0]
+    : null
   const category = CATEGORIES.find((c) => c.id === room.category_id)
   const allies = players.filter((p) => p.role === 'impostor' && p.user_id !== user.id)
   // دۆخی «متخفّی»: ساختەکار وشەیەکی نزیک وەردەگرێت لە جیاتی هیچ
@@ -33,7 +40,7 @@ export default function Reveal() {
   // شاردنەوەی خۆکاری کارت بۆ دەستەی کەشتی دوای ١٠ چرکە
   useEffect(() => {
     if (!flipped || isImpostor) return
-    setCountdown(REVEAL_SECONDS)
+    setCountdown(revealSeconds)
     timerRef.current = setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {
@@ -45,7 +52,7 @@ export default function Reveal() {
       })
     }, 1000)
     return () => clearInterval(timerRef.current)
-  }, [flipped, isImpostor])
+  }, [flipped, isImpostor, revealSeconds])
 
   const handleFlip = () => {
     setFlipped(true)
@@ -145,16 +152,40 @@ export default function Reveal() {
       ) : (
         // ───── دەستەی کەشتی ─────
         <div className="animate-scale-in w-full text-center">
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-crew/40 bg-crew/10 px-3 py-1 text-crew">
-            <ShieldCheck className="h-4 w-4" />
-            <span className="text-sm font-bold">{t('دەستەی کەشتی')}</span>
-          </div>
+          {isDetective ? (
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-amber-400/10 px-3 py-1 text-amber-500">
+              <Search className="h-4 w-4" />
+              <span className="text-sm font-bold">{t('لێکۆڵەر')}</span>
+            </div>
+          ) : (
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-crew/40 bg-crew/10 px-3 py-1 text-crew">
+              <ShieldCheck className="h-4 w-4" />
+              <span className="text-sm font-bold">{t('دەستەی کەشتی')}</span>
+            </div>
+          )}
           <p className="mb-1 text-xs text-ink/50">هاوپۆل: {category?.name}</p>
           <h1 className="mb-4 text-4xl font-black text-ink neon-text">{room.secret_word_ku}</h1>
 
           <div className="mb-4 flex justify-center">
             <WordImage englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={220} />
           </div>
+
+          {/* ئاماژەی لێکۆڵەر — ناسنامەی ساختەکارێک */}
+          {isDetective && knownImpostor && (
+            <Panel className="mb-4 border-amber-400/40 bg-amber-400/5">
+              <p className="mb-2 flex items-center justify-center gap-2 text-xs text-ink/60">
+                <Search className="h-4 w-4 text-amber-500" />
+                {t('زانیاری نهێنی')}
+              </p>
+              <div className="flex items-center justify-center gap-2">
+                <Avatar url={knownImpostor.avatar_url} name={knownImpostor.display_name} size={40} ring ringColor="impostor" />
+                <div className="text-right">
+                  <p className="font-bold text-impostor">{knownImpostor.display_name}</p>
+                  <p className="text-xs text-ink/50">{t('ساختەکارە! بەبێ ئاشکراکردن دەستەکەت ئاراستە بکە.')}</p>
+                </div>
+              </div>
+            </Panel>
+          )}
 
           <p className="mb-5 text-sm text-ink/60">
             {t('ئەمە وشە نهێنیەکەتە. بیری لێ بکەرەوە چۆن بەبێ ئاشکراکردن وەسفی بکەیت.')}

@@ -36,7 +36,11 @@ export default function Discussion() {
   const seconds = remaining % 60
   const urgent = remaining <= 10
 
-  const ordered = [...players].sort((a, b) => a.order_index - b.order_index)
+  // بینەرەکان لە ڕیزی وەسفکردن دەرناکەون (نۆرەیان نییە)
+  const ordered = [...players]
+    .filter((p) => !p.is_spectator)
+    .sort((a, b) => a.order_index - b.order_index)
+  const spectatorCount = players.filter((p) => p.is_spectator).length
   const turnPlayer = players.find((p) => p.user_id === room.turn_player_id)
   const myTurn = room.turn_player_id === user.id
 
@@ -63,7 +67,14 @@ export default function Discussion() {
               <Users className="h-5 w-5 text-crew" />
               <div>
                 <p className="text-xs text-ink/50">{t('یاریزان')}</p>
-                <p className="font-black text-ink">{players.length}</p>
+                <p className="font-black text-ink">
+                  {ordered.length}
+                  {spectatorCount > 0 && (
+                    <span className="ml-1 text-xs font-bold text-ink/40">
+                      +{spectatorCount} <Eye className="inline h-3 w-3" />
+                    </span>
+                  )}
+                </p>
               </div>
             </Panel>
             <Panel className="!p-3 flex items-center gap-2">

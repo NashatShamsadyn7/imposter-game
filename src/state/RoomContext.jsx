@@ -10,6 +10,9 @@ import {
   supabase,
   createRoom as apiCreateRoom,
   joinRoom as apiJoinRoom,
+  quickMatch as apiQuickMatch,
+  addBot as apiAddBot,
+  castBotVotes as apiCastBotVotes,
   leaveRoom as apiLeaveRoom,
   updateRoom,
   updatePlayer,
@@ -42,6 +45,7 @@ export function RoomProvider({ children }) {
   const [busy, setBusy] = useState(false)
   const resultsRef = useRef(false)
   const prevStatusRef = useRef(null)
+  const botVoteRef = useRef(new Set()) // بۆتانی ئەم جۆلەیان دەنگیان داوە
 
   // ───── هاوکاتکردنی ڕاستەوخۆ ─────
   const refreshAll = useCallback(async (rid) => {
@@ -141,6 +145,23 @@ export function RoomProvider({ children }) {
     [user, profile]
   )
 
+  // یاری خێرا — ژوورێکی گشتی بدۆزەرەوە/دروستبکە و بەشداربە
+  const quickPlay = useCallback(async () => {
+    if (!user || !profile) return
+    setBusy(true)
+    setError(null)
+    try {
+      const r = await apiQuickMatch()
+      await apiJoinRoom(r.code, user, profile)
+      localStorage.setItem(LS_ROOM, r.id)
+      setRoomId(r.id)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }, [user, profile])
+
   const leaveRoom = useCallback(async () => {
     if (roomId && user) await apiLeaveRoom(roomId, user.id)
     localStorage.removeItem(LS_ROOM)
@@ -164,6 +185,9 @@ export function RoomProvider({ children }) {
         discussionSeconds: 'discussion_seconds',
         multiplier: 'multiplier',
         mode: 'mode',
+        revealSeconds: 'reveal_seconds',
+        locked: 'locked',
+        allowLateJoin: 'allow_late_join',
       }
       const dbPatch = {}
       Object.entries(patch).forEach(([k, v]) => (dbPatch[map[k] || k] = v))
@@ -188,6 +212,36 @@ export function RoomProvider({ children }) {
     [isHost, roomId]
   )
 
+  // زیادکردنی بۆت (تەنها خانەخوێ، تەنها لە لۆبی)
+  const addBotPlayer = useCallback(() => {
+    if (!isHost) return
+    const botCount = players.filter((p) => p.is_bot).length
+    apiAddBot(roomId, players.length, botCount + 1)
+  }, [isHost, players, roomId])
+
+  // ───── دەنگدانی بۆتەکان (خانەخوێ بەڕێوەی دەبات) ─────
+  // کاتێک قۆناغی دەنگدان دەستپێدەکات، خانەخوێ بۆ هەر بۆتێک دەنگی هەرەمەکی دەنێرێت
+  useEffect(() => {
+    if (room?.status !== 'voting') {
+      botVoteRef.current = new Set()
+      return
+    }
+    if (!isHost) return
+    const active = players.filter((p) => !p.is_spectator)
+    active
+      .filter((p) => p.is_bot)
+      .forEach((bot) => {
+        if (botVoteRef.current.has(bot.user_id)) return
+        botVoteRef.current.add(bot.user_id)
+        const targets = active.filter((p) => p.user_id !== bot.user_id)
+        const picks = [...targets]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, room.impostor_count)
+          .map((p) => p.user_id)
+        if (picks.length) apiCastBotVotes(roomId, bot.user_id, picks).catch(() => {})
+      })
+  }, [isHost, room?.status, room?.impostor_count, players, roomId])
+
   // ───── دەستپێکردنی یاری (خانەخوێ) ─────
   const startGame = useCallback(async () => {
     if (!isHost) return
@@ -202,11 +256,24 @@ export function RoomProvider({ children }) {
     const shuffled = [...ids].sort(() => Math.random() - 0.5)
     const impostorIds = new Set(shuffled.slice(0, room.impostor_count))
 
+    // دۆخی «لێکۆڵەر»: یەک یاریزانی دەستەی کەشتی دەبێتە لێکۆڵەر و
+    // ناسنامەی ساختەکارێک دەزانێت (لە کارتی ئاشکراکردندا نیشان دەدرێت)
+    const crewIds = shuffled.filter((id) => !impostorIds.has(id))
+    const detectiveId = room.mode === 'detective' && crewIds.length ? crewIds[0] : null
+
+    // ڕۆڵی هەر یاریزانێک
+    const roleFor = (p) => {
+      if (p.is_spectator) return null
+      if (impostorIds.has(p.user_id)) return 'impostor'
+      if (p.user_id === detectiveId) return 'detective'
+      return 'crew'
+    }
+
     await clearVotes(roomId)
     await Promise.all(
       players.map((p) =>
         updatePlayer(roomId, p.user_id, {
-          role: p.is_spectator ? null : impostorIds.has(p.user_id) ? 'impostor' : 'crew',
+          role: roleFor(p),
           ejected: false,
           points_this_game: 0,
         })
@@ -288,12 +355,14 @@ export function RoomProvider({ children }) {
         })
       )
     )
-    // تۆمارکردنی ئەنجام + زیادکردنی خاڵ بۆ هەموان (مێژووش تۆمار دەکرێت)
+    // تۆمارکردنی ئەنجام + زیادکردنی خاڵ (بۆتەکان تۆمار ناکرێن — پرۆفایلیان نییە)
     await Promise.all(
-      results.map((r) => {
-        const won = winner === r.role
-        return recordResult(r.user_id, r.points, won, r.role, room.category_id, room.secret_word_ku)
-      })
+      results
+        .filter((r) => !active.find((p) => p.user_id === r.user_id)?.is_bot)
+        .map((r) => {
+          const won = winner === r.role
+          return recordResult(r.user_id, r.points, won, r.role, room.category_id, room.secret_word_ku)
+        })
     )
     await updateRoom(roomId, { status: 'results', winner_side: winner })
   }, [isHost, roomId, room])
@@ -354,10 +423,12 @@ export function RoomProvider({ children }) {
     busy,
     createRoom,
     joinRoom,
+    quickPlay,
     leaveRoom,
     setSettings,
     reorderPlayers,
     kickPlayer,
+    addBotPlayer,
     startGame,
     beginDiscussion,
     nextTurn,
