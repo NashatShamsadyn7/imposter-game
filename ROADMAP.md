@@ -33,10 +33,10 @@
 - الحلفاء (المحتالون الآخرون) عبر RPC خاص يتحقّق أن الطالب محتال.
 - **الأثر:** يجعل المواسم/التصنيف ذا معنى. **بدونه، نظام ELO بلا قيمة.**
 
-### 2. تدوير الأسرار المسرّبة (Rotate leaked secrets)
-- مفاتيح Groq/Supabase/Vercel/GitHub ظهرت في سجلّات/محادثات → **اعتبرها مكشوفة**.
-- جدّد: `BOT_API_KEY`، Supabase anon/service، GitHub token، أعد فحص `.codex/config.toml`.
-- فعّل **Secret Scanning** على GitHub + امنع رفع `.env`.
+### 2. تدوير الأسرار (Rotate secrets) — ✅ مُنجَز (2026-06-07)
+- دُوِّرت: `BOT_API_KEY`، Supabase anon/service، GitHub token، `.codex/config.toml`.
+- فعّل **Secret Scanning** على GitHub + امنع رفع `.env` (مغطّى في `.gitignore`).
+- كرّر التدوير دوريًا أو عند أي اشتباه بتسريب — انظر [SECURITY.md](SECURITY.md).
 
 ### 3. سلامة البيانات للبوتات (بدل حذف الـ FK)
 **المشكلة:** حذفنا FK من `room_players.user_id` و `votes` و `messages` → ضعف سلامة عام.
@@ -151,8 +151,7 @@
 - [x] P0#1 إخفاء الأدوار (server-authoritative) — جدول `room_roles` + RLS + RPCs
       (`assign_roles`/`get_my_role`/`get_my_allies`/`reveal_roles`) + ربط الواجهة.
       ⚠️ **طبّق الهجرة `20260607010000_room_roles.sql` على staging واختبر دورة لعب كاملة قبل الإنتاج.**
-- [~] P0#2 تدوير الأسرار — `.gitignore` مؤمّن + [SECURITY.md](SECURITY.md) فيه قائمة التدوير.
-      ⚠️ **التدوير الفعلي على Supabase/Vercel/GitHub يدويّ — نفّذه أنت.**
+- [x] P0#2 تدوير الأسرار — مُنجَز (2026-06-07) + `.gitignore` مؤمّن + [SECURITY.md](SECURITY.md).
 - [x] P0#3 إصلاح سلامة البوتات — هجرة `20260607000000_bot_integrity.sql` (FK مركّبة + triggers).
 - [~] P1#4 بنية i18next — المحرّك + كشف اللغة + RTL/LTR ديناميكي + الإنجليزية (بداية).
       الترجمة الكاملة للنصوص ومجموعات الكلمات لكل لغة = عمل مستمر (P1#5).
