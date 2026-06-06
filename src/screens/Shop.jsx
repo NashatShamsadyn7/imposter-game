@@ -104,7 +104,7 @@ export default function Shop({ onBack }) {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6 pb-24">
+    <div className="mx-auto max-w-md px-4 py-6 pb-24 md:max-w-2xl">
       {/* سەرپەڕە */}
       <header className="mb-5 flex items-center justify-between">
         <button onClick={onBack} className="btn-press grid h-10 w-10 place-items-center rounded-full bg-surface text-ink shadow-card">

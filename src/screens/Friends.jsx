@@ -76,7 +76,7 @@ export default function Friends({ onBack, onJoinRoom }) {
   )
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6 pb-24">
+    <div className="mx-auto max-w-md px-4 py-6 pb-24 md:max-w-2xl">
       <header className="mb-6 flex items-center gap-3 animate-fade-in">
         <button
           onClick={onBack}

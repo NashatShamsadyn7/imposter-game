@@ -31,7 +31,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-6">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-6 md:max-w-3xl">
       {/* پرۆفایل */}
       <header className="mb-8 flex items-center justify-between animate-fade-in">
         <button
@@ -106,7 +106,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
       {/* بانگهێشتی هاوڕێیان + پاداشتی هاوبەشکردن */}
       <ShareApp />
 
-      <div className="flex flex-1 flex-col justify-center gap-4">
+      <div className="flex flex-1 flex-col justify-center gap-4 md:grid md:grid-cols-2 md:content-start">
         {/* ئۆنلاین */}
         <button onClick={() => go(onOnline)} className="btn-press block w-full text-right">
           <Panel className="panel-glow flex items-center gap-4 !p-4 transition hover:border-crew">

@@ -118,7 +118,7 @@ export default function ProfileEdit({ onBack }) {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6">
+    <div className="mx-auto max-w-md px-4 py-6 md:max-w-2xl">
       <header className="mb-6 flex items-center gap-3 animate-fade-in">
         <button
           onClick={onBack}

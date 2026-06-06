@@ -67,7 +67,7 @@ export default function Leaderboard({ onBack }) {
   const myRank = rows.findIndex((r) => r.id === user?.id)
 
   return (
-    <div className="mx-auto max-w-md px-5 py-6 pb-24">
+    <div className="mx-auto max-w-md px-5 py-6 pb-24 md:max-w-2xl">
       {/* سەردێڕ */}
       <header className="mb-6 flex items-center gap-3 animate-fade-in">
         <button
