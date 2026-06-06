@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { Eye, Skull, ShieldCheck, EyeOff, MessageSquare, Users, Loader2, Search } from 'lucide-react'
-import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { CATEGORIES, findWord } from '../data/words'
 import { Button, Panel } from '../components/ui'
@@ -12,8 +11,7 @@ import { sfx, playGameStart } from '../lib/sound'
 const DEFAULT_REVEAL_SECONDS = 10
 
 export default function Reveal() {
-  const { user } = useAuth()
-  const { room, players, me, isHost, beginDiscussion } = useRoom()
+  const { room, me, isHost, beginDiscussion, myRole, myAllies, detectiveTarget } = useRoom()
   const t = useT()
   // ماوەی شاردنەوەی کارت — ڕێکخراوی خانەخوێ (یەدەگ: ١٠ چرکە)
   const revealSeconds = room.reveal_seconds || DEFAULT_REVEAL_SECONDS
@@ -26,14 +24,13 @@ export default function Reveal() {
     playGameStart()
   }, [])
 
-  const isImpostor = me?.role === 'impostor'
+  // P0#1: ڕۆڵ + هاوپەیمان + ئامانجی لێکۆڵەر لە سێرڤەرەوە دێن (نەک room_players)
+  const isImpostor = myRole === 'impostor'
   // لێکۆڵەر: یاریزانی دەستەی کەشتی کە ناسنامەی ساختەکارێک دەزانێت
-  const isDetective = me?.role === 'detective'
-  const knownImpostor = isDetective
-    ? [...players].filter((p) => p.role === 'impostor').sort((a, b) => a.order_index - b.order_index)[0]
-    : null
+  const isDetective = myRole === 'detective'
+  const knownImpostor = isDetective ? detectiveTarget : null
   const category = CATEGORIES.find((c) => c.id === room.category_id)
-  const allies = players.filter((p) => p.role === 'impostor' && p.user_id !== user.id)
+  const allies = myAllies
   // دۆخی «متخفّی»: ساختەکار وشەیەکی نزیک وەردەگرێت لە جیاتی هیچ
   const isUndercover = room.mode === 'undercover' && !!room.decoy_word_ku
 
@@ -95,10 +92,17 @@ export default function Reveal() {
 
           <button
             onClick={handleFlip}
-            className="btn-press animate-pulse-glow neon-ring group mx-auto flex h-52 w-52 flex-col items-center justify-center gap-3 rounded-3xl border-2 border-crew/40 bg-surface/60 backdrop-blur"
+            disabled={!myRole}
+            className="btn-press animate-pulse-glow neon-ring group mx-auto flex h-52 w-52 flex-col items-center justify-center gap-3 rounded-3xl border-2 border-crew/40 bg-surface/60 backdrop-blur disabled:opacity-50"
           >
-            <Eye className="h-14 w-14 text-crew transition group-hover:scale-110" />
-            <span className="font-bold text-crew">{t('بینینی ڕۆڵ')}</span>
+            {myRole ? (
+              <>
+                <Eye className="h-14 w-14 text-crew transition group-hover:scale-110" />
+                <span className="font-bold text-crew">{t('بینینی ڕۆڵ')}</span>
+              </>
+            ) : (
+              <Loader2 className="h-10 w-10 animate-spin text-crew" />
+            )}
           </button>
         </div>
       ) : isImpostor ? (

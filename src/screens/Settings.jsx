@@ -5,7 +5,7 @@ import PushToggle from '../components/PushToggle'
 import Avatar from '../components/Avatar'
 import { useFriends } from '../state/FriendsContext'
 import { useEconomy } from '../state/EconomyContext'
-import { useLang } from '../lib/i18n'
+import { useLang, LANGS } from '../lib/i18n'
 import { fetchProfilesByIds } from '../lib/supabase'
 import { THEMES } from '../lib/cosmetics'
 import { sfx } from '../lib/sound'
@@ -46,22 +46,17 @@ export default function Settings({ ui, onBack }) {
           </div>
           <p className="flex-1 font-bold text-ink">{t('زمان')}</p>
           <div className="flex gap-1 rounded-xl bg-surface2 p-1">
-            <button
-              onClick={() => { sfx.tap(); setLang('ku') }}
-              className={`rounded-lg px-3 py-1.5 text-sm font-bold transition ${
-                lang === 'ku' ? 'bg-crew text-white' : 'text-muted'
-              }`}
-            >
-              کوردی
-            </button>
-            <button
-              onClick={() => { sfx.tap(); setLang('ar') }}
-              className={`rounded-lg px-3 py-1.5 text-sm font-bold transition ${
-                lang === 'ar' ? 'bg-crew text-white' : 'text-muted'
-              }`}
-            >
-              العربية
-            </button>
+            {LANGS.map((l) => (
+              <button
+                key={l.code}
+                onClick={() => { sfx.tap(); setLang(l.code) }}
+                className={`rounded-lg px-3 py-1.5 text-sm font-bold transition ${
+                  lang === l.code ? 'bg-crew text-white' : 'text-muted'
+                }`}
+              >
+                {l.name}
+              </button>
+            ))}
           </div>
         </div>
       </Panel>

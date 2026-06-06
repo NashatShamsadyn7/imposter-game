@@ -326,6 +326,58 @@ export async function updateRoom(roomId, patch) {
   await supabase.from('rooms').update(patch).eq('id', roomId)
 }
 
+// ───── ڕۆڵە نهێنییەکان (P0#1 — server-authoritative) ─────
+// خانەخوێ: سێرڤەر بە هەرەمەکی ڕۆڵ دابەش دەکات (room_roles)
+export async function assignRoles(roomId, impostorCount, mode) {
+  need()
+  const { error } = await supabase.rpc('assign_roles', {
+    p_room: roomId,
+    p_impostor_count: impostorCount,
+    p_mode: mode || 'classic',
+  })
+  if (error) throw error
+}
+
+// ڕۆڵی خۆم (یان null)
+export async function getMyRole(roomId) {
+  if (!supabase) return null
+  const { data } = await supabase.rpc('get_my_role', { p_room: roomId })
+  return data ?? null
+}
+
+// هاوپەیمانەکانم (تەنها ئەگەر ساختەکار بم)
+export async function getMyAllies(roomId) {
+  if (!supabase) return []
+  const { data } = await supabase.rpc('get_my_allies', { p_room: roomId })
+  return data || []
+}
+
+// ئامانجی لێکۆڵەر — یەک ساختەکار (تەنها ئەگەر لێکۆڵەر بم)
+export async function getDetectiveTarget(roomId) {
+  if (!supabase) return null
+  const { data } = await supabase.rpc('get_detective_target', { p_room: roomId })
+  return (data && data[0]) || null
+}
+
+// ڕۆڵی بۆتەکان (تەنها خانەخوێ، بۆ بەڕێوەبردنیان) → { [user_id]: role }
+export async function getBotRoles(roomId) {
+  if (!supabase) return {}
+  const { data } = await supabase.rpc('get_bot_roles', { p_room: roomId })
+  const map = {}
+  ;(data || []).forEach((r) => (map[r.user_id] = r.role))
+  return map
+}
+
+// کۆتایی یاری — خانەخوێ هەموو ڕۆڵەکان وەردەگرێت → { [user_id]: role }
+export async function revealRoles(roomId) {
+  need()
+  const { data, error } = await supabase.rpc('reveal_roles', { p_room: roomId })
+  if (error) throw error
+  const map = {}
+  ;(data || []).forEach((r) => (map[r.user_id] = r.role))
+  return map
+}
+
 export async function fetchRoom(roomId) {
   need()
   const { data } = await supabase.from('rooms').select('*').eq('id', roomId).maybeSingle()

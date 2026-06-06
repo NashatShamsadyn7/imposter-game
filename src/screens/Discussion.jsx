@@ -11,7 +11,7 @@ import { sfx } from '../lib/sound'
 
 export default function Discussion() {
   const { user } = useAuth()
-  const { room, players, me, isHost, nextTurn, beginVoting } = useRoom()
+  const { room, players, me, isHost, nextTurn, beginVoting, myRole } = useRoom()
   const t = useT()
   const [now, setNow] = useState(Date.now())
 
@@ -81,8 +81,8 @@ export default function Discussion() {
               <Eye className="h-5 w-5 text-crew" />
               <div>
                 <p className="text-xs text-ink/50">{t('ڕۆڵی تۆ')}</p>
-                <p className={`font-black ${me?.is_spectator ? 'text-ink/50' : me?.role === 'impostor' ? 'text-impostor' : 'text-crew'}`}>
-                  {me?.is_spectator ? t('بینەر') : me?.role === 'impostor' ? t('ساختەکار') : t('کەشتی')}
+                <p className={`font-black ${me?.is_spectator ? 'text-ink/50' : myRole === 'impostor' ? 'text-impostor' : 'text-crew'}`}>
+                  {me?.is_spectator ? t('بینەر') : myRole === 'impostor' ? t('ساختەکار') : t('کەشتی')}
                 </p>
               </div>
             </Panel>

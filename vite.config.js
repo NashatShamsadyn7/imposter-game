@@ -1,8 +1,18 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  // تاقیکردنەوە (Vitest) — لۆجیکی پاک: scoring/rank/stats
+  test: {
+    environment: 'node',
+    include: ['src/**/*.{test,spec}.{js,jsx}'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/lib/scoring.js', 'src/lib/rank.js', 'src/lib/stats.js'],
+    },
+  },
   server: {
     port: 5173,
     host: true,

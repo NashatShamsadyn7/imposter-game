@@ -28,6 +28,12 @@ import {
   clearVotes,
   recordResult,
   subscribeRoom,
+  assignRoles as apiAssignRoles,
+  getMyRole as apiGetMyRole,
+  getMyAllies as apiGetMyAllies,
+  getDetectiveTarget as apiGetDetectiveTarget,
+  getBotRoles as apiGetBotRoles,
+  revealRoles as apiRevealRoles,
 } from '../lib/supabase'
 
 const RoomContext = createContext(null)
@@ -49,6 +55,12 @@ export function RoomProvider({ children }) {
   const prevStatusRef = useRef(null)
   const botVoteRef = useRef(new Set()) // بۆتانی ئەم جۆلەیان دەنگیان داوە
   const botCluedRef = useRef(new Set()) // بۆتانی ئەم جۆلە وەسفیان کردووە
+
+  // ───── ڕۆڵە نهێنییەکان (P0#1) — کڵاینت تەنها زانیاری خۆی وەردەگرێت ─────
+  const [myRole, setMyRole] = useState(null)         // ڕۆڵی خۆم (لە سێرڤەرەوە)
+  const [myAllies, setMyAllies] = useState([])       // هاوپەیمانەکان (ئەگەر ساختەکار بم)
+  const [detectiveTarget, setDetectiveTarget] = useState(null) // ئامانجی لێکۆڵەر
+  const botRolesRef = useRef({})                     // { [bot_user_id]: role } — تەنها خانەخوێ
 
   // ───── هاوکاتکردنی ڕاستەوخۆ ─────
   const refreshAll = useCallback(async (rid) => {
@@ -110,6 +122,42 @@ export function RoomProvider({ children }) {
     }
     prevStatusRef.current = room.status
   }, [room?.status, roomId])
+
+  // ───── هێنانی ڕۆڵی خۆم (P0#1) ─────
+  // کاتێک یاری چالاکە (reveal/discussion/voting)، ڕۆڵی خۆم + هاوپەیمان +
+  // ئامانجی لێکۆڵەر لە سێرڤەرەوە وەردەگرم. لە لۆبی/ئەنجام پاک دەکرێنەوە.
+  const activeRolePhase = ['reveal', 'discussion', 'voting'].includes(room?.status)
+  useEffect(() => {
+    if (!roomId || !supabase) return
+    if (!activeRolePhase) {
+      setMyRole(null)
+      setMyAllies([])
+      setDetectiveTarget(null)
+      botRolesRef.current = {}
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const role = await apiGetMyRole(roomId)
+      if (cancelled) return
+      setMyRole(role)
+      if (role === 'impostor') {
+        apiGetMyAllies(roomId).then((a) => !cancelled && setMyAllies(a))
+      } else {
+        setMyAllies([])
+      }
+      if (role === 'detective') {
+        apiGetDetectiveTarget(roomId).then((t) => !cancelled && setDetectiveTarget(t))
+      } else {
+        setDetectiveTarget(null)
+      }
+      // خانەخوێ ڕۆڵی بۆتەکان وەردەگرێت بۆ بەڕێوەبردنیان (ئەگەر لەدەستچووبێت)
+      if (room?.host_id === user?.id && !Object.keys(botRolesRef.current).length) {
+        apiGetBotRoles(roomId).then((m) => { botRolesRef.current = m })
+      }
+    })()
+    return () => { cancelled = true }
+  }, [roomId, activeRolePhase, room?.host_id, user?.id])
 
   // ───── کردارەکانی ژوور ─────
   const createRoom = useCallback(
@@ -256,7 +304,7 @@ export function RoomProvider({ children }) {
         ;(async () => {
           const res = await apiBotTurn({
             action: 'vote',
-            role: bot.role,
+            role: botRolesRef.current[bot.user_id] || 'crew',
             lang,
             clues,
             candidates,
@@ -277,35 +325,16 @@ export function RoomProvider({ children }) {
     // دۆخی «متخفّی»: ساختەکار وشەیەکی نزیکی هاوپۆڵ وەردەگرێت لە جیاتی هیچ
     const decoy = room.mode === 'undercover' ? pickDecoyWord(category, word.ku) : null
 
-    // بینەرەکان لە دابەشکردنی ڕۆڵ و یاری بەدەر دەکرێن
-    const playable = players.filter((p) => !p.is_spectator)
-    const ids = playable.map((p) => p.user_id)
-    const shuffled = [...ids].sort(() => Math.random() - 0.5)
-    const impostorIds = new Set(shuffled.slice(0, room.impostor_count))
-
-    // دۆخی «لێکۆڵەر»: یەک یاریزانی دەستەی کەشتی دەبێتە لێکۆڵەر و
-    // ناسنامەی ساختەکارێک دەزانێت (لە کارتی ئاشکراکردندا نیشان دەدرێت)
-    const crewIds = shuffled.filter((id) => !impostorIds.has(id))
-    const detectiveId = room.mode === 'detective' && crewIds.length ? crewIds[0] : null
-
-    // ڕۆڵی هەر یاریزانێک
-    const roleFor = (p) => {
-      if (p.is_spectator) return null
-      if (impostorIds.has(p.user_id)) return 'impostor'
-      if (p.user_id === detectiveId) return 'detective'
-      return 'crew'
-    }
-
     await clearVotes(roomId)
-    await Promise.all(
-      players.map((p) =>
-        updatePlayer(roomId, p.user_id, {
-          role: roleFor(p),
-          ejected: false,
-          points_this_game: 0,
-        })
-      )
-    )
+
+    // P0#1: ڕۆڵەکان لە لای سێرڤەرەوە بە هەرەمەکی دابەش دەکرێن (room_roles).
+    // کڵاینت ناتوانێت ڕۆڵی کەسانی تر ببینێت. assign_roles هاوکات
+    // room_players.role بەتاڵ دەکاتەوە و ejected/points ڕیسێت دەکات.
+    await apiAssignRoles(roomId, room.impostor_count, room.mode)
+
+    // خانەخوێ ڕۆڵی بۆتەکان وەردەگرێت بۆ بەڕێوەبردنیان لە جۆلەکەدا
+    botRolesRef.current = await apiGetBotRoles(roomId)
+
     resultsRef.current = false
     await updateRoom(roomId, {
       status: 'reveal',
@@ -363,10 +392,11 @@ export function RoomProvider({ children }) {
         .filter((m) => m.kind === 'chat' || m.kind === 'clue')
         .slice(-12)
         .map((m) => ({ name: m.display_name, text: m.content }))
+      const botRole = botRolesRef.current[bot.user_id] || 'crew'
       const res = await apiBotTurn({
         action: 'describe',
-        role: bot.role,
-        word: bot.role === 'impostor' ? null : room.secret_word_ku,
+        role: botRole,
+        word: botRole === 'impostor' ? null : room.secret_word_ku,
         category: resolveCategory(room.category_id)?.name,
         lang,
         clues,
@@ -403,7 +433,13 @@ export function RoomProvider({ children }) {
     if (!isHost || resultsRef.current) return
     resultsRef.current = true
     const freshVotes = await fetchVotes(roomId)
-    const freshPlayers = await fetchPlayers(roomId)
+    // P0#1: ڕۆڵەکان لە سێرڤەرەوە ئاشکرا دەکرێن (یاری تەواوبووە) و
+    // دەخرێنە سەر room_players. پاشان لۆجیکی تاقیکراوی scoring.js بەکاردێنین.
+    const roleMap = await apiRevealRoles(roomId)
+    const freshPlayers = (await fetchPlayers(roomId)).map((p) => ({
+      ...p,
+      role: p.role ?? roleMap[p.user_id] ?? null,
+    }))
     // بینەرەکان لە لێکدانەوەی ئەنجام بەدەر دەکرێن
     const active = freshPlayers.filter((p) => !p.is_spectator)
     const { results, winner } = resolveGame(
@@ -487,6 +523,9 @@ export function RoomProvider({ children }) {
     isHost,
     error,
     busy,
+    myRole,
+    myAllies,
+    detectiveTarget,
     createRoom,
     joinRoom,
     quickPlay,

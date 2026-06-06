@@ -32,7 +32,7 @@ VITE_VAPID_PUBLIC_KEY = <Public Key>
 
 ## ٣) جێبەجێکردنی SQL
 
-لە Supabase > SQL Editor، ناوەڕۆکی `supabase_push.sql` جێبەجێ بکە
+لە Supabase > SQL Editor، ناوەڕۆکی `supabase/migrations/20260530031842_push.sql` جێبەجێ بکە
 (خشتەی `push_subscriptions` + RLS دروست دەکات).
 
 ---
@@ -70,7 +70,7 @@ Supabase > Database > Webhooks > Create:
 
 **ڕێگەی B — SQL Trigger:**
 لە Dashboard > Database > Extensions ئەکستێنشنی `pg_net` چالاک بکە،
-پاشان لە `supabase_push.sql` ئەو بەشەی کۆمێنتکراوە (`notify_push`) لێبکەرەوە و
+پاشان لە `supabase/migrations/20260530031842_push.sql` ئەو بەشەی کۆمێنتکراوە (`notify_push`) لێبکەرەوە و
 `<PROJECT_REF>` و `<SERVICE_ROLE_KEY>` بگۆڕە، ئینجا جێبەجێی بکە.
 
 ---
