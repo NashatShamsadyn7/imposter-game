@@ -119,6 +119,54 @@
   --shadow: rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
+/* کوردستان — ڕەنگی ئاڵای کوردی (سەوز/سوور/زەرد) */
+[data-theme='kurdistan'] {
+  --c-space: 8 20 14;
+  --c-surface: 17 34 26;
+  --c-surface2: 24 46 35;
+  --c-ink: 240 248 240;
+  --c-muted: 156 186 166;
+  --c-line: 38 66 50;
+  --c-crew: 34 197 94;
+  --c-impostor: 239 68 68;
+  --aurora-1: 34 197 94;
+  --aurora-2: 250 204 21;
+  --aurora-3: 239 68 68;
+  --shadow: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+/* دەریا — شینی نیلی ژورف */
+[data-theme='ocean'] {
+  --c-space: 6 16 30;
+  --c-surface: 14 30 52;
+  --c-surface2: 20 42 70;
+  --c-ink: 224 240 255;
+  --c-muted: 144 174 204;
+  --c-line: 32 58 92;
+  --c-crew: 56 189 248;
+  --c-impostor: 251 113 133;
+  --aurora-1: 56 189 248;
+  --aurora-2: 14 165 233;
+  --aurora-3: 99 102 241;
+  --shadow: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+/* گوڵی — پەمەیی/مۆری نەرم */
+[data-theme='rose'] {
+  --c-space: 26 12 24;
+  --c-surface: 46 22 42;
+  --c-surface2: 62 30 56;
+  --c-ink: 252 234 246;
+  --c-muted: 210 170 196;
+  --c-line: 92 46 80;
+  --c-crew: 244 114 182;
+  --c-impostor: 251 146 60;
+  --aurora-1: 244 114 182;
+  --aurora-2: 217 70 239;
+  --aurora-3: 168 85 247;
+  --shadow: rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
 
 * {
   -webkit-tap-highlight-color: transparent;

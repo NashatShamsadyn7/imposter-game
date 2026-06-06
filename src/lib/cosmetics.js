@@ -25,6 +25,13 @@ export const AVATARS = [
   { id: 'av_dragon',    type: 'avatar', name: 'ئەژدیها',  price: 280, emoji: '🐉', bg: 'from-emerald-500 via-teal-600 to-cyan-700' },
   { id: 'av_crown',     type: 'avatar', name: 'پاشا',     price: 380, emoji: '🤴', bg: 'from-amber-300 via-yellow-500 to-amber-700' },
   { id: 'av_unicorn',   type: 'avatar', name: 'یەکشاخ',   price: 380, emoji: '🦄', bg: 'from-pink-400 via-fuchsia-500 to-violet-600' },
+  // ───── ئەڤاتاری کوردی ─────
+  { id: 'av_peshmerga', type: 'avatar', name: 'پێشمەرگە',  price: 220, emoji: '🪖', bg: 'from-green-600 via-emerald-700 to-stone-700' },
+  { id: 'av_dancer',    type: 'avatar', name: 'هەڵپەرکێ',  price: 150, emoji: '💃', bg: 'from-red-500 via-amber-500 to-green-600' },
+  { id: 'av_shepherd',  type: 'avatar', name: 'شوان',      price: 150, emoji: '🐑', bg: 'from-stone-400 via-emerald-600 to-green-800' },
+  { id: 'av_tulip',     type: 'avatar', name: 'گوڵی نەورۆز', price: 150, emoji: '🌷', bg: 'from-rose-400 via-red-500 to-green-600' },
+  { id: 'av_eagle_ku',  type: 'avatar', name: 'هەڵۆی زاگرۆس', price: 280, emoji: '🦅', bg: 'from-amber-500 via-stone-600 to-slate-700' },
+  { id: 'av_sun_ku',    type: 'avatar', name: 'خۆری کوردی', price: 500, emoji: '☀️', bg: 'from-yellow-300 via-amber-400 to-red-500' },
 ]
 
 // ───── چوارچێوەکانی ئەڤاتار ─────
@@ -61,6 +68,11 @@ export const FRAMES = [
   { id: 'frame_cosmos',  type: 'frame', name: 'کۆزمۆس',      price: 380, ring: 'from-violet-600 via-fuchsia-600 to-cyan-500',  glow: 'shadow-[0_0_24px_rgba(168,85,247,0.65)]', anim: 'cos-spin', fx: 'stars' },
   { id: 'frame_diamond', type: 'frame', name: 'ئەڵماس',      price: 380, ring: 'from-sky-200 via-white to-cyan-200',         glow: 'shadow-[0_0_24px_rgba(186,230,253,0.7)]', anim: 'cos-shimmer cos-pulse', fx: 'stars' },
   { id: 'frame_venom',   type: 'frame', name: 'ژەهر',        price: 220, ring: 'from-emerald-400 via-lime-500 to-green-700',  glow: 'shadow-[0_0_18px_rgba(132,204,22,0.6)]',  anim: 'cos-shimmer cos-pulse', fx: 'bubbles' },
+  // ───── چوارچێوەی کوردی ─────
+  { id: 'frame_kurdistan', type: 'frame', name: 'ئاڵای کوردستان', price: 380, ring: 'from-green-500 via-yellow-400 to-red-500', glow: 'shadow-[0_0_20px_rgba(250,204,21,0.6)]', anim: 'cos-shimmer cos-pulse' },
+  { id: 'frame_newroz',  type: 'frame', name: 'ئاگری نەورۆز', price: 220, ring: 'from-red-500 via-orange-500 to-yellow-400', glow: 'shadow-[0_0_18px_rgba(249,115,22,0.6)]', anim: 'cos-shimmer cos-pulse', fx: 'fire' },
+  { id: 'frame_zagros',  type: 'frame', name: 'چیای زاگرۆس', price: 220, ring: 'from-emerald-600 via-stone-500 to-slate-600', glow: 'shadow-[0_0_16px_rgba(120,113,108,0.55)]', anim: 'cos-shimmer' },
+  { id: 'frame_sun_ku',  type: 'frame', name: 'خۆری کوردی',  price: 500, ring: 'from-yellow-300 via-amber-400 to-red-500', glow: 'shadow-[0_0_24px_rgba(250,204,21,0.7)]', anim: 'cos-spin', fx: 'fire' },
 ]
 
 // ───── ڕەنگی ناو ─────
@@ -150,10 +162,13 @@ export const BACKGROUNDS = [
 export const THEMES = [
   { id: 'dark',   type: 'theme', name: 'تاریک',    price: 0,   swatch: ['bg-slate-900', 'bg-teal-400', 'bg-rose-400'], free: true },
   { id: 'light',  type: 'theme', name: 'ڕووناک',   price: 0,   swatch: ['bg-slate-100', 'bg-teal-500', 'bg-rose-500'], free: true },
-  { id: 'galaxy', type: 'theme', name: 'گەلەکسی',  price: 300, swatch: ['bg-violet-900', 'bg-cyan-300', 'bg-pink-400'] },
-  { id: 'sunset', type: 'theme', name: 'ئاوابوون', price: 300, swatch: ['bg-rose-900', 'bg-orange-400', 'bg-rose-500'] },
-  { id: 'cyber',  type: 'theme', name: 'سایبەر',   price: 380, swatch: ['bg-slate-900', 'bg-cyan-300', 'bg-pink-500'] },
-  { id: 'forest', type: 'theme', name: 'دارستان',  price: 300, swatch: ['bg-emerald-950', 'bg-emerald-400', 'bg-lime-400'] },
+  { id: 'galaxy',    type: 'theme', name: 'گەلەکسی',  price: 300, swatch: ['bg-violet-900', 'bg-cyan-300', 'bg-pink-400'] },
+  { id: 'sunset',    type: 'theme', name: 'ئاوابوون', price: 300, swatch: ['bg-rose-900', 'bg-orange-400', 'bg-rose-500'] },
+  { id: 'cyber',     type: 'theme', name: 'سایبەر',   price: 380, swatch: ['bg-slate-900', 'bg-cyan-300', 'bg-pink-500'] },
+  { id: 'forest',    type: 'theme', name: 'دارستان',  price: 300, swatch: ['bg-emerald-950', 'bg-emerald-400', 'bg-lime-400'] },
+  { id: 'kurdistan', type: 'theme', name: 'کوردستان', price: 380, swatch: ['bg-green-900', 'bg-yellow-400', 'bg-red-500'] },
+  { id: 'ocean',     type: 'theme', name: 'دەریا',    price: 300, swatch: ['bg-blue-950', 'bg-sky-400', 'bg-indigo-400'] },
+  { id: 'rose',      type: 'theme', name: 'گوڵی',     price: 300, swatch: ['bg-pink-950', 'bg-pink-400', 'bg-fuchsia-400'] },
 ]
 
 export const CATALOG = [
