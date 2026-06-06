@@ -4,7 +4,9 @@
 //  هەردوو شێوازی یاری (ئۆنلاین + ناوخۆیی Pass and Play) ئەم بانکە بەکاردێنن.
 // ═══════════════════════════════════════════════════════════
 
-export const CATEGORIES = [
+// هەموو هاوپۆڵەکان (وشە + گرووپی شاراوە). تەنها ١٢ـیان لە یاریدا دەردەکەون
+// (بڕوانە CATEGORIES لە خوارەوە). هیچ داتایەک نەسڕاوەتەوە — تەنها فلتەر.
+const ALL_CATEGORIES = [
   {
     id: 'kurdish', name: 'کوردەواری', icon: '🏔️',
     words: [
@@ -1716,6 +1718,42 @@ export const CATEGORIES = [
     ],
   },
 ]
+
+// ───── ١٢ هاوپۆڵی هەڵبژێردراو (تەنها ئەمانە لە یاریدا دەردەکەون) ─────
+// بۆ زیادکردن/گۆڕین، تەنها ئەم لیستەی ناسنامەکان دەستکاری بکە.
+// هەر هاوپۆڵێک خۆی دەیان وشە لەخۆدەگرێت، و هەر وشەیەک وێنەی AI ـی هەیە
+// (لە en ـەوە) لەگەڵ ئیمۆجی وەک یەدەگ.
+export const FEATURED_CATEGORY_IDS = [
+  'kurdish', 'animals', 'food', 'fruits', 'places', 'sports',
+  'countries', 'professions', 'transport', 'nature', 'objects', 'clothes',
+]
+
+// دەوڵەمەندکردنی هاوپۆڵەکان: وشەی هاوپۆڵە پەیوەندیدارە شاراوەکان تێکەڵ دەکرێن
+// (بەبێ دووبارەبوونەوە) بۆ ئەوەی هەر هاوپۆڵێک وشەی زیاتری هەبێت.
+const MERGE_INTO = {
+  animals: ['sea', 'birds'],
+  food: ['drinks', 'vegetables', 'kitchen'],
+  places: ['landmarks'],
+  nature: ['weather', 'flowers', 'space'],
+  objects: ['electronics', 'instruments', 'home', 'school', 'office'],
+}
+
+export const CATEGORIES = FEATURED_CATEGORY_IDS
+  .map((id) => {
+    const base = ALL_CATEGORIES.find((c) => c.id === id)
+    if (!base) return null
+    const extraIds = MERGE_INTO[id] || []
+    if (!extraIds.length) return base
+    const seen = new Set(base.words.map((w) => w.ku))
+    const extra = []
+    extraIds.forEach((eid) => {
+      ALL_CATEGORIES.find((c) => c.id === eid)?.words.forEach((w) => {
+        if (!seen.has(w.ku)) { seen.add(w.ku); extra.push(w) }
+      })
+    })
+    return { ...base, words: [...base.words, ...extra] }
+  })
+  .filter(Boolean)
 
 // هاوپۆڵی هەڕەمەکی (بۆ هەڵبژاردن)
 export const RANDOM_CATEGORY = { id: 'random', name: 'هەڕەمەکی', icon: '🎲' }
