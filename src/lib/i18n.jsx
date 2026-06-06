@@ -37,6 +37,12 @@ if (!i18next.isInitialized) {
       },
       fallbackLng: 'ku',
       supportedLngs: ['ku', 'ar', 'en'],
+      // دەستپێکی هاوکات (نەک async) — resources لە کۆددان، پێویست بە چاوەڕوانی نییە.
+      // ئەگەر async بێت، useTranslation لە سەرەتادا suspend دەکات و چونکە
+      // هیچ Suspense ـێک لە سەرەوەی LanguageProvider نییە → شاشەی سپی.
+      initImmediate: false,
+      // Suspense ناکارا — useTranslation یەکسەر t دەگەڕێنێتەوە (بەبێ ڕاگرتن)
+      react: { useSuspense: false },
       // کلیلەکان ':' و '.' لەخۆدەگرن — جیاکەرەوەکان ناکارا بکە
       keySeparator: false,
       nsSeparator: false,
