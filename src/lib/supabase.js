@@ -253,6 +253,19 @@ export async function joinRoom(code, user, profile) {
   const room = await findRoomByCode(code)
   if (!room) throw new Error('ژوور نەدۆزرایەوە')
   const isHost = room.host_id === user.id
+  // قەدەغەی دەرکردن — یاریزانی دەرکراو ناتوانێت پێش ٢٠ چرکە بگەڕێتەوە
+  if (!isHost) {
+    const { data: kick } = await supabase
+      .from('room_kicks')
+      .select('until')
+      .eq('room_id', room.id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (kick && new Date(kick.until) > new Date()) {
+      const secs = Math.ceil((new Date(kick.until) - Date.now()) / 1000)
+      throw new Error(`لە ژوورەکە دەرکراویت — چاوەڕێ بکە ${secs} چرکە`)
+    }
+  }
   const inProgress = room.status !== 'lobby'
   // ژووری داخراو — تەنها خانەخوێ دەتوانێت بگەڕێتەوە
   if (room.locked && !isHost) throw new Error('ژوور داخراوە')
@@ -270,6 +283,13 @@ export async function joinRoom(code, user, profile) {
 export async function leaveRoom(roomId, userId) {
   if (!supabase) return
   await supabase.from('room_players').delete().eq('room_id', roomId).eq('user_id', userId)
+}
+
+// دەرکردنی یاریزان (تەنها خانەخوێ) — دەرکردنی ڕاستەوخۆ + قەدەغەی ٢٠ چرکە
+export async function kickPlayer(roomId, userId) {
+  need()
+  const { error } = await supabase.rpc('kick_player', { p_room: roomId, p_user: userId })
+  if (error) throw error
 }
 
 // ───── بۆتەکان ─────
@@ -699,7 +719,7 @@ export async function fetchPublicProfile(userId) {
   if (!userId) return null
   const { data } = await supabase
     .from('profiles')
-    .select('id, display_name, avatar_url, friend_code, total_points, games_played, wins, last_seen')
+    .select('id, display_name, avatar_url, friend_code, total_points, games_played, wins, last_seen, equipped_cosmetics')
     .eq('id', userId)
     .maybeSingle()
   return data

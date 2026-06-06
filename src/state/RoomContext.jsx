@@ -16,6 +16,7 @@ import {
   botTurn as apiBotTurn,
   postBotMessage as apiPostBotMessage,
   leaveRoom as apiLeaveRoom,
+  kickPlayer as apiKickPlayer,
   updateRoom,
   updatePlayer,
   reorderPlayers as apiReorder,
@@ -226,6 +227,15 @@ export function RoomProvider({ children }) {
   const isHost = room && user && room.host_id === user.id
   const me = players.find((p) => p.user_id === user?.id) || null
 
+  // ئەگەر یاریزان دەرکرا (خانەخوێ ڕیزەکەی سڕییەوە)، ڕاستەوخۆ لە ژوور دەرچێت
+  useEffect(() => {
+    if (!room || !user || isHost) return
+    if (players.length > 0 && !players.some((p) => p.user_id === user.id)) {
+      setError('لە ژوورەکە دەرکرایت')
+      leaveRoom()
+    }
+  }, [players, room, user, isHost, leaveRoom])
+
   // ───── ڕێکخستن (خانەخوێ) ─────
   const setSettings = useCallback(
     (patch) => {
@@ -258,7 +268,8 @@ export function RoomProvider({ children }) {
   const kickPlayer = useCallback(
     (uid) => {
       if (!isHost) return
-      apiLeaveRoom(roomId, uid)
+      // دەرکردنی ڕاستەوخۆ + قەدەغەی ٢٠ چرکە (لە سێرڤەرەوە)
+      apiKickPlayer(roomId, uid).catch(() => apiLeaveRoom(roomId, uid))
     },
     [isHost, roomId]
   )

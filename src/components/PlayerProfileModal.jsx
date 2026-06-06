@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { X, Loader2, Star, Trophy, Gamepad2, Percent, UserPlus, Check, Clock, UserCheck, Skull, ShieldCheck, Ban, History, Flag } from 'lucide-react'
 import { fetchPublicProfile, fetchMatchHistory, reportUser } from '../lib/supabase'
 import { levelInfo, levelTitle, winRate } from '../lib/achievements'
+import { equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar } from '../lib/cosmetics'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import Avatar from './Avatar'
@@ -44,6 +45,12 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
 
   const name = stats?.display_name || fallbackName || t('یاریزان')
   const avatar = stats?.avatar_url || fallbackAvatar
+  // ڕووکاری بەرکراو (ڕەنگی ناو/تدرّج، چوارچێوە، ناونیشان، ئەڤاتار) — هەمان وەک مێنیو
+  const equipped = stats?.equipped_cosmetics || {}
+  const frameStyle = equippedFrameStyle(equipped)
+  const nameColor = equippedNameColor(equipped)
+  const title = equippedTitle(equipped)
+  const avatarChar = equippedAvatar(equipped)
   const lvl = levelInfo(stats?.total_points || 0)
   const wr = Math.round(winRate(stats || {}) * 100)
   const status = friends?.friendStatusWith?.(userId) || 'self'
@@ -97,8 +104,9 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
           <>
             {/* ئەڤاتار + ناو + ئاست */}
             <div className="flex flex-col items-center text-center">
-              <Avatar url={avatar} name={name} size={84} level={lvl.level} ring />
-              <h2 className="mt-3 text-xl font-black text-ink">{name}</h2>
+              <Avatar url={avatar} name={name} size={84} level={lvl.level} cosmeticFrame={frameStyle} avatarChar={avatarChar} ring />
+              <h2 className={`mt-3 text-xl font-black ${nameColor || 'text-ink'}`}>{name}</h2>
+              {title && <p className="mt-0.5 text-xs font-bold text-muted">{title}</p>}
               <div className="mt-1 flex items-center gap-2">
                 <span className="rounded-full bg-crew/15 px-3 py-0.5 text-sm font-bold text-crew">
                   {t('ئاستی')} {lvl.level}

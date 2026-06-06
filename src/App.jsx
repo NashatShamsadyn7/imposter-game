@@ -143,6 +143,13 @@ function Shell({ ui }) {
     setView('online')
   }
 
+  // کلیک لەسەر توستی بانگهێشت → بەشداربوون لە ژوور (ڕووداوی گشتی)
+  useEffect(() => {
+    const onJoin = (e) => { if (e.detail) joinByCode(e.detail) }
+    window.addEventListener('imposter:join', onJoin)
+    return () => window.removeEventListener('imposter:join', onJoin)
+  }, [])
+
   // بۆردی ناچاری یوزەرنەیم — بەبێ ناوی بەکارهێنەر ناتوانرێت بەردەوام بێت.
   // لەناو دارەکەی provider ـەکان دەمێنێتەوە تاکو ReferralHandler کار بکات.
   const needsUsername = !profile.username

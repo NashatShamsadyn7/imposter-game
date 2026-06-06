@@ -21,10 +21,8 @@ export const AVATARS = [
   { id: 'av_alien',     type: 'avatar', name: 'بیانی',    price: 150, emoji: '👽', bg: 'from-lime-400 via-green-500 to-emerald-700' },
   { id: 'av_robot',     type: 'avatar', name: 'ڕۆبۆت',    price: 150, emoji: '🤖', bg: 'from-sky-400 via-cyan-500 to-blue-700' },
   { id: 'av_ghost',     type: 'avatar', name: 'دروو',     price: 150, emoji: '👻', bg: 'from-slate-300 via-indigo-300 to-violet-400' },
-  { id: 'av_devil',     type: 'avatar', name: 'شەیتان',   price: 220, emoji: '😈', bg: 'from-red-500 via-rose-600 to-purple-700' },
   { id: 'av_skull',     type: 'avatar', name: 'کاسەسەر',  price: 220, emoji: '💀', bg: 'from-zinc-400 via-slate-600 to-zinc-900' },
   { id: 'av_dragon',    type: 'avatar', name: 'ئەژدیها',  price: 280, emoji: '🐉', bg: 'from-emerald-500 via-teal-600 to-cyan-700' },
-  { id: 'av_wizard',    type: 'avatar', name: 'جادووگەر', price: 280, emoji: '🧙', bg: 'from-violet-500 via-purple-600 to-indigo-800' },
   { id: 'av_crown',     type: 'avatar', name: 'پاشا',     price: 380, emoji: '🤴', bg: 'from-amber-300 via-yellow-500 to-amber-700' },
   { id: 'av_unicorn',   type: 'avatar', name: 'یەکشاخ',   price: 380, emoji: '🦄', bg: 'from-pink-400 via-fuchsia-500 to-violet-600' },
 ]
@@ -103,16 +101,13 @@ export const TITLES = [
   { id: 'title_hunter',    type: 'title', name: 'ڕاوچی',    price: 150, text: 'ڕاوچی' },
   { id: 'title_mastermind',type: 'title', name: 'مێشکی پیلان', price: 300, text: 'مێشکی پیلان' },
   { id: 'title_champion',  type: 'title', name: 'پاڵەوان',  price: 300, text: 'پاڵەوان' },
-  { id: 'title_immortal',  type: 'title', name: 'نەمر',     price: 380, text: 'نەمر' },
   // ───── ناونیشانی نوێ ─────
   { id: 'title_spy',       type: 'title', name: 'سیخوڕ',    price: 100, text: 'سیخوڕ' },
   { id: 'title_ghost',     type: 'title', name: 'دروو',     price: 100, text: 'دروو' },
   { id: 'title_genius',    type: 'title', name: 'زیرەک',    price: 150, text: 'زیرەک' },
   { id: 'title_wolf',      type: 'title', name: 'گورگ',     price: 150, text: 'گورگ' },
-  { id: 'title_assassin',  type: 'title', name: 'تیرۆریست', price: 300, text: 'تیرۆریست' },
   { id: 'title_warlord',   type: 'title', name: 'سەرکردە',  price: 300, text: 'سەرکردە' },
   { id: 'title_emperor',   type: 'title', name: 'ئیمپراتۆر', price: 380, text: 'ئیمپراتۆر' },
-  { id: 'title_god',       type: 'title', name: 'خواوەند',  price: 380, text: 'خواوەند' },
 ]
 
 // ───── شێوەی سندووقی خەڵات ─────

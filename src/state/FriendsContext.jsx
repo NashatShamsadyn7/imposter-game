@@ -106,6 +106,9 @@ export function FriendsProvider({ children }) {
           title: 'بانگهێشت بۆ ژوور 🎮',
           body: `${name} بانگهێشتی کردیت — کۆد: ${msg.content}`,
           type: 'invite',
+          // کلیک لەسەر توست → ڕاستەوخۆ بەشداربە لە ژوور
+          onClick: () =>
+            window.dispatchEvent(new CustomEvent('imposter:join', { detail: msg.content })),
         })
       } else {
         notify({ title: name, body: msg.content, type: 'dm' })
