@@ -207,6 +207,15 @@ export function RoomProvider({ children }) {
       await apiJoinRoom(r.code, user, profile)
       localStorage.setItem(LS_ROOM, r.id)
       setRoomId(r.id)
+      // تجربەی یەکەم یاری باشتر: ئەگەر ژوورێکی نوێ دروستکرا (من خانەخوێم و
+      // تەنها خۆم)، دوو بۆت زیاد بکە تاکو یەکسەر بتوانرێت دەست بە یاری بکرێت
+      // (بەبێ چاوەڕوانی بەتەنها). یاریزانی ڕاستەقینەش دەتوانن دواتر بێنە ناوەوە.
+      if (r.host_id === user.id) {
+        try {
+          await apiAddBot(r.id, 1, 1)
+          await apiAddBot(r.id, 2, 2)
+        } catch { /* بۆت زیادکردن سەرکەوتوو نەبوو — گرنگ نییە */ }
+      }
     } catch (e) {
       setError(e.message)
     } finally {
