@@ -123,6 +123,9 @@ export function EconomyProvider({ children }) {
     if (!seededRef.current || !seededRef.current.startsWith(`${uid}:`)) return
     try {
       localStorage.setItem(keyFor(uid), JSON.stringify({ coins, owned: [...owned], equipped }))
+      // پاشبنەی بەرکراو بۆ کۆمپۆنێنتی Background (لە دەرەوەی ئەم provider ـەیە)
+      localStorage.setItem('imposter:bg', equipped.background || 'bg_aurora')
+      window.dispatchEvent(new CustomEvent('imposter:bg'))
     } catch { /* noop */ }
   }, [uid, coins, owned, equipped])
 

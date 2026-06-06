@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════
 
 // جۆرەکان
-export const COSMETIC_TYPES = ['avatar', 'frame', 'nameColor', 'title', 'chestSkin']
+export const COSMETIC_TYPES = ['avatar', 'frame', 'nameColor', 'title', 'chestSkin', 'background']
 
 // نرخی نموونەیی بەپێی دەگمەنی
 // common 60 · rare 120 · epic 220 · legendary 380
@@ -127,6 +127,23 @@ export const CHEST_SKINS = [
   { id: 'skin_diamond', type: 'chestSkin', name: 'ئەڵماس', price: 380, ring: 'border-sky-200/60 from-sky-200/30 to-cyan-300/10',    iconColor: 'text-sky-200', glow: 'shadow-[0_0_30px_rgba(186,230,253,0.55)]' },
 ]
 
+// ───── پاشبنەکان (backgrounds) — جوانکاری بە دراو ─────
+// هەر پاشبنەیەک سێ بلۆبی ڕەنگاوڕەنگ دەگرێتەوە (asset نییە، هەمیشە کاردەکات).
+// image (ئارەزوومەندانە): URL ـی وێنە — ئەگەر دانرا، لەسەر بلۆبەکان دادەنرێت.
+// rarity: legendary/iconic بۆ توهجی تایبەت.
+export const BACKGROUNDS = [
+  { id: 'bg_aurora',  type: 'background', name: 'شەفەق',     price: 0,   free: true, blobs: ['#0e9c8e', '#be64f5', '#608cfa'] },
+  { id: 'bg_sunset',  type: 'background', name: 'ئاوابوون',  price: 200, blobs: ['#f97316', '#ec4899', '#f43f5e'] },
+  { id: 'bg_ocean',   type: 'background', name: 'دەریا',     price: 200, blobs: ['#0ea5e9', '#06b6d4', '#3b82f6'] },
+  { id: 'bg_forest',  type: 'background', name: 'دارستان',   price: 200, blobs: ['#22c55e', '#10b981', '#84cc16'] },
+  { id: 'bg_candy',   type: 'background', name: 'شیرینی',    price: 200, blobs: ['#ec4899', '#d946ef', '#a855f7'] },
+  { id: 'bg_galaxy',  type: 'background', name: 'گەلەکسی',   price: 380, blobs: ['#6366f1', '#a855f7', '#d946ef'] },
+  { id: 'bg_inferno', type: 'background', name: 'دۆزەخ',     price: 380, blobs: ['#ef4444', '#f97316', '#facc15'] },
+  // ───── ئاستی iconic (بەرزترین) ─────
+  { id: 'bg_diamond', type: 'background', name: 'ئەڵماس',    price: 500, blobs: ['#bae6fd', '#22d3ee', '#818cf8'] },
+  { id: 'bg_royal',   type: 'background', name: 'شاهانە',    price: 500, blobs: ['#fbbf24', '#a855f7', '#f43f5e'] },
+]
+
 // ───── ثیمەکانی ڕووکار (purchasable themes) ─────
 // id = بەهای data-theme . dark/light بەخۆڕایین (price 0).
 // swatch: ڕەنگەکانی پێشبینین (tailwind classes).
@@ -139,7 +156,11 @@ export const THEMES = [
   { id: 'forest', type: 'theme', name: 'دارستان',  price: 300, swatch: ['bg-emerald-950', 'bg-emerald-400', 'bg-lime-400'] },
 ]
 
-export const CATALOG = [...AVATARS, ...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS, ...THEMES.filter((th) => !th.free)]
+export const CATALOG = [
+  ...AVATARS, ...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS,
+  ...BACKGROUNDS.filter((b) => !b.free),
+  ...THEMES.filter((th) => !th.free),
+]
 
 const BY_ID = Object.fromEntries(CATALOG.map((c) => [c.id, c]))
 export function getCosmetic(id) {
@@ -171,4 +192,13 @@ export function equippedChestSkin(equipped) {
 // ئەڤاتاری کەسایەتی بەرکراو → کۆمەتیک یان null
 export function equippedAvatar(equipped) {
   return getCosmetic(equipped?.avatar) || null
+}
+
+// پاشبنەی بەرکراو → کۆمەتیک (بنەڕەت ئەگەر هیچ نەبوو)
+const DEFAULT_BG = BACKGROUNDS[0]
+export function getBackground(id) {
+  return BACKGROUNDS.find((b) => b.id === id) || DEFAULT_BG
+}
+export function equippedBackground(equipped) {
+  return getBackground(equipped?.background)
 }

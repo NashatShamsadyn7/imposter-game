@@ -12,22 +12,24 @@ import Avatar from '../components/Avatar'
 import FrameFx from '../components/FrameFx'
 import { levelInfo } from '../lib/achievements'
 import {
-  AVATARS, FRAMES, NAME_COLORS, TITLES, CHEST_SKINS,
+  AVATARS, FRAMES, NAME_COLORS, TITLES, CHEST_SKINS, BACKGROUNDS,
   equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar,
 } from '../lib/cosmetics'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
 const TABS = [
-  { id: 'avatar',    label: 'ئەڤاتار',   items: AVATARS },
-  { id: 'frame',     label: 'چوارچێوە',  items: FRAMES },
-  { id: 'nameColor', label: 'ڕەنگی ناو', items: NAME_COLORS },
-  { id: 'title',     label: 'ناونیشان',  items: TITLES },
-  { id: 'chestSkin', label: 'سندووق',    items: CHEST_SKINS },
+  { id: 'avatar',     label: 'ئەڤاتار',   items: AVATARS },
+  { id: 'frame',      label: 'چوارچێوە',  items: FRAMES },
+  { id: 'background', label: 'پاشبنە',    items: BACKGROUNDS.filter((b) => !b.free) },
+  { id: 'nameColor',  label: 'ڕەنگی ناو', items: NAME_COLORS },
+  { id: 'title',      label: 'ناونیشان',  items: TITLES },
+  { id: 'chestSkin',  label: 'سندووق',    items: CHEST_SKINS },
 ]
 
 // ئاستی دەگمەنی بەپێی نرخ → ڕەنگی توهج
 function rarity(price) {
+  if (price >= 500) return { ring: 'shadow-[0_0_22px_-3px_rgba(244,114,182,0.85)]', border: 'border-pink-400/60', label: 'ئایکۆنیک', color: 'text-pink-400' }
   if (price >= 280) return { ring: 'shadow-[0_0_18px_-4px_rgba(251,191,36,0.7)]', border: 'border-amber-400/50', label: 'ئەفسانەیی', color: 'text-amber-400' }
   if (price >= 200) return { ring: 'shadow-[0_0_16px_-4px_rgba(168,85,247,0.6)]', border: 'border-violet-400/45', label: 'ئیپیک', color: 'text-violet-400' }
   if (price >= 120) return { ring: 'shadow-[0_0_14px_-4px_rgba(56,189,248,0.55)]', border: 'border-sky-400/40', label: 'دەگمەن', color: 'text-sky-400' }
@@ -59,6 +61,16 @@ function Swatch({ item }) {
   }
   if (item.type === 'title') {
     return <span className="rounded-full bg-crew/15 px-3 py-1 text-sm font-black text-crew">{item.text}</span>
+  }
+  if (item.type === 'background') {
+    const [a, b, c] = item.blobs || []
+    return (
+      <div className="relative h-12 w-16 overflow-hidden rounded-xl border border-line">
+        <span className="absolute -left-1 -top-1 h-8 w-8 rounded-full blur-md" style={{ background: a, opacity: 0.8 }} />
+        <span className="absolute bottom-0 right-1 h-7 w-7 rounded-full blur-md" style={{ background: b, opacity: 0.8 }} />
+        <span className="absolute left-5 top-3 h-6 w-6 rounded-full blur-md" style={{ background: c, opacity: 0.7 }} />
+      </div>
+    )
   }
   // chestSkin
   return (
