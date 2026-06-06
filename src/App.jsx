@@ -131,6 +131,17 @@ function Shell({ ui }) {
   // ئایا لە ناو ژوورێکی ئۆنلاینداین؟ (نەک تەنها هۆڵی ئۆنلاین) — بۆ شاردنەوەی شریت
   const [inOnlineRoom, setInOnlineRoom] = useState(false)
 
+  // کلیک لەسەر توستی بانگهێشت → بەشداربوون لە ژوور (ڕووداوی گشتی).
+  // ⚠️ دەبێت پێش هەر return ـێکی پێشوەخت بێت (یاسای hooks) — بۆیە setter ـە
+  // جێگیرەکان بەکاردێنین نەک joinByCode.
+  useEffect(() => {
+    const onJoin = (e) => {
+      if (e.detail) { setPendingJoin(e.detail); setView('online') }
+    }
+    window.addEventListener('imposter:join', onJoin)
+    return () => window.removeEventListener('imposter:join', onJoin)
+  }, [])
+
   if (!isSupabaseEnabled) return <Login />
   if (loading) return <FullLoader />
   if (!user) return <Login />
@@ -142,13 +153,6 @@ function Shell({ ui }) {
     setPendingJoin(code)
     setView('online')
   }
-
-  // کلیک لەسەر توستی بانگهێشت → بەشداربوون لە ژوور (ڕووداوی گشتی)
-  useEffect(() => {
-    const onJoin = (e) => { if (e.detail) joinByCode(e.detail) }
-    window.addEventListener('imposter:join', onJoin)
-    return () => window.removeEventListener('imposter:join', onJoin)
-  }, [])
 
   // بۆردی ناچاری یوزەرنەیم — بەبێ ناوی بەکارهێنەر ناتوانرێت بەردەوام بێت.
   // لەناو دارەکەی provider ـەکان دەمێنێتەوە تاکو ReferralHandler کار بکات.
