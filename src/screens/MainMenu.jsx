@@ -54,32 +54,15 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
             </p>
           </div>
         </button>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => go(onFriends)}
-            className="btn-press relative grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
-            title={t('هاوڕێیان')}
-          >
-            <Users className="h-5 w-5" />
-            {friendBadge > 0 && (
-              <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-impostor px-1 text-[10px] font-black text-white">
-                {friendBadge}
-              </span>
-            )}
-          </button>
+        {/* ئایکۆنەکان: لە دیسکتۆپ بە شریتی لاتەنیشت دەردەکەون (md:hidden).
+            هاوڕێیان و لیدەربۆرد لە شریتی خوارەوەی مۆبایلن، بۆیە لێرە لانەبراون. */}
+        <div className="flex items-center gap-2 md:hidden">
           <button
             onClick={() => go(onGroups)}
             className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
             title={t('گرووپەکان')}
           >
             <MessagesSquare className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => go(onLeaderboard)}
-            className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-amber-500 shadow-card hover:brightness-110"
-            title={t('لیدەربۆرد')}
-          >
-            <Crown className="h-5 w-5" />
           </button>
           <button
             onClick={() => go(onAchievements)}
