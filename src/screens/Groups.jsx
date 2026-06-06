@@ -17,7 +17,8 @@ import {
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
-export default function Groups({ onBack }) {
+// embedded=true: لەناو شاشەی هاوڕێیان دەردەکەوێت (بەبێ سەردێڕ/گەڕانەوەی خۆی)
+export default function Groups({ onBack, embedded = false }) {
   const { user, profile } = useAuth()
   const t = useT()
   const [groups, setGroups] = useState([])
@@ -94,19 +95,21 @@ export default function Groups({ onBack }) {
   }
 
   return (
-    <div className="mx-auto max-w-md px-4 py-6 md:max-w-2xl">
-      {/* سەردێڕ */}
-      <header className="mb-5 flex items-center gap-3 animate-fade-in">
-        <button
-          onClick={onBack}
-          className="btn-press grid h-10 w-10 place-items-center rounded-xl bg-surface text-muted shadow-card hover:text-ink"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
-        <h1 className="flex items-center gap-2 text-xl font-black text-ink">
-          <Users className="h-6 w-6 text-crew" /> {t('گرووپەکان')}
-        </h1>
-      </header>
+    <div className={embedded ? '' : 'mx-auto max-w-md px-4 py-6 md:max-w-2xl'}>
+      {/* سەردێڕ — تەنها کاتێک سەربەخۆیە (نەک لەناو هاوڕێیان) */}
+      {!embedded && (
+        <header className="mb-5 flex items-center gap-3 animate-fade-in">
+          <button
+            onClick={onBack}
+            className="btn-press grid h-10 w-10 place-items-center rounded-xl bg-surface text-muted shadow-card hover:text-ink"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+          <h1 className="flex items-center gap-2 text-xl font-black text-ink">
+            <Users className="h-6 w-6 text-crew" /> {t('گرووپەکان')}
+          </h1>
+        </header>
+      )}
 
       {/* دوگمەکان */}
       <div className="mb-5 grid grid-cols-2 gap-3">

@@ -10,6 +10,7 @@ import {
   Trash2,
   Search,
   AtSign,
+  MessagesSquare,
 } from 'lucide-react'
 import { useFriends } from '../state/FriendsContext'
 import { useProfileViewer } from '../state/ProfileViewer'
@@ -17,6 +18,7 @@ import { useT } from '../lib/i18n'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import DirectChat from './DirectChat'
+import Groups from './Groups'
 import { isOnline, lastSeenText } from '../lib/presence'
 import { sfx } from '../lib/sound'
 
@@ -32,6 +34,7 @@ export default function Friends({ onBack, onJoinRoom }) {
   const [msg, setMsg] = useState(null)
   const [sentTo, setSentTo] = useState({}) // id -> true
   const [chatWith, setChatWith] = useState(null)
+  const [tab, setTab] = useState('friends') // friends | groups
 
   // گەڕانی خۆکار (debounce) — کاتێک ٢ پیت یان زیاتر بنووسرێت
   useEffect(() => {
@@ -86,10 +89,34 @@ export default function Friends({ onBack, onJoinRoom }) {
         </button>
         <div className="flex items-center gap-2">
           <Users className="h-6 w-6 text-crew" />
-          <h1 className="text-2xl font-black text-ink">{t('هاوڕێیان')}</h1>
+          <h1 className="text-2xl font-black text-ink">{t('هاوڕێیان و گرووپەکان')}</h1>
         </div>
       </header>
 
+      {/* تابەکان: هاوڕێیان | گرووپەکان */}
+      <div className="mb-5 flex rounded-2xl bg-surface2 p-1">
+        <button
+          onClick={() => { sfx.tap(); setTab('friends') }}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold transition ${
+            tab === 'friends' ? 'bg-crew text-white shadow-card' : 'text-muted'
+          }`}
+        >
+          <Users className="h-4 w-4" /> {t('هاوڕێیان')}
+        </button>
+        <button
+          onClick={() => { sfx.tap(); setTab('groups') }}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold transition ${
+            tab === 'groups' ? 'bg-crew text-white shadow-card' : 'text-muted'
+          }`}
+        >
+          <MessagesSquare className="h-4 w-4" /> {t('گرووپەکان')}
+        </button>
+      </div>
+
+      {tab === 'groups' && <Groups embedded />}
+
+      {tab === 'friends' && (
+      <>
       {/* گەڕان بەپێی یوزەرنەیم */}
       <Panel className="mb-5 !p-4">
         <p className="mb-3 text-sm font-bold text-ink">{t('گەڕان بۆ هاوڕێ بە ناوی بەکارهێنەر')}</p>
@@ -258,6 +285,8 @@ export default function Friends({ onBack, onJoinRoom }) {
             ))}
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   )

@@ -58,9 +58,9 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
             هاوڕێیان و لیدەربۆرد لە شریتی خوارەوەی مۆبایلن، بۆیە لێرە لانەبراون. */}
         <div className="flex items-center gap-2 md:hidden">
           <button
-            onClick={() => go(onGroups)}
+            onClick={() => go(onFriends)}
             className="btn-press grid h-11 w-11 place-items-center rounded-full bg-surface text-crew shadow-card hover:brightness-110"
-            title={t('گرووپەکان')}
+            title={t('هاوڕێیان و گرووپەکان')}
           >
             <MessagesSquare className="h-5 w-5" />
           </button>

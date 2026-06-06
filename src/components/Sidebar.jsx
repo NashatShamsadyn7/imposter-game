@@ -4,7 +4,7 @@
 //  مۆبایل: شریتێکی خوارەوە بە ئایکۆنە سەرەکییەکان.
 // ═══════════════════════════════════════════════════════════
 
-import { Home, Wifi, Smartphone, ShoppingBag, Crown, Users, MessagesSquare, BarChart3, Trophy, Settings as SettingsIcon, User, LogOut } from 'lucide-react'
+import { Home, Wifi, Smartphone, ShoppingBag, Crown, Users, BarChart3, Trophy, Settings as SettingsIcon, User, LogOut } from 'lucide-react'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
@@ -16,7 +16,6 @@ const ITEMS = [
   { id: 'shop', icon: ShoppingBag, label: 'دوکان' },
   { id: 'leaderboard', icon: Crown, label: 'لیدەربۆرد' },
   { id: 'friends', icon: Users, label: 'هاوڕێیان' },
-  { id: 'groups', icon: MessagesSquare, label: 'گرووپەکان' },
   { id: 'stats', icon: BarChart3, label: 'ئامار' },
   { id: 'achievements', icon: Trophy, label: 'دەستکەوت' },
   { id: 'profile', icon: User, label: 'پرۆفایل' },
