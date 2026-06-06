@@ -254,7 +254,8 @@ function Shell({ ui }) {
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('imposter:theme') || 'dark')
   const [sfxOn, setSfxOn] = useState(() => localStorage.getItem('imposter:sfx') !== 'off')
-  const [musicOn, setMusicOn] = useState(() => localStorage.getItem('imposter:music') !== 'off')
+  // مۆسیقا بە بنەڕەت کوژاوەیە — بەکارهێنەر لە ڕێکخستن دایدەگیرسێنێت
+  const [musicOn, setMusicOn] = useState(() => localStorage.getItem('imposter:music') === 'on')
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme

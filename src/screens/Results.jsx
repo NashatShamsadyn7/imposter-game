@@ -15,7 +15,7 @@ import { addPoints } from '../lib/supabase'
 import { updateStreak } from '../lib/streak'
 
 export default function Results() {
-  const { room, players, me, isHost, playAgain, leaveRoom } = useRoom()
+  const { room, players, votes, me, isHost, playAgain, leaveRoom } = useRoom()
   const { user, refreshProfile } = useAuth()
   const { openProfile } = useProfileViewer() || {}
   const t = useT()
@@ -60,6 +60,11 @@ export default function Results() {
   const ranked = [...players]
     .filter((p) => !p.is_spectator)
     .sort((a, b) => b.points_this_game - a.points_this_game)
+
+  // کێ دەنگی بۆ کێ دا — لە دەنگە ڕاستەقینەکانەوە (نەک ستوونی نەبوو)
+  const nameById = Object.fromEntries(players.map((p) => [p.user_id, p.display_name]))
+  const votersFor = (uid) =>
+    (votes || []).filter((v) => v.target_id === uid).map((v) => nameById[v.voter_id] || '؟')
 
   return (
     <div className={`mx-auto max-w-md px-4 py-6 pb-24 ${impostorWin ? 'animate-shake' : ''}`}>
@@ -110,7 +115,9 @@ export default function Results() {
       <Panel className="mb-6">
         <h2 className="mb-3 text-center font-bold text-ink">{t('ئەنجام و خاڵەکان')}</h2>
         <div className="space-y-2">
-          {ranked.map((p) => (
+          {ranked.map((p) => {
+            const voters = votersFor(p.user_id)
+            return (
             <button
               key={p.user_id}
               onClick={() => openProfile?.(p.user_id, p.display_name, p.avatar_url)}
@@ -121,7 +128,7 @@ export default function Results() {
               }`}
             >
               <Avatar url={p.avatar_url} name={p.display_name} size={38} />
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 font-bold text-ink">
                   {p.role === 'impostor' ? (
                     <Skull className="h-4 w-4 text-impostor" />
@@ -136,14 +143,20 @@ export default function Results() {
                   )}
                 </p>
                 <p className="text-xs text-ink/50">
-                  {p.role === 'impostor' ? t('ساختەکار') : t('دەستەی کەشتی')} · {p.votes || 0} {t('دەنگ')}
+                  {p.role === 'impostor' ? t('ساختەکار') : t('دەستەی کەشتی')} · {voters.length} {t('دەنگ')}
                 </p>
+                {/* کێ دەنگی بۆ ئەم دا — بە نووسینی بچووک */}
+                {voters.length > 0 && (
+                  <p className="truncate text-[11px] text-ink/40">
+                    {t('دەنگیان دا:')} {voters.join('، ')}
+                  </p>
+                )}
               </div>
               <span className="flex items-center gap-1 font-black text-crew">
                 <Star className="h-4 w-4" />+{p.points_this_game}
               </span>
             </button>
-          ))}
+          )})}
         </div>
       </Panel>
 

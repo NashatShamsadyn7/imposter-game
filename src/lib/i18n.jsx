@@ -10,7 +10,6 @@ import i18next from 'i18next'
 import { initReactI18next, useTranslation } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { AR } from './translations'
-import { EN } from './locales/en'
 
 const LS_KEY = 'imposter:lang'
 
@@ -18,7 +17,6 @@ const LS_KEY = 'imposter:lang'
 export const LANGS = [
   { code: 'ku', name: 'کوردی', dir: 'rtl' },
   { code: 'ar', name: 'العربية', dir: 'rtl' },
-  { code: 'en', name: 'English', dir: 'ltr' },
 ]
 
 const RTL = new Set(['ku', 'ar', 'fa', 'he', 'ur'])
@@ -33,10 +31,9 @@ if (!i18next.isInitialized) {
       resources: {
         ku: { translation: {} },
         ar: { translation: AR },
-        en: { translation: EN },
       },
       fallbackLng: 'ku',
-      supportedLngs: ['ku', 'ar', 'en'],
+      supportedLngs: ['ku', 'ar'],
       // دەستپێکی هاوکات (نەک async) — resources لە کۆددان، پێویست بە چاوەڕوانی نییە.
       // ئەگەر async بێت، useTranslation لە سەرەتادا suspend دەکات و چونکە
       // هیچ Suspense ـێک لە سەرەوەی LanguageProvider نییە → شاشەی سپی.
