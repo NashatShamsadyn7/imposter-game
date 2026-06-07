@@ -433,7 +433,7 @@ export async function reorderPlayers(orderedIds, roomId) {
 }
 
 // ═══════════════ چات ═══════════════
-export async function sendMessage(roomId, user, profile, content, kind = 'chat') {
+export async function sendMessage(roomId, user, profile, content, kind = 'chat', bubble = null) {
   need()
   await supabase.from('messages').insert({
     room_id: roomId,
@@ -442,6 +442,7 @@ export async function sendMessage(roomId, user, profile, content, kind = 'chat')
     avatar_url: profile.avatar_url,
     content,
     kind,
+    bubble,
   })
 }
 

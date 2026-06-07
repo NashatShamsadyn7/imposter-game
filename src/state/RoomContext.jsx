@@ -527,9 +527,9 @@ export function RoomProvider({ children }) {
 
   // ───── چات ─────
   const sendMessage = useCallback(
-    (content, kind = 'chat') => {
+    (content, kind = 'chat', bubble = null) => {
       if (!user || !profile || !content.trim()) return
-      apiSendMessage(roomId, user, profile, content.trim().slice(0, 300), kind)
+      apiSendMessage(roomId, user, profile, content.trim().slice(0, 300), kind, bubble)
     },
     [roomId, user, profile]
   )

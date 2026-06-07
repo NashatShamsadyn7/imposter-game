@@ -3,6 +3,8 @@ import { Send, Smile, X, Film } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { useFriends } from '../state/FriendsContext'
+import { useEconomy } from '../state/EconomyContext'
+import { bubbleClass } from '../lib/cosmetics'
 import Avatar from './Avatar'
 import GifPicker from './GifPicker'
 import { isGifEnabled } from '../lib/gif'
@@ -21,6 +23,8 @@ export default function Chat({ disabled = false, className = '' }) {
   const { user } = useAuth()
   const { messages, sendMessage } = useRoom()
   const { isBlocked } = useFriends() || {}
+  const { equipped } = useEconomy() || {}
+  const myBubble = equipped?.bubble || null
   const t = useT()
   const [text, setText] = useState('')
   const [showQuick, setShowQuick] = useState(false)
@@ -41,7 +45,7 @@ export default function Chat({ disabled = false, className = '' }) {
   const submit = (e) => {
     e.preventDefault()
     if (!text.trim() || disabled) return
-    sendMessage(text)
+    sendMessage(text, 'chat', myBubble)
     sfx.tap()
     setText('')
     // کیبۆرد کراوە بهێڵەرەوە بۆ نووسینی خێرای دواتر (مۆبایل)
@@ -51,7 +55,7 @@ export default function Chat({ disabled = false, className = '' }) {
   // ناردنی خێرا (ئیمۆجی یان دەستەواژە)
   const quickSend = (content) => {
     if (disabled) return
-    sendMessage(content)
+    sendMessage(content, 'chat', myBubble)
     sfx.tap()
   }
 
@@ -93,10 +97,8 @@ export default function Chat({ disabled = false, className = '' }) {
                   </div>
                 ) : (
                   <div
-                    className={`inline-block rounded-2xl px-3 py-2 text-sm ${
-                      mine
-                        ? 'bg-crew text-white rounded-br-sm'
-                        : 'bg-ink/10 text-ink rounded-bl-sm'
+                    className={`inline-block rounded-2xl px-3 py-2 text-sm ${mine ? 'rounded-br-sm' : 'rounded-bl-sm'} ${
+                      bubbleClass(m.bubble) || (mine ? 'bg-crew text-white' : 'bg-ink/10 text-ink')
                     }`}
                   >
                     {m.content}

@@ -12,7 +12,7 @@ import Avatar from '../components/Avatar'
 import FrameFx from '../components/FrameFx'
 import { levelInfo } from '../lib/achievements'
 import {
-  AVATARS, FRAMES, NAME_COLORS, TITLES, CHEST_SKINS, BACKGROUNDS,
+  AVATARS, FRAMES, NAME_COLORS, TITLES, CHEST_SKINS, BACKGROUNDS, CHAT_BUBBLES,
   equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar,
 } from '../lib/cosmetics'
 import { useT } from '../lib/i18n'
@@ -23,6 +23,7 @@ const TABS = [
   { id: 'frame',      label: 'چوارچێوە',  items: FRAMES },
   { id: 'background', label: 'پاشبنە',    items: BACKGROUNDS.filter((b) => !b.free) },
   { id: 'nameColor',  label: 'ڕەنگی ناو', items: NAME_COLORS },
+  { id: 'bubble',     label: 'فقاعةی چات', items: CHAT_BUBBLES },
   { id: 'title',      label: 'ناونیشان',  items: TITLES },
   { id: 'chestSkin',  label: 'سندووق',    items: CHEST_SKINS },
 ]
@@ -58,6 +59,13 @@ function Swatch({ item }) {
   }
   if (item.type === 'nameColor') {
     return <span className={`text-xl font-black ${item.className}`}>ناو</span>
+  }
+  if (item.type === 'bubble') {
+    return (
+      <span className={`inline-block rounded-2xl rounded-br-sm px-3 py-1.5 text-xs font-bold ${item.className}`}>
+        سڵاو 👋
+      </span>
+    )
   }
   if (item.type === 'title') {
     return <span className="rounded-full bg-crew/15 px-3 py-1 text-sm font-black text-crew">{item.text}</span>

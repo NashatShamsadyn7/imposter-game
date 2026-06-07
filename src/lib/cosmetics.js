@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════
 
 // جۆرەکان
-export const COSMETIC_TYPES = ['avatar', 'frame', 'nameColor', 'title', 'chestSkin', 'background']
+export const COSMETIC_TYPES = ['avatar', 'frame', 'nameColor', 'title', 'chestSkin', 'background', 'bubble']
 
 // نرخی نموونەیی بەپێی دەگمەنی
 // common 60 · rare 120 · epic 220 · legendary 380
@@ -171,8 +171,24 @@ export const THEMES = [
   { id: 'rose',      type: 'theme', name: 'گوڵی',     price: 300, swatch: ['bg-pink-950', 'bg-pink-400', 'bg-fuchsia-400'] },
 ]
 
+// ───── فقاعةی چات (chat bubbles) ─────
+// className لەسەر فقاعةی نامەکە دادەنرێت (پاشبنە + ڕەنگی دەق).
+// لە جیاتی پاشبنەی بنەڕەتی (bg-crew/bg-ink) بەکاردێت.
+export const CHAT_BUBBLES = [
+  { id: 'bubble_sunset',  type: 'bubble', name: 'ئاوابوون',   price: 100, className: 'bg-gradient-to-r from-orange-500 to-pink-600 text-white' },
+  { id: 'bubble_ocean',   type: 'bubble', name: 'دەریا',      price: 100, className: 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white' },
+  { id: 'bubble_emerald', type: 'bubble', name: 'زمروود',     price: 100, className: 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white' },
+  { id: 'bubble_violet',  type: 'bubble', name: 'مۆر',        price: 100, className: 'bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white' },
+  { id: 'bubble_slate',   type: 'bubble', name: 'پۆلایین',    price: 80,  className: 'bg-gradient-to-r from-slate-600 to-zinc-700 text-white' },
+  { id: 'bubble_candy',   type: 'bubble', name: 'شیرینی',     price: 150, className: 'cos-shimmer bg-gradient-to-r from-pink-400 via-fuchsia-400 to-purple-500 text-white' },
+  { id: 'bubble_fire',    type: 'bubble', name: 'گڕی ئاگر',   price: 200, className: 'cos-shimmer bg-gradient-to-r from-amber-400 via-orange-500 to-red-600 text-white' },
+  { id: 'bubble_gold',    type: 'bubble', name: 'زێڕین',      price: 200, className: 'cos-shimmer bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-600 text-white' },
+  { id: 'bubble_galaxy',  type: 'bubble', name: 'گەلەکسی',    price: 280, className: 'cos-shimmer bg-gradient-to-r from-indigo-500 via-purple-600 to-fuchsia-600 text-white' },
+  { id: 'bubble_kurd',    type: 'bubble', name: 'کوردی',      price: 280, className: 'cos-shimmer bg-gradient-to-r from-green-500 via-yellow-400 to-red-500 text-white' },
+]
+
 export const CATALOG = [
-  ...AVATARS, ...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS,
+  ...AVATARS, ...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS, ...CHAT_BUBBLES,
   ...BACKGROUNDS.filter((b) => !b.free),
   ...THEMES.filter((th) => !th.free),
 ]
@@ -207,6 +223,11 @@ export function equippedChestSkin(equipped) {
 // ئەڤاتاری کەسایەتی بەرکراو → کۆمەتیک یان null
 export function equippedAvatar(equipped) {
   return getCosmetic(equipped?.avatar) || null
+}
+
+// className ـی فقاعةی چات بەپێی id → string یان null
+export function bubbleClass(id) {
+  return getCosmetic(id)?.className || null
 }
 
 // پاشبنەی بەرکراو → کۆمەتیک (بنەڕەت ئەگەر هیچ نەبوو)
