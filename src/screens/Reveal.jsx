@@ -108,7 +108,7 @@ export default function Reveal() {
         </div>
       ) : isImpostor ? (
         // ───── ساختەکار ─────
-        <div className="animate-scale-in w-full text-center">
+        <div className="animate-flip-in w-full text-center">
           <div className="animate-pulse-glow-red mb-4 inline-flex rounded-full border-2 border-impostor bg-impostor/15 p-5">
             <Skull className="h-14 w-14 text-impostor" />
           </div>
@@ -156,7 +156,7 @@ export default function Reveal() {
         </div>
       ) : (
         // ───── دەستەی کەشتی ─────
-        <div className="animate-scale-in w-full text-center">
+        <div className="animate-flip-in w-full text-center">
           {isDetective ? (
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-400/50 bg-amber-400/10 px-3 py-1 text-amber-500">
               <Search className="h-4 w-4" />

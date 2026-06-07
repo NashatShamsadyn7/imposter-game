@@ -29,6 +29,8 @@ export default function Background() {
 
   return (
     <div className="aurora">
+      {/* چینی شەفەقی چەرخاو — پاشبنە زیندوو دەکات */}
+      <div className="aurora-rot" />
       {/* وێنەی پاشبنە (ئەگەر هەبوو) */}
       {bg.image && (
         <div

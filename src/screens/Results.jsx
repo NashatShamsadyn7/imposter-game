@@ -8,7 +8,9 @@ import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import WordImage from '../components/WordImage'
 import Confetti from '../components/Confetti'
+import CountUp from '../components/CountUp'
 import MysteryReward from '../components/MysteryReward'
+import { Crown } from 'lucide-react'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 import { addPoints } from '../lib/supabase'
@@ -125,19 +127,25 @@ export default function Results() {
       <Panel className="mb-6">
         <h2 className="mb-3 text-center font-bold text-ink">{t('ئەنجام و خاڵەکان')}</h2>
         <div className="space-y-2">
-          {ranked.map((p) => {
+          {ranked.map((p, i) => {
             const voters = votersFor(p.user_id)
+            const isTop = i === 0 && p.points_this_game > 0
             return (
             <button
               key={p.user_id}
               onClick={() => openProfile?.(p.user_id, p.display_name, p.avatar_url)}
-              className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-right ${
+              style={{ animationDelay: `${i * 60}ms` }}
+              className={`animate-fade-in flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-right ${
+                isTop ? 'border-amber-400/60 bg-amber-400/10 shadow-[0_0_16px_-4px_rgba(251,191,36,0.5)]' :
                 p.role === 'impostor'
                   ? 'border-impostor/40 bg-impostor/10'
                   : 'border-crew/25 bg-crew/5'
               }`}
             >
-              <Avatar url={p.avatar_url} name={p.display_name} size={38} />
+              <div className="relative">
+                <Avatar url={p.avatar_url} name={p.display_name} size={38} />
+                {isTop && <Crown className="absolute -right-1 -top-2 h-4 w-4 rotate-12 text-amber-400 drop-shadow" />}
+              </div>
               <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 font-bold text-ink">
                   {p.role === 'impostor' ? (
@@ -163,7 +171,7 @@ export default function Results() {
                 )}
               </div>
               <span className="flex items-center gap-1 font-black text-crew">
-                <Star className="h-4 w-4" />+{p.points_this_game}
+                <Star className="h-4 w-4" />+<CountUp value={p.points_this_game} />
               </span>
             </button>
           )})}

@@ -267,7 +267,10 @@ function Shell({ ui }) {
             {/* md:pr-16 شوێن بۆ شریتی باریک · pb-16 شوێن بۆ شریتی خوارەوەی مۆبایل */}
             <div className={showSidebar ? 'md:pr-16 pb-16 md:pb-0' : ''}>
               <ErrorBoundary onReset={toMenu}>
-                <Suspense fallback={<FullLoader />}>{inner}</Suspense>
+                <Suspense fallback={<FullLoader />}>
+                  {/* گواستنەوەی نەرم لە نێوان شاشەکان — بە گۆڕینی view نوێ دەبێتەوە */}
+                  <div key={needsUsername ? 'username' : view} className="animate-page-in">{inner}</div>
+                </Suspense>
               </ErrorBoundary>
             </div>
             {showSidebar && (

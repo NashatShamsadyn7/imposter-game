@@ -410,3 +410,45 @@ input[type='number']::-webkit-outer-spin-button {
 @media (prefers-reduced-motion: reduce) {
   #splash .splash-logo, #splash .splash-spin { animation: none; }
 }
+
+/* ═══════════════ ئەنیمەیشنە بینراوەکان (وەشانی نوێ) ═══════════════ */
+
+/* گواستنەوەی نێوان شاشەکان */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-page-in { animation: page-in 0.34s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+/* هەڵگەڕانەوەی کارتی ڕۆڵ (3D flip) */
+@keyframes flip-in {
+  from { opacity: 0; transform: perspective(900px) rotateY(-78deg) scale(0.92); }
+  60%  { opacity: 1; }
+  to   { opacity: 1; transform: perspective(900px) rotateY(0deg) scale(1); }
+}
+.animate-flip-in { animation: flip-in 0.55s cubic-bezier(0.2, 0.8, 0.25, 1) both; }
+
+/* پاشبنەی زیندوو — چەرخانێکی هێواشی conic */
+.aurora-rot {
+  position: fixed;
+  inset: -60%;
+  z-index: -10;
+  pointer-events: none;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgb(var(--aurora-1) / 0.05) 70deg,
+    transparent 140deg,
+    rgb(var(--aurora-2) / 0.05) 210deg,
+    transparent 280deg,
+    rgb(var(--aurora-3) / 0.05) 340deg,
+    transparent 360deg
+  );
+  animation: aurora-rot 48s linear infinite;
+}
+@keyframes aurora-rot { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-in, .animate-flip-in { animation: none; }
+  .aurora-rot { animation: none; }
+}
