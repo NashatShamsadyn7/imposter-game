@@ -606,6 +606,19 @@ export async function adminBulkImport(categories, items) {
   }
 }
 
+// بارکردنی وێنەی وشە بۆ Storage و گەڕاندنەوەی URL ـی گشتی
+export async function uploadWordImage(userId, file) {
+  need()
+  const ext = (file.name?.split('.').pop() || 'jpg').toLowerCase()
+  const path = `${userId}/word-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+  const { error } = await supabase.storage
+    .from('word-images')
+    .upload(path, file, { upsert: true, cacheControl: '3600' })
+  if (error) throw error
+  const { data } = supabase.storage.from('word-images').getPublicUrl(path)
+  return data.publicUrl
+}
+
 // ───── پێشنیاری قسم لەلایەن یاریزانان ─────
 // ناردنی پێشنیاری قسم — words: [{ ku, emoji, ar, en }]  → { ok, id } یان { ok:false, error }
 export async function submitSection(name, icon, words) {

@@ -276,8 +276,9 @@ export default function WordsAdmin({ onBack }) {
                     {expanded === s.id && (
                       <div className="mt-2 flex flex-wrap gap-1.5 border-t border-line pt-2">
                         {expandedItems.map((w) => (
-                          <span key={w.id} className="rounded-lg bg-ink/5 px-2 py-1 text-xs text-ink">
-                            {w.emoji} {w.ku}
+                          <span key={w.id} className="flex items-center gap-1 rounded-lg bg-ink/5 py-1 pe-2 ps-1 text-xs text-ink">
+                            <WordImage imageUrl={w.image_url} englishPrompt={w.en} emoji={w.emoji} size={24} className="!rounded" />
+                            {w.ku}
                           </span>
                         ))}
                       </div>
