@@ -10,6 +10,7 @@ import {
   ShieldAlert, FolderPlus, EyeOff, Sparkles, Check, ChevronDown,
 } from 'lucide-react'
 import { useWords } from '../../state/WordsContext'
+import { useNotify } from '../../state/NotificationContext'
 import { CATEGORIES as STATIC_CATEGORIES } from '../../data/words'
 import { Button, Panel } from '../../components/ui'
 import WordImage from '../../components/WordImage'
@@ -39,6 +40,7 @@ function Field({ label, value, onChange, placeholder, dir = 'rtl' }) {
 
 export default function WordsAdmin({ onBack }) {
   const { isAdmin, reload: reloadGameBank } = useWords()
+  const notify = useNotify()
   const [bank, setBank] = useState({ categories: [], items: [] })
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -77,8 +79,9 @@ export default function WordsAdmin({ onBack }) {
       setExpanded(null)
       await load()
       await reloadGameBank()
+      notify({ title: 'قسم پەسەندکرا ✅', type: 'success' })
     } catch (e) {
-      alert('هەڵە: ' + (e?.message || e))
+      notify({ title: 'هەڵە', body: e?.message || String(e), type: 'error' })
     } finally {
       setBusy(false)
     }
@@ -91,8 +94,9 @@ export default function WordsAdmin({ onBack }) {
       await rejectSection(id)
       setExpanded(null)
       await load()
+      notify({ title: 'پێشنیار ڕەتکرایەوە', type: 'info' })
     } catch (e) {
-      alert('هەڵە: ' + (e?.message || e))
+      notify({ title: 'هەڵە', body: e?.message || String(e), type: 'error' })
     } finally {
       setBusy(false)
     }
@@ -137,9 +141,9 @@ export default function WordsAdmin({ onBack }) {
       await adminBulkImport(cats, items)
       await load()
       await reloadGameBank()
-      alert(`هاوردەکرا: ${cats.length} هاوپۆڵ، ${items.length} وشە ✅`)
+      notify({ title: `هاوردەکرا: ${cats.length} هاوپۆڵ، ${items.length} وشە`, type: 'success' })
     } catch (e) {
-      alert('هەڵە لە هاوردەکردن: ' + (e?.message || e))
+      notify({ title: 'هەڵە لە هاوردەکردن', body: e?.message || String(e), type: 'error' })
     } finally {
       setBusy(false)
     }
@@ -148,8 +152,8 @@ export default function WordsAdmin({ onBack }) {
   // ───── پاشەکەوتی وشە ─────
   const saveWord = async () => {
     const w = editing
-    if (!w.ku?.trim()) { alert('ناوی کوردی پێویستە'); return }
-    if (!w.category_id) { alert('هاوپۆڵ هەڵبژێرە'); return }
+    if (!w.ku?.trim()) { notify({ title: 'ناوی کوردی پێویستە', type: 'warn' }); return }
+    if (!w.category_id) { notify({ title: 'هاوپۆڵ هەڵبژێرە', type: 'warn' }); return }
     setBusy(true)
     try {
       const patch = {
@@ -163,8 +167,9 @@ export default function WordsAdmin({ onBack }) {
       setEditing(null)
       await load()
       await reloadGameBank()
+      notify({ title: w._new ? 'وشە زیادکرا' : 'وشە نوێکرایەوە', type: 'success' })
     } catch (e) {
-      alert('هەڵە: ' + (e?.message || e))
+      notify({ title: 'هەڵە', body: e?.message || String(e), type: 'error' })
     } finally {
       setBusy(false)
     }
@@ -185,7 +190,7 @@ export default function WordsAdmin({ onBack }) {
   // ───── پاشەکەوتی هاوپۆڵ ─────
   const saveCat = async () => {
     const c = newCat
-    if (!c.id?.trim() || !c.name_ku?.trim()) { alert('ناسنامە و ناوی کوردی پێویستن'); return }
+    if (!c.id?.trim() || !c.name_ku?.trim()) { notify({ title: 'ناسنامە و ناوی کوردی پێویستن', type: 'warn' }); return }
     setBusy(true)
     try {
       await adminUpsertCategory({
@@ -196,8 +201,9 @@ export default function WordsAdmin({ onBack }) {
       setNewCat(null)
       await load()
       await reloadGameBank()
+      notify({ title: 'هاوپۆڵ زیادکرا', type: 'success' })
     } catch (e) {
-      alert('هەڵە: ' + (e?.message || e))
+      notify({ title: 'هەڵە', body: e?.message || String(e), type: 'error' })
     } finally {
       setBusy(false)
     }

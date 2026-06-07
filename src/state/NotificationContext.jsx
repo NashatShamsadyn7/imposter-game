@@ -3,12 +3,22 @@
 // ═══════════════════════════════════════════════════════════
 
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
-import { Bell, MessageCircle, UserPlus, Gamepad2, X } from 'lucide-react'
+import { Bell, MessageCircle, UserPlus, Gamepad2, X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
 const NotificationContext = createContext(null)
 export const useNotify = () => useContext(NotificationContext)?.notify || (() => {})
 
-const ICONS = { dm: MessageCircle, friend: UserPlus, invite: Gamepad2, default: Bell }
+const ICONS = {
+  dm: MessageCircle, friend: UserPlus, invite: Gamepad2, default: Bell,
+  success: CheckCircle2, error: AlertCircle, info: Info, warn: AlertTriangle,
+}
+// ڕەنگی ئایکۆن بەپێی جۆر
+const ICON_TONE = {
+  success: 'bg-crew/15 text-crew',
+  error: 'bg-impostor/15 text-impostor',
+  warn: 'bg-amber-500/15 text-amber-500',
+  info: 'bg-sky-500/15 text-sky-500',
+}
 
 export function NotificationProvider({ children }) {
   const [toasts, setToasts] = useState([])
@@ -67,7 +77,7 @@ export function NotificationProvider({ children }) {
               }}
               className="pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3 text-right shadow-soft animate-scale-in"
             >
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-crew/15 text-crew">
+              <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${ICON_TONE[t.type] || 'bg-crew/15 text-crew'}`}>
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">

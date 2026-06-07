@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ChevronRight, Loader2, ShieldAlert, Ban, Check, Flag } from 'lucide-react'
 import { useWords } from '../../state/WordsContext'
+import { useNotify } from '../../state/NotificationContext'
 import { Button, Panel } from '../../components/ui'
 import Avatar from '../../components/Avatar'
 import { SkeletonList } from '../../components/Skeleton'
@@ -22,6 +23,7 @@ function timeAgo(iso) {
 
 export default function ModerationAdmin({ onBack }) {
   const { isAdmin } = useWords()
+  const notify = useNotify()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(null)
@@ -40,8 +42,9 @@ export default function ModerationAdmin({ onBack }) {
     try {
       await adminSetBan(row.reported_id, next)
       setRows((rs) => rs.map((r) => (r.reported_id === row.reported_id ? { ...r, banned: next } : r)))
+      notify({ title: next ? `«${row.display_name}» حظرکرا` : `حظر لابرا`, type: next ? 'warn' : 'success' })
     } catch (e) {
-      alert('هەڵە: ' + (e?.message || e))
+      notify({ title: 'هەڵە', body: e?.message || String(e), type: 'error' })
     } finally {
       setBusy(null)
     }

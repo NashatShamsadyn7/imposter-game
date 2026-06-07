@@ -1,15 +1,27 @@
-import { Rocket, LogIn, AlertTriangle, ChevronRight } from 'lucide-react'
+import { Rocket, LogIn, AlertTriangle, ChevronRight, Skull, ShieldCheck, Mic, Users, ShoppingBag, Lock } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { signInWithGoogle } from '../lib/supabase'
 import { Button, Panel } from '../components/ui'
 import { useT } from '../lib/i18n'
+
+const FEATURES = [
+  { icon: Mic, label: 'دەنگ' },
+  { icon: Users, label: 'هاوڕێیان' },
+  { icon: ShoppingBag, label: 'دوکان' },
+]
 
 export default function Login({ onExit }) {
   const { isSupabaseEnabled } = useAuth()
   const t = useT()
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-5 py-10 text-center">
+    <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center overflow-hidden px-5 py-10 text-center">
+      {/* ئایکۆنە مەلەکەرە لە پشتەوە — جوانکاری */}
+      <Skull className="animate-float pointer-events-none absolute left-6 top-24 h-12 w-12 text-impostor/10" />
+      <ShieldCheck className="animate-float pointer-events-none absolute right-8 top-40 h-14 w-14 text-crew/10" style={{ animationDelay: '2s' }} />
+      <Skull className="animate-float pointer-events-none absolute bottom-28 right-10 h-10 w-10 text-impostor/10" style={{ animationDelay: '4s' }} />
+      <ShieldCheck className="animate-float pointer-events-none absolute bottom-40 left-8 h-12 w-12 text-crew/10" style={{ animationDelay: '1s' }} />
+
       {onExit && (
         <button
           onClick={onExit}
@@ -28,7 +40,17 @@ export default function Login({ onExit }) {
           </div>
         </div>
         <h1 className="mb-2 text-5xl font-black tracking-tight text-ink neon-text">{t('ساختەکار')}</h1>
-        <p className="mb-10 text-ink/60">{t('یاری گرووپیی فەزایی — ئۆنلاین لەگەڵ هاوڕێکانت')}</p>
+        <p className="mb-6 text-ink/60">{t('یاری گرووپیی فەزایی — ئۆنلاین لەگەڵ هاوڕێکانت')}</p>
+
+        {/* تایبەتمەندییەکان */}
+        <div className="mb-8 flex justify-center gap-2">
+          {FEATURES.map((f) => (
+            <div key={f.label} className="flex items-center gap-1.5 rounded-full border border-line bg-surface/60 px-3 py-1.5 backdrop-blur">
+              <f.icon className="h-3.5 w-3.5 text-crew" />
+              <span className="text-xs font-bold text-ink/70">{t(f.label)}</span>
+            </div>
+          ))}
+        </div>
 
         {isSupabaseEnabled ? (
           <Panel className="panel-glow">
@@ -39,6 +61,9 @@ export default function Login({ onExit }) {
               <LogIn className="h-6 w-6" />
               {t('چوونەژوورەوە بە Google')}
             </Button>
+            <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted">
+              <Lock className="h-3 w-3" /> {t('پارێزراو بە Google — بێ وشەی نهێنی')}
+            </p>
           </Panel>
         ) : (
           <Panel className="border-impostor/40 text-right">

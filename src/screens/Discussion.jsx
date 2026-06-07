@@ -35,6 +35,11 @@ export default function Discussion() {
   const minutes = Math.floor(remaining / 60)
   const seconds = remaining % 60
   const urgent = remaining <= 10
+  // ڕێژەی ماوە بۆ خاڵقەی بازنەیی
+  const total = room.discussion_seconds || 60
+  const progress = Math.max(0, Math.min(1, remaining / total))
+  const RING_R = 60
+  const RING_C = 2 * Math.PI * RING_R
 
   // بینەرەکان لە ڕیزی وەسفکردن دەرناکەون (نۆرەیان نییە)
   const ordered = [...players]
@@ -94,13 +99,28 @@ export default function Discussion() {
               <Clock className="h-4 w-4" />
               <span className="text-sm">{t('کاتی گفتوگۆ')}</span>
             </div>
-            <p
-              className={`text-5xl font-black tabular-nums neon-text ${
-                urgent ? 'animate-pulse text-impostor' : 'text-ink'
-              }`}
-            >
-              {minutes}:{String(seconds).padStart(2, '0')}
-            </p>
+            {/* خاڵقەی کاتی بازنەیی */}
+            <div className="relative grid place-items-center" style={{ width: 148, height: 148 }}>
+              <svg width="148" height="148" className="-rotate-90">
+                <circle cx="74" cy="74" r={RING_R} fill="none" strokeWidth="9" style={{ stroke: 'rgb(var(--c-ink) / 0.1)' }} />
+                <circle
+                  cx="74" cy="74" r={RING_R} fill="none" strokeWidth="9" strokeLinecap="round"
+                  style={{
+                    stroke: urgent ? 'rgb(var(--c-impostor))' : 'rgb(var(--c-crew))',
+                    strokeDasharray: RING_C,
+                    strokeDashoffset: RING_C * (1 - progress),
+                    transition: 'stroke-dashoffset 0.5s linear, stroke 0.3s',
+                  }}
+                />
+              </svg>
+              <p
+                className={`absolute text-4xl font-black tabular-nums neon-text ${
+                  urgent ? 'animate-pulse text-impostor' : 'text-ink'
+                }`}
+              >
+                {minutes}:{String(seconds).padStart(2, '0')}
+              </p>
+            </div>
           </Panel>
 
           {/* ڕیزی قسەکردن */}
