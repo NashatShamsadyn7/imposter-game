@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Rocket, ChevronRight, Plus, LogIn, Trophy, Crown, Loader2, Star, Zap } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import { Rocket, ChevronRight, Plus, LogIn, Loader2, Star, Zap, Users, RefreshCw, DoorOpen } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
-import { useFriends } from '../state/FriendsContext'
-import { useProfileViewer } from '../state/ProfileViewer'
-import { getLeaderboard, getSeasonLeaderboard } from '../lib/supabase'
+import { useWords } from '../state/WordsContext'
+import { listOpenRooms } from '../lib/supabase'
 import { levelInfo } from '../lib/achievements'
 import { useT } from '../lib/i18n'
 import { Button, Panel } from '../components/ui'
@@ -13,46 +12,24 @@ import Avatar from '../components/Avatar'
 export default function Home({ onExit }) {
   const { profile } = useAuth()
   const { createRoom, joinRoom, quickPlay, busy, error } = useRoom()
-  const { friends } = useFriends()
-  const { openProfile } = useProfileViewer() || {}
+  const { getCategoryById } = useWords()
   const t = useT()
   const [code, setCode] = useState('')
-  const [board, setBoard] = useState([])
-  const [seasonBoard, setSeasonBoard] = useState([])
-  const [loadingBoard, setLoadingBoard] = useState(true)
-  const [loadingSeason, setLoadingSeason] = useState(false)
-  const [scope, setScope] = useState('global') // global | friends | season
+  const [rooms, setRooms] = useState([])
+  const [loadingRooms, setLoadingRooms] = useState(true)
 
-  useEffect(() => {
-    getLeaderboard(20)
-      .then(setBoard)
-      .finally(() => setLoadingBoard(false))
+  // هێنانی ژوورە کراوەکان + نوێکردنەوەی خۆکار هەر ٦ چرکە
+  const loadRooms = useCallback(async () => {
+    const data = await listOpenRooms()
+    setRooms(data)
+    setLoadingRooms(false)
   }, [])
 
-  // لیدەربۆردی هەفتانە — لە سەرەتای هەفتەی ئێستاوە (دووشەممە UTC)
   useEffect(() => {
-    if (scope !== 'season' || seasonBoard.length) return
-    const now = new Date()
-    const day = (now.getUTCDay() + 6) % 7 // دووشەممە = 0
-    const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day))
-    setLoadingSeason(true)
-    getSeasonLeaderboard(monday.toISOString(), 20)
-      .then(setSeasonBoard)
-      .finally(() => setLoadingSeason(false))
-  }, [scope, seasonBoard.length])
-
-  // لیستی هاوڕێیان (+ خۆم) ڕیزکراو بەپێی خاڵ
-  const friendsBoard = [
-    ...(profile ? [{ id: profile.id, display_name: profile.display_name, avatar_url: profile.avatar_url, total_points: profile.total_points || 0 }] : []),
-    ...friends.map((f) => ({
-      id: f.id,
-      display_name: f.profile?.display_name,
-      avatar_url: f.profile?.avatar_url,
-      total_points: f.profile?.total_points || 0,
-    })),
-  ].sort((a, b) => b.total_points - a.total_points)
-
-  const shown = scope === 'friends' ? friendsBoard : scope === 'season' ? seasonBoard : board
+    loadRooms()
+    const i = setInterval(loadRooms, 6000)
+    return () => clearInterval(i)
+  }, [loadRooms])
 
   return (
     <div className="mx-auto max-w-md px-4 py-5 pb-24">
@@ -134,76 +111,60 @@ export default function Home({ onExit }) {
         </Button>
       </Panel>
 
-      {/* لیدەربۆرد */}
+      {/* ژوورە کراوەکان — بەشداربە لە یارییەکانی ئێستا */}
       <Panel className="!p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-xl bg-crew/10">
-            <Trophy className="h-4 w-4 text-crew" />
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="grid h-8 w-8 place-items-center rounded-xl bg-crew/10">
+              <DoorOpen className="h-4 w-4 text-crew" />
+            </div>
+            <h2 className="font-bold text-ink">{t('ژوورە کراوەکان')}</h2>
           </div>
-          <h2 className="font-bold text-ink">{t('پاڵەوانان')}</h2>
+          <button
+            onClick={loadRooms}
+            className="btn-press grid h-8 w-8 place-items-center rounded-xl bg-surface2 text-muted hover:text-crew"
+            title={t('نوێکردنەوە')}
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
         </div>
 
-        {/* جیاکردنەوەی گشتی / هاوڕێیان / هەفتانە */}
-        <div className="mb-4 flex rounded-2xl bg-surface2 p-1">
-          {[
-            { k: 'global', label: t('گشتی') },
-            { k: 'friends', label: t('هاوڕێیان') },
-            { k: 'season', label: t('هەفتانە') },
-          ].map((tab) => (
-            <button
-              key={tab.k}
-              onClick={() => setScope(tab.k)}
-              className={`flex-1 rounded-xl py-1.5 text-sm font-bold transition ${
-                scope === tab.k ? 'bg-crew text-white shadow-card' : 'text-muted'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {(scope === 'global' && loadingBoard) || (scope === 'season' && loadingSeason) ? (
+        {loadingRooms ? (
           <div className="flex justify-center py-6 text-crew">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
-        ) : shown.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted">
-            {scope === 'friends'
-              ? t('هێشتا هاوڕێیەکت نییە')
-              : scope === 'season'
-              ? t('ئەم هەفتە کەس خاڵی نەهێناوە')
-              : t('هێشتا کەس یاری نەکردووە')}
+        ) : rooms.length === 0 ? (
+          <p className="py-5 text-center text-sm text-muted">
+            {t('هیچ ژوورێکی کراوە نییە ئێستا — یەکێک دروست بکە!')}
           </p>
         ) : (
-          <div className="space-y-1.5">
-            {shown.map((p, i) => (
-              <button
-                key={p.id}
-                onClick={() => openProfile?.(p.id, p.display_name, p.avatar_url)}
-                className={`btn-press flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-right ${
-                  i === 0 ? 'bg-amber-400/10' : 'bg-surface2'
-                }`}
-              >
-                <span
-                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-black ${
-                    i === 0
-                      ? 'bg-amber-400/30 text-amber-600'
-                      : i === 1
-                      ? 'bg-ink/10 text-ink'
-                      : i === 2
-                      ? 'bg-orange-400/25 text-orange-600'
-                      : 'bg-ink/5 text-muted'
-                  }`}
+          <div className="space-y-2">
+            {rooms.map((r) => {
+              const cat = getCategoryById(r.category_id)
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => !busy && joinRoom(r.code)}
+                  disabled={busy}
+                  className="btn-press flex w-full items-center gap-3 rounded-2xl border border-line bg-surface2 px-3 py-2.5 text-right hover:border-crew/50 disabled:opacity-50"
                 >
-                  {i === 0 ? <Crown className="h-4 w-4" /> : i + 1}
-                </span>
-                <Avatar url={p.avatar_url} name={p.display_name} size={32} level={levelInfo(p.total_points).level} />
-                <span className="flex-1 truncate font-bold text-ink">{p.display_name}</span>
-                <span className="flex items-center gap-1 rounded-full bg-crew/10 px-2.5 py-1 text-sm font-bold text-crew">
-                  {scope === 'season' ? p.season_points : p.total_points}
-                </span>
-              </button>
-            ))}
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-crew/10 text-xl">
+                    {cat?.icon || '🎮'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-ink">
+                      {cat?.name || r.category_id}
+                      {r.mode === 'undercover' && <span className="mr-1 text-xs text-impostor"> · شاراوە</span>}
+                    </p>
+                    <p className="truncate text-xs text-muted">{r.host_name}</p>
+                  </div>
+                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-crew/10 px-2.5 py-1 text-sm font-bold text-crew">
+                    <Users className="h-3.5 w-3.5" /> {Number(r.player_count)}
+                  </span>
+                  <LogIn className="h-4 w-4 shrink-0 text-muted" />
+                </button>
+              )
+            })}
           </div>
         )}
       </Panel>

@@ -215,6 +215,14 @@ export async function quickMatch() {
   return data
 }
 
+// لیستی ژوورە کراوەکان (لۆبی، نا-داخراو) لەگەڵ ژمارەی یاریزانان
+export async function listOpenRooms() {
+  if (!supabase) return []
+  const { data, error } = await supabase.rpc('list_open_rooms', { p_limit: 30 })
+  if (error) return []
+  return data || []
+}
+
 export async function findRoomByCode(code) {
   need()
   const { data } = await supabase
