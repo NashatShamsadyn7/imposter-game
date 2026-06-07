@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Rocket, ChevronRight, Plus, LogIn, Loader2, Star, Zap, Users, RefreshCw, DoorOpen } from 'lucide-react'
+import { Rocket, ChevronRight, Plus, LogIn, Loader2, Star, Users, RefreshCw, DoorOpen } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { useWords } from '../state/WordsContext'
@@ -11,7 +11,7 @@ import Avatar from '../components/Avatar'
 
 export default function Home({ onExit }) {
   const { profile } = useAuth()
-  const { createRoom, joinRoom, quickPlay, busy, error } = useRoom()
+  const { createRoom, joinRoom, busy, error } = useRoom()
   const { getCategoryById } = useWords()
   const t = useT()
   const [code, setCode] = useState('')
@@ -72,16 +72,6 @@ export default function Home({ onExit }) {
           {error}
         </p>
       )}
-
-      {/* یاری خێرا — بەشداربوونی هەرەمەکی خێرا */}
-      <Button
-        onClick={() => quickPlay()}
-        disabled={busy}
-        className="mb-5 w-full !py-4 !text-lg !bg-gradient-to-r !from-amber-500 !to-impostor"
-      >
-        {busy ? <Loader2 className="h-6 w-6 animate-spin" /> : <Zap className="h-6 w-6" />}
-        {t('یاری خێرا')}
-      </Button>
 
       {/* ژوورە کراوەکان — یەکەم شت پیشان دەدرێت تاکو بەشداربیت پێش دروستکردن */}
       <Panel className="mb-5 !p-4">
