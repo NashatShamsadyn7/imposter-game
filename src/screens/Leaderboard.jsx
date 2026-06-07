@@ -4,12 +4,13 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useState } from 'react'
-import { ChevronRight, Crown, Medal, Loader2, Trophy } from 'lucide-react'
+import { ChevronRight, Crown, Medal, Trophy } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import { useProfileViewer } from '../state/ProfileViewer'
 import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
+import { SkeletonList } from '../components/Skeleton'
 import { getSeasonLeaderboard } from '../lib/supabase'
 import { levelInfo } from '../lib/achievements'
 import { useT } from '../lib/i18n'
@@ -97,9 +98,7 @@ export default function Leaderboard({ onBack }) {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16 text-crew">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
+        <SkeletonList rows={8} />
       ) : rows.length === 0 ? (
         <Panel className="py-12 text-center text-muted">{t('هێشتا ئەنجامێک نییە')}</Panel>
       ) : (

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Gamepad2, Trophy, Star, Skull, ShieldCheck, Percent, Loader2 } from 'lucide-react'
+import { ChevronRight, Gamepad2, Trophy, Star, Skull, ShieldCheck, Percent } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { Panel } from '../components/ui'
+import Skeleton, { SkeletonList } from '../components/Skeleton'
 import { useWords } from '../state/WordsContext'
 import { fetchUserResults } from '../lib/supabase'
 import { computeStats } from '../lib/stats'
@@ -47,8 +48,12 @@ export default function Stats({ onBack }) {
       </header>
 
       {loading ? (
-        <div className="flex justify-center py-20 text-crew">
-          <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="space-y-3">
+          <div className="grid grid-cols-3 gap-2">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />)}
+          </div>
+          <Skeleton className="h-24" />
+          <SkeletonList rows={4} />
         </div>
       ) : !stats || stats.games === 0 ? (
         <Panel className="py-12 text-center text-muted">

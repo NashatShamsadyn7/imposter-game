@@ -452,3 +452,28 @@ input[type='number']::-webkit-outer-spin-button {
   .animate-page-in, .animate-flip-in { animation: none; }
   .aurora-rot { animation: none; }
 }
+
+/* ═══════════════ هیکلی بارکردن (Skeleton shimmer) ═══════════════ */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgb(var(--c-ink) / 0.07);
+  border-radius: 0.75rem;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--c-ink) / 0.06),
+    transparent
+  );
+  animation: skeleton-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer { 100% { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+}

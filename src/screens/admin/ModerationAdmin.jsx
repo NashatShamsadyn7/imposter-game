@@ -8,6 +8,7 @@ import { ChevronRight, Loader2, ShieldAlert, Ban, Check, Flag } from 'lucide-rea
 import { useWords } from '../../state/WordsContext'
 import { Button, Panel } from '../../components/ui'
 import Avatar from '../../components/Avatar'
+import { SkeletonList } from '../../components/Skeleton'
 import { adminReports, adminSetBan } from '../../lib/supabase'
 
 function timeAgo(iso) {
@@ -68,7 +69,7 @@ export default function ModerationAdmin({ onBack }) {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16 text-crew"><Loader2 className="h-8 w-8 animate-spin" /></div>
+        <SkeletonList rows={6} />
       ) : rows.length === 0 ? (
         <Panel className="text-center text-muted">هیچ ڕاپۆرتێک نییە ✅</Panel>
       ) : (

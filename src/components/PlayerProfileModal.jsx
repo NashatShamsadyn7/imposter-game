@@ -10,6 +10,7 @@ import { equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar } 
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import Avatar from './Avatar'
+import Skeleton from './Skeleton'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
@@ -97,8 +98,13 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="h-8 w-8 animate-spin text-crew" />
+          <div className="flex flex-col items-center gap-3 py-4">
+            <Skeleton className="h-20 w-20 !rounded-full" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-20" />
+            <div className="mt-2 grid w-full grid-cols-3 gap-2">
+              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16" />)}
+            </div>
           </div>
         ) : (
           <>
