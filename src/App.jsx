@@ -186,7 +186,7 @@ function Shell({ ui }) {
       )
       break
     case 'settings':
-      inner = <SettingsScreen ui={ui} onBack={toMenu} />
+      inner = <SettingsScreen ui={ui} onBack={toMenu} onOpenAdmin={() => setView('admin')} />
       break
     case 'achievements':
       inner = <Achievements onBack={toMenu} />

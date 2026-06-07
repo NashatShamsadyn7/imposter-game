@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Volume2, Music, Settings as SettingsIcon, Ban, Languages, Coins, Check, Lock, Palette, Play, Pause } from 'lucide-react'
+import { ChevronRight, Volume2, Music, Settings as SettingsIcon, Ban, Languages, Coins, Check, Lock, Palette, Play, Pause, BookA } from 'lucide-react'
 import { Panel } from '../components/ui'
 import PushToggle from '../components/PushToggle'
 import Avatar from '../components/Avatar'
 import { useFriends } from '../state/FriendsContext'
+import { useWords } from '../state/WordsContext'
 import { useEconomy } from '../state/EconomyContext'
 import { useLang, LANGS } from '../lib/i18n'
 import { fetchProfilesByIds } from '../lib/supabase'
@@ -19,9 +20,10 @@ function Toggle({ on }) {
 }
 
 // شاشەی ڕێکخستنەکان
-export default function Settings({ ui, onBack }) {
+export default function Settings({ ui, onBack, onOpenAdmin }) {
   const { theme, setTheme, sfxOn, setSfxOn, musicOn, setMusicOn } = ui
   const { lang, setLang, t } = useLang()
+  const { isAdmin } = useWords()
 
   return (
     <div className="mx-auto max-w-md px-4 py-6 md:max-w-2xl">
@@ -60,6 +62,25 @@ export default function Settings({ ui, onBack }) {
           </div>
         </div>
       </Panel>
+
+      {/* بەڕێوەبردنی وشە — تەنها بۆ بەڕێوەبەر */}
+      {isAdmin && (
+        <Panel className="mb-5 !p-2">
+          <button
+            onClick={() => { sfx.tap(); onOpenAdmin?.() }}
+            className="flex w-full items-center gap-3 rounded-xl p-3 hover:bg-surface2"
+          >
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-crew/12 text-crew">
+              <BookA className="h-5 w-5" />
+            </div>
+            <div className="flex-1 text-right">
+              <p className="font-bold text-ink">{t('بەڕێوەبردنی وشەکان')}</p>
+              <p className="text-xs text-muted">{t('گۆڕین، زیادکردن و سڕینەوەی وشە و وێنەکان')}</p>
+            </div>
+            <ChevronRight className="h-5 w-5 rotate-180 text-muted" />
+          </button>
+        </Panel>
+      )}
 
       {/* دەنگ */}
       <Panel className="mb-5 !p-2">
