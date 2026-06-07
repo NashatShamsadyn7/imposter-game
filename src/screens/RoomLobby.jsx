@@ -32,6 +32,7 @@ import InviteFriends from '../components/InviteFriends'
 import SuggestSection from '../components/SuggestSection'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
+import { isPlayerOnline } from '../lib/presence'
 
 export default function RoomLobby() {
   const { user } = useAuth()
@@ -152,8 +153,19 @@ export default function RoomLobby() {
                 onClick={() => openProfile?.(p.user_id, p.display_name, p.avatar_url)}
                 className="flex min-w-0 flex-1 items-center gap-2"
               >
-                <Avatar url={p.avatar_url} name={p.display_name} size={36} />
-                <span className="truncate font-medium text-ink">
+                <div className="relative shrink-0">
+                  <Avatar url={p.avatar_url} name={p.display_name} size={36} />
+                  {/* خاڵی حزوور — تەنها بۆ یاریزانی ڕاستەقینە */}
+                  {!p.is_bot && (
+                    <span
+                      title={isPlayerOnline(p.last_seen) ? t('ئۆنلاین') : t('ئۆفلاین')}
+                      className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface ${
+                        isPlayerOnline(p.last_seen) ? 'bg-crew' : 'bg-ink/30'
+                      }`}
+                    />
+                  )}
+                </div>
+                <span className={`truncate font-medium ${!p.is_bot && !isPlayerOnline(p.last_seen) ? 'text-ink/40' : 'text-ink'}`}>
                   {p.display_name}
                   {p.user_id === user.id && <span className="text-xs text-crew"> ({t('تۆ')})</span>}
                 </span>

@@ -6,6 +6,7 @@ import { createContext, useContext, useEffect, useRef, useState, useCallback } f
 import { useAuth } from './AuthContext'
 import { useWords } from './WordsContext'
 import { resolveGame } from '../lib/scoring'
+import { ROOM_PRESENCE_INTERVAL, isPlayerOnline } from '../lib/presence'
 import {
   supabase,
   createRoom as apiCreateRoom,
@@ -17,6 +18,9 @@ import {
   postBotMessage as apiPostBotMessage,
   leaveRoom as apiLeaveRoom,
   kickPlayer as apiKickPlayer,
+  touchRoomPresence,
+  claimHost as apiClaimHost,
+  pruneStalePlayers as apiPruneStalePlayers,
   updateRoom,
   updatePlayer,
   reorderPlayers as apiReorder,
@@ -245,6 +249,57 @@ export function RoomProvider({ children }) {
       leaveRoom()
     }
   }, [players, room, user, isHost, leaveRoom])
+
+  // ───── نبضی حزووری ناو ژوور (P3) ─────
+  // هەر ~١٢ چرکە (و کاتی گەڕانەوەی تاب) last_seen ـی خۆم نوێ دەکەمەوە تاکو
+  // یاریزانانی تر بزانن من ئۆنلاینم و گواستنەوەی خانەخوێ بەهەڵە ڕووی نەدات.
+  useEffect(() => {
+    if (!roomId || !supabase) return
+    touchRoomPresence(roomId)
+    const iv = setInterval(() => touchRoomPresence(roomId), ROOM_PRESENCE_INTERVAL)
+    const onVisible = () =>
+      document.visibilityState === 'visible' && touchRoomPresence(roomId)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(iv)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [roomId])
+
+  // ───── چاودێری خانەخوێ + پاککردنەوە (P2 + P3) ─────
+  // ئەگەر خانەخوێ ئۆفلاین بوو، تاکە یاریزانی پێشەنگ (کۆنترین ئۆنلاین) داوای
+  // خانەخوێیەتی دەکات — سێرڤەر بە دەترمینی حەکەم دەکات. بەمەش یاری ناوەستێت.
+  // خانەخوێی ئێستاش هەر چرکەیەک یاریزانە دیرپچڕاوەکان دەسڕێتەوە (ghost cleanup).
+  useEffect(() => {
+    if (!roomId || !supabase || !user) return
+    const tick = () => {
+      // خانەخوێی ئێستا: پاککردنەوەی دڕکەکان
+      if (isHost) {
+        apiPruneStalePlayers(roomId).catch(() => {})
+        return
+      }
+      // نا-خانەخوێ: ئایا خانەخوێ ئۆفلاینە؟
+      const host = players.find((p) => p.user_id === room?.host_id)
+      const hostOffline = !host || !isPlayerOnline(host.last_seen)
+      if (!hostOffline) return
+      // تەنها پێشەنگی ڕیز (کۆنترین یاریزانی ئۆنلاینی نا-بۆت) داوا دەکات،
+      // تاکو هەموو کڵاینتەکان هاوکات بانگی نەکەن.
+      const eligible = players
+        .filter(
+          (p) =>
+            !p.is_bot &&
+            !p.is_spectator &&
+            p.user_id !== room?.host_id &&
+            isPlayerOnline(p.last_seen)
+        )
+        .sort((a, b) => new Date(a.joined_at) - new Date(b.joined_at))
+      if (eligible[0]?.user_id === user.id) {
+        apiClaimHost(roomId).catch(() => {})
+      }
+    }
+    const iv = setInterval(tick, 8000)
+    return () => clearInterval(iv)
+  }, [roomId, user, isHost, players, room?.host_id])
 
   // ───── ڕێکخستن (خانەخوێ) ─────
   const setSettings = useCallback(

@@ -244,6 +244,7 @@ async function joinRoomRow(roomId, user, profile, isHost, isSpectator = false) {
       can_speak: isHost,        // خانەخوێ ڕاستەوخۆ دەتوانێت قسە بکات
       mic_requested: false,
       is_spectator: isSpectator, // بینەر: یاری ناکات، تەنها سەیر دەکات
+      last_seen: new Date().toISOString(), // نبضی حزووری سەرەتایی
     },
     { onConflict: 'room_id,user_id' }
   )
@@ -417,6 +418,27 @@ export async function fetchPlayers(roomId) {
 export async function updatePlayer(roomId, userId, patch) {
   need()
   await supabase.from('room_players').update(patch).eq('room_id', roomId).eq('user_id', userId)
+}
+
+// ───── بەرگەگرتن لە پچڕانی پەیوەندی (حزوور + گواستنەوەی خانەخوێ) ─────
+// نبضی حزووری ناو ژوور — last_seen ـی خۆم نوێ دەکاتەوە
+export async function touchRoomPresence(roomId) {
+  if (!supabase || !roomId) return
+  await supabase.rpc('touch_room_presence', { p_room: roomId })
+}
+
+// گواستنەوەی خانەخوێ بە خۆکار ئەگەر خانەخوێی ئێستا ئۆفلاین بێت.
+// سێرڤەر بە دەترمینی هەڵدەبژێرێت → دەگەڕێنێتەوە idـی خانەخوێی نوێ (یان کۆن)
+export async function claimHost(roomId) {
+  if (!supabase || !roomId) return null
+  const { data } = await supabase.rpc('claim_host', { p_room: roomId })
+  return data ?? null
+}
+
+// سڕینەوەی یاریزانە دیرپچڕاوەکان (تەنها خانەخوێ)
+export async function pruneStalePlayers(roomId) {
+  if (!supabase || !roomId) return
+  await supabase.rpc('prune_stale_players', { p_room: roomId })
 }
 
 export async function reorderPlayers(orderedIds, roomId) {
