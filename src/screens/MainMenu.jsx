@@ -1,4 +1,5 @@
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, MessagesSquare, Coins, BarChart3 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, MessagesSquare, Coins, BarChart3, HelpCircle } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import { useEconomy } from '../state/EconomyContext'
@@ -6,6 +7,7 @@ import { Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import DailyPanel from '../components/DailyPanel'
 import ShareApp from '../components/ShareApp'
+import Onboarding, { shouldShowOnboarding } from '../components/Onboarding'
 import { levelInfo } from '../lib/achievements'
 import { equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar } from '../lib/cosmetics'
 import { useT } from '../lib/i18n'
@@ -24,6 +26,10 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
   const title = equippedTitle(equipped)
   const avatarChar = equippedAvatar(equipped)
 
+  // ڕێنمایی یەکەم جار بۆ یاریزانی نوێ
+  const [showOnboard, setShowOnboard] = useState(false)
+  useEffect(() => { if (shouldShowOnboarding()) setShowOnboard(true) }, [])
+
   const go = (fn) => {
     unlockAudio()
     sfx.click()
@@ -32,6 +38,7 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 py-6 md:max-w-3xl">
+      {showOnboard && <Onboarding onClose={() => setShowOnboard(false)} />}
       {/* پرۆفایل */}
       <header className="mb-8 flex items-center justify-between animate-fade-in">
         <button
@@ -97,7 +104,12 @@ export default function MainMenu({ onOnline, onLocal, onSettings, onAchievements
           </div>
         </div>
         <h1 className="text-4xl font-black tracking-tight text-ink neon-text">{t('ساختەکار')}</h1>
-        <p className="mt-1 text-sm text-muted">{t('شێوازی یاری هەڵبژێرە')}</p>
+        <button
+          onClick={() => { sfx.tap(); setShowOnboard(true) }}
+          className="btn-press mt-1 inline-flex items-center gap-1 text-sm text-muted hover:text-crew"
+        >
+          {t('شێوازی یاری هەڵبژێرە')} <HelpCircle className="h-3.5 w-3.5" />
+        </button>
       </div>
 
       {/* پاداشتی ڕۆژانە + مەرج */}
