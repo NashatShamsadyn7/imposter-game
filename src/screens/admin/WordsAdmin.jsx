@@ -7,7 +7,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   ChevronRight, Search, Plus, Pencil, Trash2, Save, X, Download, Loader2,
-  ShieldAlert, FolderPlus, EyeOff,
+  ShieldAlert, FolderPlus, EyeOff, Sparkles, Check, ChevronDown,
 } from 'lucide-react'
 import { useWords } from '../../state/WordsContext'
 import { CATEGORIES as STATIC_CATEGORIES } from '../../data/words'
@@ -16,6 +16,7 @@ import WordImage from '../../components/WordImage'
 import {
   adminFetchWordBank, adminInsertWord, adminUpdateWord, adminDeleteWord,
   adminUpsertCategory, adminDeleteCategory, adminBulkImport,
+  adminPendingSections, approveSection, rejectSection, adminFetchCategoryItems,
 } from '../../lib/supabase'
 
 const EMPTY_WORD = { ku: '', ar: '', en: '', emoji: '', image_url: '', enabled: true }
@@ -45,18 +46,57 @@ export default function WordsAdmin({ onBack }) {
   const [query, setQuery] = useState('')
   const [editing, setEditing] = useState(null) // وشەی دەستکاریکراو یان { _new:true }
   const [newCat, setNewCat] = useState(null)   // { id, name_ku, name_ar, icon }
+  const [pending, setPending] = useState([])   // پێشنیارە چاوەڕوانەکان
+  const [expanded, setExpanded] = useState(null) // idی پێشنیاری کراوە
+  const [expandedItems, setExpandedItems] = useState([])
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await adminFetchWordBank()
+      const [data, pend] = await Promise.all([adminFetchWordBank(), adminPendingSections()])
       setBank(data)
+      setPending(pend)
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => { if (isAdmin) load() }, [isAdmin, load])
+
+  // پێشبینینی وشەکانی پێشنیارێک
+  const toggleExpand = async (id) => {
+    if (expanded === id) { setExpanded(null); setExpandedItems([]); return }
+    setExpanded(id)
+    setExpandedItems(await adminFetchCategoryItems(id))
+  }
+
+  const approve = async (id) => {
+    setBusy(true)
+    try {
+      await approveSection(id)
+      setExpanded(null)
+      await load()
+      await reloadGameBank()
+    } catch (e) {
+      alert('هەڵە: ' + (e?.message || e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const reject = async (id, label) => {
+    if (!window.confirm(`ڕەتکردنەوە و سڕینەوەی پێشنیاری «${label}»؟`)) return
+    setBusy(true)
+    try {
+      await rejectSection(id)
+      setExpanded(null)
+      await load()
+    } catch (e) {
+      alert('هەڵە: ' + (e?.message || e))
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const catName = useCallback(
     (id) => bank.categories.find((c) => c.id === id)?.name_ku || id,
@@ -214,6 +254,48 @@ export default function WordsAdmin({ onBack }) {
         </Panel>
       ) : (
         <>
+          {/* پێشنیارە چاوەڕوانەکان */}
+          {pending.length > 0 && (
+            <Panel className="mb-4 border-crew/40 !p-3">
+              <p className="mb-2 flex items-center gap-1.5 text-sm font-black text-crew">
+                <Sparkles className="h-4 w-4" /> پێشنیاری یاریزانان ({pending.length})
+              </p>
+              <div className="space-y-2">
+                {pending.map((s) => (
+                  <div key={s.id} className="rounded-xl border border-line bg-surface2 p-2">
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => toggleExpand(s.id)} className="flex min-w-0 flex-1 items-center gap-2 text-right">
+                        <span className="text-xl">{s.icon}</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-bold text-ink">{s.name_ku}</span>
+                          <span className="block truncate text-[11px] text-muted">{s.submitter} · {Number(s.word_count)} وشە</span>
+                        </span>
+                        <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition ${expanded === s.id ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+                    {expanded === s.id && (
+                      <div className="mt-2 flex flex-wrap gap-1.5 border-t border-line pt-2">
+                        {expandedItems.map((w) => (
+                          <span key={w.id} className="rounded-lg bg-ink/5 px-2 py-1 text-xs text-ink">
+                            {w.emoji} {w.ku}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="mt-2 flex gap-2">
+                      <Button className="flex-1 py-1.5 text-sm" onClick={() => approve(s.id)} disabled={busy}>
+                        <Check className="h-4 w-4" /> پەسەند
+                      </Button>
+                      <Button variant="ghost" className="flex-1 py-1.5 text-sm" onClick={() => reject(s.id, s.name_ku)} disabled={busy}>
+                        <X className="h-4 w-4 text-impostor" /> ڕەت
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+          )}
+
           {/* گەڕان */}
           <div className="mb-3 flex items-center gap-2 rounded-xl border border-line bg-surface2 px-3">
             <Search className="h-4 w-4 text-muted" />

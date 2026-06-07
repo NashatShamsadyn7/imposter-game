@@ -7,6 +7,7 @@ import { useLocal } from '../../state/LocalContext'
 import { RANDOM_CATEGORY } from '../../data/words'
 import { Button, Panel } from '../../components/ui'
 import RulesModal from '../../components/RulesModal'
+import SuggestSection from '../../components/SuggestSection'
 import { useT } from '../../lib/i18n'
 import { sfx } from '../../lib/sound'
 
@@ -19,6 +20,7 @@ export default function LocalLobby({ onExit }) {
 
   const [newName, setNewName] = useState('')
   const [showRules, setShowRules] = useState(false)
+  const [showSuggest, setShowSuggest] = useState(false)
 
   const maxImpostors = Math.max(1, Math.floor((players.length - 1) / 2))
   const canStart = players.length >= 3 && settings.impostorCount < players.length
@@ -38,6 +40,7 @@ export default function LocalLobby({ onExit }) {
   return (
     <div className="mx-auto max-w-md px-4 py-5 pb-24">
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
+      {showSuggest && <SuggestSection onClose={() => setShowSuggest(false)} />}
 
       {/* سەرپەڕە */}
       <header className="mb-6 flex items-center justify-between animate-fade-in">
@@ -158,6 +161,13 @@ export default function LocalLobby({ onExit }) {
               </button>
             ))}
           </div>
+          {/* پێشنیاری قسمی نوێ — بۆ هەموو یاریزانان */}
+          <button
+            onClick={() => { sfx.tap(); setShowSuggest(true) }}
+            className="btn-press mt-2 flex w-full items-center justify-center gap-1 rounded-xl border border-dashed border-crew/40 py-2 text-xs font-bold text-crew"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> {t('پێشنیاری قسمی نوێ')}
+          </button>
         </div>
 
         {/* دۆخی یاری */}

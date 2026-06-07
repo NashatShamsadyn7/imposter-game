@@ -29,6 +29,7 @@ import { useWords } from '../state/WordsContext'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import InviteFriends from '../components/InviteFriends'
+import SuggestSection from '../components/SuggestSection'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
@@ -48,6 +49,7 @@ export default function RoomLobby() {
   } = useRoom()
   const [copied, setCopied] = useState(false)
   const [shared, setShared] = useState(false)
+  const [showSuggest, setShowSuggest] = useState(false)
   const { openProfile } = useProfileViewer() || {}
   const t = useT()
 
@@ -94,6 +96,7 @@ export default function RoomLobby() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-6 pb-24">
+      {showSuggest && <SuggestSection onClose={() => setShowSuggest(false)} />}
       {/* سەرپەڕە */}
       <header className="mb-5 flex items-center justify-between animate-fade-in">
         <div className="flex items-center gap-2">
@@ -234,6 +237,13 @@ export default function RoomLobby() {
               )
             })}
           </div>
+          {/* پێشنیاری قسمی نوێ — بۆ هەموو یاریزانان */}
+          <button
+            onClick={() => { sfx.tap(); setShowSuggest(true) }}
+            className="btn-press mt-2 flex w-full items-center justify-center gap-1 rounded-xl border border-dashed border-crew/40 py-2 text-xs font-bold text-crew"
+          >
+            <Sparkles className="h-3.5 w-3.5" /> {t('پێشنیاری قسمی نوێ')}
+          </button>
         </div>
 
         {/* دۆخی یاری */}

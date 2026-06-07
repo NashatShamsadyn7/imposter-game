@@ -606,6 +606,48 @@ export async function adminBulkImport(categories, items) {
   }
 }
 
+// ───── پێشنیاری قسم لەلایەن یاریزانان ─────
+// ناردنی پێشنیاری قسم — words: [{ ku, emoji, ar, en }]  → { ok, id } یان { ok:false, error }
+export async function submitSection(name, icon, words) {
+  if (!supabase) return { ok: false, error: 'offline' }
+  const { data, error } = await supabase.rpc('submit_section', {
+    p_name: name, p_icon: icon, p_words: words,
+  })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true, id: data }
+}
+
+// لیستی پێشنیارە چاوەڕوانەکان (تەنها بەڕێوەبەر)
+export async function adminPendingSections() {
+  if (!supabase) return []
+  const { data, error } = await supabase.rpc('admin_pending_sections')
+  if (error) return []
+  return data || []
+}
+
+// وشەکانی قسمێک (بۆ پێشبینینی بەڕێوەبەر)
+export async function adminFetchCategoryItems(categoryId) {
+  need()
+  const { data } = await supabase
+    .from('word_items')
+    .select('*')
+    .eq('category_id', categoryId)
+    .order('sort', { ascending: true })
+  return data || []
+}
+
+export async function approveSection(id) {
+  need()
+  const { error } = await supabase.rpc('approve_section', { p_id: id })
+  if (error) throw error
+}
+
+export async function rejectSection(id) {
+  need()
+  const { error } = await supabase.rpc('reject_section', { p_id: id })
+  if (error) throw error
+}
+
 // ═══════════════ مێژوو + مۆسم + پاداشتی ڕۆژانە ═══════════════
 // مێژووی دواین یارییەکانی بەکارهێنەرێک
 export async function fetchMatchHistory(userId, limit = 10) {
