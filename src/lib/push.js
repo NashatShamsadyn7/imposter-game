@@ -9,6 +9,20 @@ const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY
 export const isPushSupported = () =>
   typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window
 
+// ئامێری iOS ـە؟ (iPhone/iPad)
+export const isIosDevice = () =>
+  typeof navigator !== 'undefined' &&
+  /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream
+
+// ئەپ وەک PWA دامەزراوە (standalone)؟
+export const isStandalone = () =>
+  typeof window !== 'undefined' &&
+  (window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true)
+
+// iOS بەڵام هێشتا دامەزرنەکراوە → Push کار ناکات تا دامەزراندن
+// (iOS 16.4+ تەنها لە دۆخی standalone پشتگیری Web Push دەکات)
+export const iosNeedsInstall = () => isIosDevice() && !isStandalone() && !isPushSupported()
+
 // گۆڕینی کلیلی VAPID لە base64 بۆ Uint8Array
 function urlBase64ToUint8Array(base64) {
   const padding = '='.repeat((4 - (base64.length % 4)) % 4)

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Bell, BellOff, Loader2 } from 'lucide-react'
+import { Bell, BellOff, Loader2, Share, Plus } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
-import { isPushSupported, getPushState, enablePush, disablePush } from '../lib/push'
+import { isPushSupported, getPushState, enablePush, disablePush, iosNeedsInstall } from '../lib/push'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
@@ -13,10 +13,12 @@ export default function PushToggle() {
   const [busy, setBusy] = useState(false)
   const [supported, setSupported] = useState(true)
   const [error, setError] = useState(null)
+  const [needsInstall, setNeedsInstall] = useState(false)
 
   useEffect(() => {
     if (!isPushSupported()) {
       setSupported(false)
+      setNeedsInstall(iosNeedsInstall())
       return
     }
     getPushState().then((s) => {
@@ -25,7 +27,27 @@ export default function PushToggle() {
     })
   }, [])
 
-  if (!supported) return null
+  // iPhone بەبێ دامەزراندن — ڕێنمایی پیشان بدە لە جیاتی شاردنەوە
+  if (!supported) {
+    if (!needsInstall) return null
+    return (
+      <div className="flex items-start gap-3 rounded-xl bg-surface2 p-3">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-crew/12 text-crew">
+          <Bell className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <p className="font-bold text-ink">{t('ئاگادارکردنەوە لە iPhone')}</p>
+          <p className="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-muted">
+            {t('سەرەتا ئەپ دامەزرێنە:')} <Share className="inline h-3.5 w-3.5" />
+            <span className="inline-flex items-center gap-0.5 font-bold text-ink">
+              <Plus className="h-3.5 w-3.5" /> {t('زیادکردن بۆ شاشەی سەرەکی')}
+            </span>
+            {t('پاشان ئەپەکە بکەرەوە و ئاگادارکردنەوە چالاک بکە.')}
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   const toggle = async () => {
     if (!user || busy) return
