@@ -38,12 +38,14 @@ const LocalVoting = lazy(() => import('./screens/local/LocalVoting'))
 const LocalResults = lazy(() => import('./screens/local/LocalResults'))
 const Shop = lazy(() => import('./screens/Shop'))
 const WordsAdmin = lazy(() => import('./screens/admin/WordsAdmin'))
+const ModerationAdmin = lazy(() => import('./screens/admin/ModerationAdmin'))
 // چینی دەنگ بە درەنگ — livekit-client لە بەستەی سەرەکی دادەبڕێت
 const VoiceLayer = lazy(() => import('./state/VoiceLayer'))
 import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled, setRoomActive } from './lib/sound'
 import { useWakeLock } from './lib/useWakeLock'
 import InstallPrompt from './components/InstallPrompt'
 import EntranceLayer from './components/EntranceLayer'
+import UpdatePrompt from './components/UpdatePrompt'
 
 function FullLoader() {
   return (
@@ -156,6 +158,20 @@ function Shell({ ui }) {
   if (!user) return <Login />
   if (!profile) return <FullLoader />
 
+  // یاریزانی حظرکراو — ناتوانێت بەردەوام بێت
+  if (profile.banned) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center px-6 text-center">
+        <div className="mb-4 text-6xl">🚫</div>
+        <h1 className="mb-2 text-2xl font-black text-impostor">هەژمارەکەت حظرکراوە</h1>
+        <p className="mb-6 text-sm text-muted">پێشێلکردنی یاساکانی یاری. ئەگەر بە هەڵە وایە، پەیوەندی بکە.</p>
+        <button onClick={signOut} className="btn-press rounded-2xl bg-surface2 px-6 py-3 font-bold text-ink">
+          چوونەدەرەوە
+        </button>
+      </div>
+    )
+  }
+
   const toMenu = () => setView('menu')
   // بانگهێشت بۆ ژوور: کۆد هەڵبگرە و بڕۆ بۆ ئۆنلاین
   const joinByCode = (code) => {
@@ -192,7 +208,7 @@ function Shell({ ui }) {
       )
       break
     case 'settings':
-      inner = <SettingsScreen ui={ui} onBack={toMenu} onOpenAdmin={() => setView('admin')} />
+      inner = <SettingsScreen ui={ui} onBack={toMenu} onOpenAdmin={() => setView('admin')} onOpenModeration={() => setView('moderation')} />
       break
     case 'achievements':
       inner = <Achievements onBack={toMenu} />
@@ -217,6 +233,9 @@ function Shell({ ui }) {
       break
     case 'admin':
       inner = <WordsAdmin onBack={toMenu} />
+      break
+    case 'moderation':
+      inner = <ModerationAdmin onBack={toMenu} />
       break
     default:
       inner = (
@@ -313,6 +332,7 @@ export default function App() {
   return (
     <LanguageProvider>
       <Background />
+      <UpdatePrompt />
       <AuthProvider>
         <WordsProvider>
           <Shell ui={ui} />

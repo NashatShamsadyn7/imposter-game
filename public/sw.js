@@ -2,12 +2,17 @@
 //  Service Worker — بۆ تواناکردنی دامەزراندن (PWA) و کارکردن بەبێ ئینتەرنێت
 // ═══════════════════════════════════════════════════════════
 
-const CACHE = 'imposter-v9'
+const CACHE = 'imposter-v10'
 const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest', '/apple-touch-icon.png']
 
 self.addEventListener('install', (event) => {
+  // skipWaiting ناکەین — چاوەڕێ دەکەین تاکو بەکارهێنەر دوگمەی «نوێکردنەوە» بکات
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(APP_SHELL)))
-  self.skipWaiting()
+})
+
+// کاتێک ئەپ داوای چالاککردنی وەشانی نوێ دەکات (کلیک لەسەر دوگمەی نوێکردنەوە)
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
 })
 
 self.addEventListener('activate', (event) => {

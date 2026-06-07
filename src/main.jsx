@@ -21,7 +21,8 @@ requestAnimationFrame(() => {
 })
 
 // تۆمارکردنی Service Worker بۆ دامەزراندن و کارکردن بەبێ ئینتەرنێت (PWA)
-// + بارکردنەوەی خۆکار کاتێک وەشانێکی نوێ چالاک دەبێت (بۆ ئەوەی کۆدی کۆن نەمێنێتەوە)
+// وەشانی نوێ خۆکار چالاک نابێت — بەکارهێنەر دوگمەی «نوێکردنەوە» دەکات
+// (ڕووداوی 'sw-waiting' بۆ UI دەنێرین، و دوای چالاکبوون یەک جار reload دەکەین)
 if ('serviceWorker' in navigator) {
   let refreshing = false
   navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -29,9 +30,27 @@ if ('serviceWorker' in navigator) {
     refreshing = true
     window.location.reload()
   })
+
+  // ئاگادارکردنەوەی UI کاتێک وەشانی نوێ ئامادەیە (worker چاوەڕوانە)
+  const notifyWaiting = (reg) => {
+    if (reg.waiting) {
+      window.dispatchEvent(new CustomEvent('sw-waiting', { detail: reg }))
+    }
+  }
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then((reg) => {
-      // هەر کاتژمێرێک پشکنین بکە بۆ وەشانی نوێ
+      notifyWaiting(reg) // ئەگەر پێشتر وەشانێکی نوێ چاوەڕوان بوو
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing
+        if (!nw) return
+        nw.addEventListener('statechange', () => {
+          // نوێ دامەزرا + کۆنترۆڵەرێک هەیە = نوێکردنەوەیە (نەک یەکەم دامەزراندن)
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            notifyWaiting(reg)
+          }
+        })
+      })
       reg.update().catch(() => {})
       setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000)
     }).catch((e) => console.warn('SW:', e.message))

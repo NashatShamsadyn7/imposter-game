@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Volume2, Music, Settings as SettingsIcon, Ban, Languages, Coins, Check, Lock, Palette, Play, Pause, BookA } from 'lucide-react'
+import { ChevronRight, Volume2, Music, Settings as SettingsIcon, Ban, Languages, Coins, Check, Lock, Palette, Play, Pause, BookA, Flag } from 'lucide-react'
 import { Panel } from '../components/ui'
 import PushToggle from '../components/PushToggle'
 import Avatar from '../components/Avatar'
@@ -20,7 +20,7 @@ function Toggle({ on }) {
 }
 
 // شاشەی ڕێکخستنەکان
-export default function Settings({ ui, onBack, onOpenAdmin }) {
+export default function Settings({ ui, onBack, onOpenAdmin, onOpenModeration }) {
   const { theme, setTheme, sfxOn, setSfxOn, musicOn, setMusicOn } = ui
   const { lang, setLang, t } = useLang()
   const { isAdmin } = useWords()
@@ -76,6 +76,19 @@ export default function Settings({ ui, onBack, onOpenAdmin }) {
             <div className="flex-1 text-right">
               <p className="font-bold text-ink">{t('بەڕێوەبردنی وشەکان')}</p>
               <p className="text-xs text-muted">{t('گۆڕین، زیادکردن و سڕینەوەی وشە و وێنەکان')}</p>
+            </div>
+            <ChevronRight className="h-5 w-5 rotate-180 text-muted" />
+          </button>
+          <button
+            onClick={() => { sfx.tap(); onOpenModeration?.() }}
+            className="flex w-full items-center gap-3 rounded-xl p-3 hover:bg-surface2"
+          >
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-impostor/12 text-impostor">
+              <Flag className="h-5 w-5" />
+            </div>
+            <div className="flex-1 text-right">
+              <p className="font-bold text-ink">{t('بەڕێوەبردنی ڕاپۆرتەکان')}</p>
+              <p className="text-xs text-muted">{t('پێداچوونەوەی ڕاپۆرتەکان و حظری یاریزان')}</p>
             </div>
             <ChevronRight className="h-5 w-5 rotate-180 text-muted" />
           </button>

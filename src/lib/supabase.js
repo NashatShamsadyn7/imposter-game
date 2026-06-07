@@ -662,6 +662,20 @@ export async function rejectSection(id) {
   if (error) throw error
 }
 
+// ───── بەڕێوەبردنی ڕاپۆرتەکان (Moderation) ─────
+export async function adminReports() {
+  if (!supabase) return []
+  const { data, error } = await supabase.rpc('admin_reports')
+  if (error) return []
+  return data || []
+}
+
+export async function adminSetBan(userId, banned) {
+  need()
+  const { error } = await supabase.rpc('admin_set_ban', { p_user: userId, p_banned: banned })
+  if (error) throw error
+}
+
 // ═══════════════ مێژوو + مۆسم + پاداشتی ڕۆژانە ═══════════════
 // مێژووی دواین یارییەکانی بەکارهێنەرێک
 export async function fetchMatchHistory(userId, limit = 10) {
