@@ -223,6 +223,12 @@ export async function listOpenRooms() {
   return data || []
 }
 
+// داخستنی ژوورە کۆنەکان (لۆبیی ٣٠ خولەک کۆنتر) — بێدەنگ
+export async function closeStaleRooms() {
+  if (!supabase) return
+  try { await supabase.rpc('close_stale_rooms') } catch { /* noop */ }
+}
+
 export async function findRoomByCode(code) {
   need()
   const { data } = await supabase

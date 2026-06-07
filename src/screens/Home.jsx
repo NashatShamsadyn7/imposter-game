@@ -3,7 +3,7 @@ import { Rocket, ChevronRight, Plus, LogIn, Loader2, Star, Users, RefreshCw, Doo
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { useWords } from '../state/WordsContext'
-import { listOpenRooms } from '../lib/supabase'
+import { listOpenRooms, closeStaleRooms } from '../lib/supabase'
 import { levelInfo } from '../lib/achievements'
 import { useT } from '../lib/i18n'
 import { Button, Panel } from '../components/ui'
@@ -26,7 +26,8 @@ export default function Home({ onExit }) {
   }, [])
 
   useEffect(() => {
-    loadRooms()
+    // داخستنی ژوورە کۆنەکان (٣٠+ خولەک) پێش پیشاندان، پاشان لیست
+    closeStaleRooms().finally(loadRooms)
     const i = setInterval(loadRooms, 6000)
     return () => clearInterval(i)
   }, [loadRooms])
