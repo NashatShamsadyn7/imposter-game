@@ -3,9 +3,9 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useState } from 'react'
-import { X, Loader2, Star, Trophy, Gamepad2, Percent, UserPlus, Check, Clock, UserCheck, Skull, ShieldCheck, Ban, History, Flag } from 'lucide-react'
+import { X, Loader2, Star, Trophy, Gamepad2, Percent, UserPlus, Check, Clock, UserCheck, Skull, ShieldCheck, Ban, History, Flag, Award } from 'lucide-react'
 import { fetchPublicProfile, fetchMatchHistory, reportUser } from '../lib/supabase'
-import { levelInfo, levelTitle, winRate } from '../lib/achievements'
+import { levelInfo, levelTitle, winRate, ACHIEVEMENTS } from '../lib/achievements'
 import { equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar } from '../lib/cosmetics'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
@@ -142,6 +142,33 @@ export default function PlayerProfileModal({ userId, fallbackName, fallbackAvata
               <span className="font-black">{stats?.total_points || 0}</span>
               <span className="text-xs">{t('کۆی خاڵ')}</span>
             </div>
+
+            {/* نیشانەکان (badges) — دەستکەوتە کراوەکان گەش، ئەوانی تر کز */}
+            {(() => {
+              const earned = ACHIEVEMENTS.filter((a) => a.check(stats || {})).length
+              return (
+                <div className="mt-4">
+                  <p className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted">
+                    <Award className="h-3.5 w-3.5" /> {t('نیشانەکان')} ({earned}/{ACHIEVEMENTS.length})
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ACHIEVEMENTS.map((a) => {
+                      const got = a.check(stats || {})
+                      const Icon = a.icon
+                      return (
+                        <div
+                          key={a.id}
+                          title={`${t(a.name)} — ${t(a.desc)}`}
+                          className={`grid h-8 w-8 place-items-center rounded-lg ${got ? 'bg-crew/15 text-crew' : 'bg-ink/5 text-ink/20'}`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* مێژووی دواین یارییەکان */}
             {history.length > 0 && (
