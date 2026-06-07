@@ -2,8 +2,8 @@
 //  Service Worker — بۆ تواناکردنی دامەزراندن (PWA) و کارکردن بەبێ ئینتەرنێت
 // ═══════════════════════════════════════════════════════════
 
-const CACHE = 'imposter-v8'
-const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest']
+const CACHE = 'imposter-v9'
+const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest', '/apple-touch-icon.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(APP_SHELL)))

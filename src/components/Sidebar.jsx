@@ -74,8 +74,11 @@ export default function Sidebar({ view, onNavigate, onSignOut, isAdmin = false }
         </button>
       </aside>
 
-      {/* ───── مۆبایل: شریتی خوارەوە ───── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-14 items-center justify-around border-t border-line bg-surface/90 backdrop-blur-xl md:hidden">
+      {/* ───── مۆبایل: شریتی خوارەوە (لەگەڵ ڕەچاوکردنی safe-area) ───── */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 flex h-14 items-center justify-around border-t border-line bg-surface/90 backdrop-blur-xl md:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)', height: 'calc(3.5rem + env(safe-area-inset-bottom))' }}
+      >
         {mobileItems.map((it) => {
           const active = view === it.id
           return (

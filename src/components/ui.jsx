@@ -1,4 +1,5 @@
 import { sfx, unlockAudio } from '../lib/sound'
+import { haptic } from '../lib/haptics'
 
 // دوگمەی سەرەکی
 export function Button({
@@ -27,6 +28,7 @@ export function Button({
       onClick={(e) => {
         unlockAudio()
         sfx.click()
+        haptic.light()
         onClick?.(e)
       }}
       className={`${base} ${variants[variant]} ${className}`}

@@ -13,6 +13,7 @@ import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 import { addPoints } from '../lib/supabase'
 import { updateStreak } from '../lib/streak'
+import { haptic } from '../lib/haptics'
 
 export default function Results() {
   const { room, players, votes, me, isHost, playAgain, leaveRoom } = useRoom()
@@ -41,6 +42,14 @@ export default function Results() {
     if (impostorWin) sfx.lose()
     else sfx.win()
   }, [impostorWin])
+
+  // لەرینەوەی مۆبایل لە کاتی بردنەوە/دۆڕان (یەک جار)
+  useEffect(() => {
+    if (!isPlayer) return
+    if (myWin) haptic.success()
+    else haptic.warn()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // زیادکردنی XPـی سندووق بۆ خۆم (هەمان شێوازی add_points ـی ئامادە)
   const grantBonus = async (amount) => {

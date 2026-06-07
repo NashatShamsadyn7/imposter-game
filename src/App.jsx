@@ -41,6 +41,8 @@ const WordsAdmin = lazy(() => import('./screens/admin/WordsAdmin'))
 // چینی دەنگ بە درەنگ — livekit-client لە بەستەی سەرەکی دادەبڕێت
 const VoiceLayer = lazy(() => import('./state/VoiceLayer'))
 import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled, setRoomActive } from './lib/sound'
+import { useWakeLock } from './lib/useWakeLock'
+import InstallPrompt from './components/InstallPrompt'
 
 function FullLoader() {
   return (
@@ -133,6 +135,8 @@ function Shell({ ui }) {
   const [view, setView] = useState(pendingJoin ? 'online' : 'menu') // menu | online | local | settings | achievements | profile | friends
   // ئایا لە ناو ژوورێکی ئۆنلاینداین؟ (نەک تەنها هۆڵی ئۆنلاین) — بۆ شاردنەوەی شریت
   const [inOnlineRoom, setInOnlineRoom] = useState(false)
+  // شاشە بەخەبەر بمێنێتەوە لە کاتی یاری (ناوخۆیی یان ناو ژووری ئۆنلاین)
+  useWakeLock(view === 'local' || inOnlineRoom)
 
   // کلیک لەسەر توستی بانگهێشت → بەشداربوون لە ژوور (ڕووداوی گشتی).
   // ⚠️ دەبێت پێش هەر return ـێکی پێشوەخت بێت (یاسای hooks) — بۆیە setter ـە
@@ -251,6 +255,7 @@ function Shell({ ui }) {
           </ProfileViewerProvider>
           <LevelUpOverlay />
           <ReferralHandler />
+          <InstallPrompt />
         </FriendsProvider>
       </NotificationProvider>
     </EconomyProvider>
