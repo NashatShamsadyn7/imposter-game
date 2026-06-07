@@ -77,48 +77,23 @@ export default function Home({ onExit }) {
       <Button
         onClick={() => quickPlay()}
         disabled={busy}
-        className="mb-3 w-full !py-4 !text-lg !bg-gradient-to-r !from-amber-500 !to-impostor"
+        className="mb-5 w-full !py-4 !text-lg !bg-gradient-to-r !from-amber-500 !to-impostor"
       >
         {busy ? <Loader2 className="h-6 w-6 animate-spin" /> : <Zap className="h-6 w-6" />}
         {t('یاری خێرا')}
       </Button>
 
-      {/* دروستکردنی ژوور */}
-      <Button
-        onClick={() => createRoom()}
-        disabled={busy}
-        variant="danger"
-        className="mb-5 w-full !py-4 !text-lg"
-      >
-        {busy ? <Loader2 className="h-6 w-6 animate-spin" /> : <Plus className="h-6 w-6" />}
-        {t('دروستکردنی ژووری نوێ')}
-      </Button>
-
-      {/* بەشداربوون بە کۆد */}
+      {/* ژوورە کراوەکان — یەکەم شت پیشان دەدرێت تاکو بەشداربیت پێش دروستکردن */}
       <Panel className="mb-5 !p-4">
-        <p className="mb-3 text-sm font-bold text-ink">{t('بەشداربوون بە کۆد')}</p>
-        <input
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          onKeyDown={(e) => e.key === 'Enter' && code && joinRoom(code)}
-          placeholder={t('کۆدی ژوور')}
-          maxLength={5}
-          className="mb-3 w-full rounded-2xl border border-line bg-surface2 px-4 py-3.5 text-center text-2xl font-black tracking-[0.3em] text-ink placeholder:text-base placeholder:font-normal placeholder:tracking-normal placeholder:text-muted/60 outline-none focus:border-crew focus:bg-surface"
-        />
-        <Button onClick={() => joinRoom(code)} disabled={busy || !code} className="w-full !py-3.5">
-          <LogIn className="h-5 w-5" />
-          {t('بەشداری')}
-        </Button>
-      </Panel>
-
-      {/* ژوورە کراوەکان — بەشداربە لە یارییەکانی ئێستا */}
-      <Panel className="!p-4">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="grid h-8 w-8 place-items-center rounded-xl bg-crew/10">
               <DoorOpen className="h-4 w-4 text-crew" />
             </div>
-            <h2 className="font-bold text-ink">{t('ژوورە کراوەکان')}</h2>
+            <h2 className="font-bold text-ink">
+              {t('ژوورە کراوەکان')}
+              {rooms.length > 0 && <span className="mr-1 text-crew"> ({rooms.length})</span>}
+            </h2>
           </div>
           <button
             onClick={loadRooms}
@@ -146,9 +121,9 @@ export default function Home({ onExit }) {
                   key={r.id}
                   onClick={() => !busy && joinRoom(r.code)}
                   disabled={busy}
-                  className="btn-press flex w-full items-center gap-3 rounded-2xl border border-line bg-surface2 px-3 py-2.5 text-right hover:border-crew/50 disabled:opacity-50"
+                  className="btn-press flex w-full items-center gap-3 rounded-2xl border border-line bg-surface2 px-3 py-3 text-right hover:border-crew/50 disabled:opacity-50"
                 >
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-crew/10 text-xl">
+                  <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-crew/10 text-2xl">
                     {cat?.icon || '🎮'}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -158,15 +133,50 @@ export default function Home({ onExit }) {
                     </p>
                     <p className="truncate text-xs text-muted">{r.host_name}</p>
                   </div>
-                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-crew/10 px-2.5 py-1 text-sm font-bold text-crew">
+                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-crew/15 px-2.5 py-1 text-sm font-black text-crew">
                     <Users className="h-3.5 w-3.5" /> {Number(r.player_count)}
                   </span>
-                  <LogIn className="h-4 w-4 shrink-0 text-muted" />
+                  <span className="flex shrink-0 items-center gap-1 rounded-xl bg-crew px-3 py-1.5 text-xs font-black text-white">
+                    <LogIn className="h-4 w-4" /> {t('بەشداری')}
+                  </span>
                 </button>
               )
             })}
           </div>
         )}
+      </Panel>
+
+      {/* یان — دروستکردنی ژووری نوێ */}
+      <div className="mb-4 flex items-center gap-3 text-xs text-muted">
+        <span className="h-px flex-1 bg-line" /> {t('یان')} <span className="h-px flex-1 bg-line" />
+      </div>
+
+      {/* دروستکردنی ژوور */}
+      <Button
+        onClick={() => createRoom()}
+        disabled={busy}
+        variant="danger"
+        className="mb-5 w-full !py-4 !text-lg"
+      >
+        {busy ? <Loader2 className="h-6 w-6 animate-spin" /> : <Plus className="h-6 w-6" />}
+        {t('دروستکردنی ژووری نوێ')}
+      </Button>
+
+      {/* بەشداربوون بە کۆد */}
+      <Panel className="!p-4">
+        <p className="mb-3 text-sm font-bold text-ink">{t('بەشداربوون بە کۆد')}</p>
+        <input
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          onKeyDown={(e) => e.key === 'Enter' && code && joinRoom(code)}
+          placeholder={t('کۆدی ژوور')}
+          maxLength={5}
+          className="mb-3 w-full rounded-2xl border border-line bg-surface2 px-4 py-3.5 text-center text-2xl font-black tracking-[0.3em] text-ink placeholder:text-base placeholder:font-normal placeholder:tracking-normal placeholder:text-muted/60 outline-none focus:border-crew focus:bg-surface"
+        />
+        <Button onClick={() => joinRoom(code)} disabled={busy || !code} className="w-full !py-3.5">
+          <LogIn className="h-5 w-5" />
+          {t('بەشداری')}
+        </Button>
       </Panel>
     </div>
   )
