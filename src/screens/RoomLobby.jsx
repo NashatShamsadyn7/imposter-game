@@ -98,11 +98,26 @@ export default function RoomLobby() {
     <div className="mx-auto max-w-md px-4 py-6 pb-24">
       {showSuggest && <SuggestSection onClose={() => setShowSuggest(false)} />}
       {/* سەرپەڕە */}
-      <header className="mb-5 flex items-center justify-between animate-fade-in">
+      <header className="mb-5 animate-fade-in">
+        {/* کۆدی ژوور — بەرچاو، بە درێژایی ڕیز (ناشاردرێتەوە لە مۆبایل) */}
+        <button
+          onClick={copyCode}
+          className="btn-press neon-ring mb-3 flex w-full items-center justify-center gap-3 rounded-2xl border border-crew/40 bg-crew/10 px-4 py-3"
+        >
+          <span className="text-xs text-ink/60">{t('کۆد')}</span>
+          <span className="text-2xl font-black tracking-[0.35em] text-crew neon-text">{room.code}</span>
+          {copied ? (
+            <Check className="h-5 w-5 text-crew" />
+          ) : (
+            <Copy className="h-5 w-5 text-ink/50" />
+          )}
+        </button>
+
+        {/* کردارەکان */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => leaveRoom()}
-            className="btn-press flex items-center gap-1 rounded-xl bg-ink/5 px-3 py-2 text-sm text-ink/70 hover:bg-ink/10"
+            className="btn-press flex flex-1 items-center justify-center gap-1 rounded-xl bg-ink/5 px-2 py-2 text-sm text-ink/70 hover:bg-ink/10"
           >
             <LogOut className="h-4 w-4" />
             {t('دەرچوون')}
@@ -110,25 +125,13 @@ export default function RoomLobby() {
           <InviteFriends roomCode={room.code} />
           <button
             onClick={shareLink}
-            className="btn-press flex items-center gap-1.5 rounded-xl bg-ink/5 px-3 py-2 text-sm font-bold text-ink/70 hover:bg-ink/10"
+            className="btn-press flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-ink/5 px-2 py-2 text-sm font-bold text-ink/70 hover:bg-ink/10"
             title={t('هاوبەشکردنی لینک')}
           >
             {shared ? <Check className="h-4 w-4 text-crew" /> : <Share2 className="h-4 w-4" />}
             {shared ? t('کۆپیکرا') : t('لینک')}
           </button>
         </div>
-        <button
-          onClick={copyCode}
-          className="btn-press neon-ring flex items-center gap-2 rounded-xl border border-crew/40 bg-crew/10 px-4 py-2"
-        >
-          <span className="text-xs text-ink/60">{t('کۆد')}</span>
-          <span className="text-lg font-black tracking-widest text-crew neon-text">{room.code}</span>
-          {copied ? (
-            <Check className="h-4 w-4 text-crew" />
-          ) : (
-            <Copy className="h-4 w-4 text-ink/50" />
-          )}
-        </button>
       </header>
 
       {/* یاریزانان */}
