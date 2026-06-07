@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Eye, Skull, ShieldCheck, EyeOff, MessageSquare, Users, Loader2, Search } from 'lucide-react'
 import { useRoom } from '../state/RoomContext'
-import { CATEGORIES, findWord } from '../data/words'
+import { useWords } from '../state/WordsContext'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import WordImage from '../components/WordImage'
@@ -12,6 +12,7 @@ const DEFAULT_REVEAL_SECONDS = 10
 
 export default function Reveal() {
   const { room, me, isHost, beginDiscussion, myRole, myAllies, detectiveTarget } = useRoom()
+  const { categories: CATEGORIES, findWord } = useWords()
   const t = useT()
   // ماوەی شاردنەوەی کارت — ڕێکخراوی خانەخوێ (یەدەگ: ١٠ چرکە)
   const revealSeconds = room.reveal_seconds || DEFAULT_REVEAL_SECONDS
@@ -119,7 +120,7 @@ export default function Reveal() {
                 <p className="mb-2 text-xs text-ink/50">{t('وشەی تۆ')}</p>
                 <h2 className="mb-3 text-3xl font-black text-impostor">{room.decoy_word_ku}</h2>
                 <div className="flex justify-center">
-                  <WordImage englishPrompt={room.decoy_word_en} emoji={findWord(room.decoy_word_ku)?.emoji} size={160} />
+                  <WordImage imageUrl={findWord(room.decoy_word_ku)?.image_url} englishPrompt={room.decoy_word_en} emoji={findWord(room.decoy_word_ku)?.emoji} size={160} />
                 </div>
                 <p className="mt-3 text-xs text-ink/50">{t('خۆت دەربخە وەک دەستەی کەشتی — ئەوان لەوانەیە وشەیەکی تری هاوپۆڵیان هەبێت.')}</p>
               </Panel>
@@ -171,7 +172,7 @@ export default function Reveal() {
           <h1 className="mb-4 text-4xl font-black text-ink neon-text">{room.secret_word_ku}</h1>
 
           <div className="mb-4 flex justify-center">
-            <WordImage englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={220} />
+            <WordImage imageUrl={findWord(room.secret_word_ku)?.image_url} englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={220} />
           </div>
 
           {/* ئاماژەی لێکۆڵەر — ناسنامەی ساختەکارێک */}

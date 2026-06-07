@@ -2,22 +2,24 @@ import { useEffect, useState, useRef } from 'react'
 import { Loader2 } from 'lucide-react'
 import { getWordImageUrl } from '../lib/images'
 
-// وێنەی وشە — هەوڵی وێنەی AI دەدات، ئەگەر نەگەیشت ئیمۆجی پیشان دەدات
-export default function WordImage({ englishPrompt, emoji, size = 220, className = '' }) {
+// وێنەی وشە — یەکەم بەستەری ڕاستەوخۆ (imageUrl)، ئەگەر نەبوو وێنەی AI،
+// ئەگەر هیچیان نەگەیشت ئیمۆجی پیشان دەدات
+export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, className = '' }) {
   const [status, setStatus] = useState('loading') // loading | loaded | error
   const [url, setUrl] = useState(null)
   const timeoutRef = useRef(null)
 
   useEffect(() => {
     setStatus('loading')
-    setUrl(getWordImageUrl(englishPrompt, { width: 400, height: 400 }))
+    // بەستەری ڕاستەوخۆ پێشینەی هەیە بەسەر وێنەی AI
+    setUrl(imageUrl || getWordImageUrl(englishPrompt, { width: 400, height: 400 }))
     // ئەگەر لە ٨ چرکەدا نەگەیشت، ئیمۆجی پیشان بدە
     clearTimeout(timeoutRef.current)
     timeoutRef.current = setTimeout(() => {
       setStatus((s) => (s === 'loaded' ? s : 'error'))
     }, 8000)
     return () => clearTimeout(timeoutRef.current)
-  }, [englishPrompt])
+  }, [imageUrl, englishPrompt])
 
   const showEmoji = status !== 'loaded'
 

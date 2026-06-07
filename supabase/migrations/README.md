@@ -34,6 +34,9 @@ supabase db push
 | 15 | `..._reports.sql` | ڕاپۆرتەکان |
 | 16 | `..._bots_ai.sql` | پەیامی بۆتی زیرەک (post_bot_message) |
 | 17 | `..._bot_integrity.sql` | **P0#3** گەڕاندنەوەی یەکپارچەیی داتا |
+| 18 | `..._room_roles.sql` | ڕۆڵە نهێنییەکان (server-authoritative) |
+| 19 | `..._room_kicks.sql` | قەدەغەی دەرکردن لە ژوور |
+| 20 | `..._word_bank.sql` | بانکی وشە + بەڕێوەبردنی بەڕێوەبەر (is_admin) |
 
 ## تێبینی
 

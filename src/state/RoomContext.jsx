@@ -4,7 +4,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react'
 import { useAuth } from './AuthContext'
-import { resolveCategory, pickRandomWord, pickDecoyWord } from '../data/words'
+import { useWords } from './WordsContext'
 import { resolveGame } from '../lib/scoring'
 import {
   supabase,
@@ -44,6 +44,7 @@ const LS_ROOM = 'imposter:roomId'
 
 export function RoomProvider({ children }) {
   const { user, profile } = useAuth()
+  const { resolveCategory, pickRandomWord, pickDecoyWord } = useWords()
 
   const [roomId, setRoomId] = useState(() => localStorage.getItem(LS_ROOM) || null)
   const [room, setRoom] = useState(null)
@@ -365,7 +366,7 @@ export function RoomProvider({ children }) {
       decoy_word_en: decoy?.en || null,
       turn_player_id: null,
     })
-  }, [isHost, room, players, roomId])
+  }, [isHost, room, roomId, resolveCategory, pickRandomWord, pickDecoyWord])
 
   // دەستپێکردنی گفتوگۆ
   const beginDiscussion = useCallback(async () => {
@@ -430,7 +431,7 @@ export function RoomProvider({ children }) {
       // دوای ماوەیەکی کورت نۆرە بگوازەوە (تەنانەت ئەگەر وەسف نەنێردرا)
       setTimeout(() => { nextTurn() }, 1600)
     })()
-  }, [isHost, room?.status, room?.turn_player_id, players, messages, roomId, nextTurn, room])
+  }, [isHost, room?.status, room?.turn_player_id, players, messages, roomId, nextTurn, room, resolveCategory])
 
   // دەستپێکردنی دەنگدان
   const beginVoting = useCallback(async () => {

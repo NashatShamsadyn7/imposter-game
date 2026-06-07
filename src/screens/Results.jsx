@@ -3,7 +3,7 @@ import { Trophy, Skull, ShieldCheck, RotateCcw, LogOut, Star, UserX } from 'luci
 import { useRoom } from '../state/RoomContext'
 import { useAuth } from '../state/AuthContext'
 import { useProfileViewer } from '../state/ProfileViewer'
-import { CATEGORIES, findWord } from '../data/words'
+import { useWords } from '../state/WordsContext'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import WordImage from '../components/WordImage'
@@ -18,6 +18,7 @@ export default function Results() {
   const { room, players, votes, me, isHost, playAgain, leaveRoom } = useRoom()
   const { user, refreshProfile } = useAuth()
   const { openProfile } = useProfileViewer() || {}
+  const { categories: CATEGORIES, findWord } = useWords()
   const t = useT()
   const impostorWin = room.winner_side === 'impostor'
   const category = CATEGORIES.find((c) => c.id === room.category_id)
@@ -102,7 +103,7 @@ export default function Results() {
         <p className="mb-1 text-xs text-ink/50">{t('وشەی نهێنی')} ({category?.name})</p>
         <p className="mb-4 text-2xl font-black text-ink">{room.secret_word_ku}</p>
         <div className="flex justify-center">
-          <WordImage englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={200} />
+          <WordImage imageUrl={findWord(room.secret_word_ku)?.image_url} englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={200} />
         </div>
         {room.mode === 'undercover' && room.decoy_word_ku && (
           <p className="mt-4 text-sm text-ink/50">

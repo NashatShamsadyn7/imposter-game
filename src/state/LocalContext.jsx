@@ -3,7 +3,8 @@
 // ═══════════════════════════════════════════════════════════
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { resolveCategory, pickRandomWord, pickDecoyWord, CATEGORIES, RANDOM_CATEGORY } from '../data/words'
+import { CATEGORIES as STATIC_CATEGORIES } from '../data/words'
+import { useWords } from './WordsContext'
 import { resolveGame } from '../lib/scoring'
 import { sfx } from '../lib/sound'
 
@@ -14,7 +15,7 @@ const MAX_PLAYERS = 40
 const STORAGE_KEY = 'imposter:local:v1'
 
 const DEFAULT_SETTINGS = {
-  categoryId: CATEGORIES[0].id,
+  categoryId: STATIC_CATEGORIES[0].id,
   impostorCount: 1,
   discussionSeconds: 60,
   multiplier: 1,
@@ -34,6 +35,7 @@ function loadLocal() {
 }
 
 export function LocalProvider({ children }) {
+  const { categories, randomCategory, resolveCategory, pickRandomWord, pickDecoyWord } = useWords()
   const saved = loadLocal()
 
   const [players, setPlayers] = useState(
@@ -105,7 +107,7 @@ export function LocalProvider({ children }) {
       winner: null,
     })
     setPhase('reveal')
-  }, [players, settings, game])
+  }, [players, settings, game, resolveCategory, pickRandomWord, pickDecoyWord])
 
   const nextReveal = useCallback(() => {
     setGame((g) => {
@@ -164,7 +166,8 @@ export function LocalProvider({ children }) {
 
   const value = {
     MAX_PLAYERS,
-    CATEGORIES,
+    CATEGORIES: categories,
+    RANDOM_CATEGORY: randomCategory,
     players,
     settings,
     scores,

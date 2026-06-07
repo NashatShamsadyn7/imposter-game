@@ -25,7 +25,7 @@ import {
 import { useAuth } from '../state/AuthContext'
 import { useRoom } from '../state/RoomContext'
 import { useProfileViewer } from '../state/ProfileViewer'
-import { CATEGORIES, RANDOM_CATEGORY } from '../data/words'
+import { useWords } from '../state/WordsContext'
 import { Button, Panel } from '../components/ui'
 import Avatar from '../components/Avatar'
 import InviteFriends from '../components/InviteFriends'
@@ -34,6 +34,7 @@ import { sfx } from '../lib/sound'
 
 export default function RoomLobby() {
   const { user } = useAuth()
+  const { categories: CATEGORIES, randomCategory: RANDOM_CATEGORY } = useWords()
   const {
     room,
     players,

@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 import { AuthProvider, useAuth } from './state/AuthContext'
+import { WordsProvider, useWords } from './state/WordsContext'
 import { RoomProvider, useRoom } from './state/RoomContext'
 import { ProfileViewerProvider } from './state/ProfileViewer'
 import { LocalProvider, useLocal } from './state/LocalContext'
@@ -36,6 +37,7 @@ const LocalDiscussion = lazy(() => import('./screens/local/LocalDiscussion'))
 const LocalVoting = lazy(() => import('./screens/local/LocalVoting'))
 const LocalResults = lazy(() => import('./screens/local/LocalResults'))
 const Shop = lazy(() => import('./screens/Shop'))
+const WordsAdmin = lazy(() => import('./screens/admin/WordsAdmin'))
 // چینی دەنگ بە درەنگ — livekit-client لە بەستەی سەرەکی دادەبڕێت
 const VoiceLayer = lazy(() => import('./state/VoiceLayer'))
 import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled, setRoomActive } from './lib/sound'
@@ -118,6 +120,7 @@ function LocalRouter({ onExit }) {
 // ───── ناوەوەی دوای چوونەژوورەوە ─────
 function Shell({ ui }) {
   const { user, profile, loading, isSupabaseEnabled, signOut } = useAuth()
+  const { isAdmin } = useWords()
   // کۆدی بانگهێشت لە لینکی هاوبەشکراو (?join=CODE) — پاکی دەکەینەوە لە URL
   const [pendingJoin, setPendingJoin] = useState(() => {
     const c = new URLSearchParams(window.location.search).get('join')
@@ -206,6 +209,9 @@ function Shell({ ui }) {
     case 'shop':
       inner = <Shop onBack={toMenu} />
       break
+    case 'admin':
+      inner = <WordsAdmin onBack={toMenu} />
+      break
     default:
       inner = (
         <MainMenu
@@ -240,7 +246,7 @@ function Shell({ ui }) {
               </ErrorBoundary>
             </div>
             {showSidebar && (
-              <Sidebar view={view} onNavigate={setView} onSignOut={signOut} />
+              <Sidebar view={view} onNavigate={setView} onSignOut={signOut} isAdmin={isAdmin} />
             )}
           </ProfileViewerProvider>
           <LevelUpOverlay />
@@ -301,7 +307,9 @@ export default function App() {
     <LanguageProvider>
       <Background />
       <AuthProvider>
-        <Shell ui={ui} />
+        <WordsProvider>
+          <Shell ui={ui} />
+        </WordsProvider>
       </AuthProvider>
     </LanguageProvider>
   )

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ChevronRight, Gamepad2, Trophy, Star, Skull, ShieldCheck, Percent, Loader2 } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { Panel } from '../components/ui'
-import { CATEGORIES } from '../data/words'
+import { useWords } from '../state/WordsContext'
 import { fetchUserResults } from '../lib/supabase'
 import { computeStats } from '../lib/stats'
 import { rankInfo } from '../lib/rank'
@@ -11,6 +11,7 @@ import { useT } from '../lib/i18n'
 // شاشەی ئامار — لێکدانەوەی مێژووی یاری
 export default function Stats({ onBack }) {
   const { user, profile } = useAuth()
+  const { categories: CATEGORIES } = useWords()
   const t = useT()
   const rk = rankInfo(profile?.rank_points)
   const [loading, setLoading] = useState(true)

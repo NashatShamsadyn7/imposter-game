@@ -40,7 +40,7 @@ export default function LocalResults() {
         <p className="mb-1 text-xs text-muted">{t('وشەی نهێنی')} ({game.category.name})</p>
         <p className="mb-4 text-2xl font-black text-ink">{game.secretWord.ku}</p>
         <div className="flex justify-center">
-          <WordImage englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={200} />
+          <WordImage imageUrl={game.secretWord.image_url} englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={200} />
         </div>
         {game.decoyWord && (
           <p className="mt-4 text-sm text-muted">

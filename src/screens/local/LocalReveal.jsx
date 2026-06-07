@@ -92,7 +92,7 @@ export default function LocalReveal() {
                 <p className="mb-2 text-xs text-muted">{t('وشەی تۆ')}</p>
                 <h2 className="mb-3 text-3xl font-black text-impostor">{game.decoyWord.ku}</h2>
                 <div className="flex justify-center">
-                  <WordImage englishPrompt={game.decoyWord.en} emoji={game.decoyWord.emoji} size={150} />
+                  <WordImage imageUrl={game.decoyWord.image_url} englishPrompt={game.decoyWord.en} emoji={game.decoyWord.emoji} size={150} />
                 </div>
               </Panel>
             </>
@@ -135,7 +135,7 @@ export default function LocalReveal() {
         <p className="mb-1 text-xs text-muted">{t('هاوپۆل:')} {game.category.name}</p>
         <h1 className="mb-4 text-4xl font-black text-ink neon-text">{game.secretWord.ku}</h1>
         <div className="mb-5 flex justify-center">
-          <WordImage englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={210} />
+          <WordImage imageUrl={game.secretWord.image_url} englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={210} />
         </div>
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-impostor/12 px-4 py-2 text-impostor">
           <EyeOff className="h-4 w-4" />

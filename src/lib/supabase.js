@@ -502,6 +502,110 @@ export async function recordResult(userId, points, won, role, categoryId, word) 
   }
 }
 
+// ═══════════════ بانکی وشە (Word Bank) ═══════════════
+// ئایا بەکارهێنەری ئێستا بەڕێوەبەرە؟ (بۆ پیشاندانی پەڕەی بەڕێوەبردن)
+export async function amIAdmin() {
+  if (!supabase) return false
+  const { data, error } = await supabase.rpc('am_i_admin')
+  if (error) return false
+  return !!data
+}
+
+// هێنانی بانکی وشە بۆ یاری — تەنها هاوپۆڵ/وشەی چالاک
+// ئەگەر خشتەکان نەبوون (migration جێبەجێ نەکراوە) → null دەگەڕێنێتەوە
+export async function fetchWordBank() {
+  if (!supabase) return null
+  const { data: categories, error: e1 } = await supabase
+    .from('word_categories')
+    .select('*')
+    .eq('enabled', true)
+    .order('sort', { ascending: true })
+  if (e1) return null
+  if (!categories || !categories.length) return { categories: [], items: [] }
+  const { data: items, error: e2 } = await supabase
+    .from('word_items')
+    .select('*')
+    .eq('enabled', true)
+    .order('sort', { ascending: true })
+  if (e2) return null
+  return { categories, items: items || [] }
+}
+
+// هێنانی هەموو بانک بۆ بەڕێوەبەر (چالاک + ناچالاک)
+export async function adminFetchWordBank() {
+  need()
+  const { data: categories } = await supabase
+    .from('word_categories')
+    .select('*')
+    .order('sort', { ascending: true })
+  const { data: items } = await supabase
+    .from('word_items')
+    .select('*')
+    .order('sort', { ascending: true })
+  return { categories: categories || [], items: items || [] }
+}
+
+// زیادکردن/نوێکردنەوەی هاوپۆڵ
+export async function adminUpsertCategory(cat) {
+  need()
+  const { data, error } = await supabase
+    .from('word_categories')
+    .upsert(cat, { onConflict: 'id' })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function adminDeleteCategory(id) {
+  need()
+  const { error } = await supabase.from('word_categories').delete().eq('id', id)
+  if (error) throw error
+}
+
+// زیادکردنی وشە
+export async function adminInsertWord(word) {
+  need()
+  const { data, error } = await supabase.from('word_items').insert(word).select().single()
+  if (error) throw error
+  return data
+}
+
+// نوێکردنەوەی وشە
+export async function adminUpdateWord(id, patch) {
+  need()
+  const { data, error } = await supabase
+    .from('word_items')
+    .update(patch)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function adminDeleteWord(id) {
+  need()
+  const { error } = await supabase.from('word_items').delete().eq('id', id)
+  if (error) throw error
+}
+
+// هاوردەکردنی کۆمەڵی وشە (بۆ بارکردنی بانکی ناوبنکە یەکەم جار)
+export async function adminBulkImport(categories, items) {
+  need()
+  if (categories.length) {
+    const { error: e1 } = await supabase
+      .from('word_categories')
+      .upsert(categories, { onConflict: 'id' })
+    if (e1) throw e1
+  }
+  // وشەکان بە کۆمەڵ (chunk) دادەبەزرێن تاکو سنووری payload نەبەزێنرێت
+  for (let i = 0; i < items.length; i += 500) {
+    const { error } = await supabase.from('word_items').insert(items.slice(i, i + 500))
+    if (error) throw error
+  }
+}
+
 // ═══════════════ مێژوو + مۆسم + پاداشتی ڕۆژانە ═══════════════
 // مێژووی دواین یارییەکانی بەکارهێنەرێک
 export async function fetchMatchHistory(userId, limit = 10) {

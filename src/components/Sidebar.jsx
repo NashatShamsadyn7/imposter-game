@@ -4,7 +4,7 @@
 //  مۆبایل: شریتێکی خوارەوە بە ئایکۆنە سەرەکییەکان.
 // ═══════════════════════════════════════════════════════════
 
-import { Home, Wifi, Smartphone, ShoppingBag, Crown, Users, BarChart3, Trophy, Settings as SettingsIcon, User, LogOut } from 'lucide-react'
+import { Home, Wifi, Smartphone, ShoppingBag, Crown, Users, BarChart3, Trophy, Settings as SettingsIcon, User, LogOut, BookA } from 'lucide-react'
 import { useT } from '../lib/i18n'
 import { sfx } from '../lib/sound'
 
@@ -25,13 +25,15 @@ const ITEMS = [
 // خاڵە سەرەکییەکانی مۆبایل (شریتی خوارەوە)
 const MOBILE_IDS = ['menu', 'online', 'shop', 'leaderboard', 'friends']
 
-export default function Sidebar({ view, onNavigate, onSignOut }) {
+export default function Sidebar({ view, onNavigate, onSignOut, isAdmin = false }) {
   const t = useT()
   const go = (id) => {
     sfx.tap()
     onNavigate(id)
   }
-  const mobileItems = ITEMS.filter((i) => MOBILE_IDS.includes(i.id))
+  // خاڵی بەڕێوەبردنی وشە تەنها بۆ بەڕێوەبەر دەردەکەوێت
+  const items = isAdmin ? [...ITEMS, { id: 'admin', icon: BookA, label: 'وشەکان' }] : ITEMS
+  const mobileItems = items.filter((i) => MOBILE_IDS.includes(i.id))
 
   return (
     <>
@@ -41,7 +43,7 @@ export default function Sidebar({ view, onNavigate, onSignOut }) {
           <Home className="h-6 w-6" />
         </div>
         <nav className="flex flex-1 flex-col gap-1">
-          {ITEMS.map((it) => {
+          {items.map((it) => {
             const active = view === it.id
             return (
               <button
