@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════
 
 // جۆرەکان
-export const COSMETIC_TYPES = ['avatar', 'frame', 'nameColor', 'title', 'chestSkin', 'background', 'bubble']
+export const COSMETIC_TYPES = ['avatar', 'frame', 'nameColor', 'title', 'chestSkin', 'background', 'bubble', 'entrance']
 
 // نرخی نموونەیی بەپێی دەگمەنی
 // common 60 · rare 120 · epic 220 · legendary 380
@@ -187,8 +187,23 @@ export const CHAT_BUBBLES = [
   { id: 'bubble_kurd',    type: 'bubble', name: 'کوردی',      price: 280, className: 'cos-shimmer bg-gradient-to-r from-green-500 via-yellow-400 to-red-500 text-white' },
 ]
 
+// ───── کاریگەری هاتنە ژوورەوە (room entrance) ─────
+// کاتێک یاریزان دێتە ژوورەوە، بانەرێک بۆ هەمووان دەردەکەوێت.
+// emoji + text + ring (تدرّجی ڕەنگ بۆ بانەرەکە).
+export const ENTRANCES = [
+  { id: 'enter_fire',   type: 'entrance', name: 'گڕ',        price: 150, emoji: '🔥', text: 'بە گڕەوە هاتە ژوورەوە!',  ring: 'from-amber-500 to-red-600' },
+  { id: 'enter_king',   type: 'entrance', name: 'پاشا',      price: 280, emoji: '👑', text: 'پاشا گەیشت!',            ring: 'from-yellow-400 to-amber-600' },
+  { id: 'enter_ninja',  type: 'entrance', name: 'نینجا',     price: 150, emoji: '🥷', text: 'بێدەنگ خزایە ژوورەوە…',  ring: 'from-slate-600 to-zinc-800' },
+  { id: 'enter_storm',  type: 'entrance', name: 'بروسکە',    price: 200, emoji: '⚡', text: 'وەک بروسکە هات!',        ring: 'from-sky-400 to-indigo-600' },
+  { id: 'enter_star',   type: 'entrance', name: 'ئەستێرە',   price: 150, emoji: '🌟', text: 'ئەستێرەکە گەیشت!',       ring: 'from-yellow-300 to-orange-500' },
+  { id: 'enter_ghost',  type: 'entrance', name: 'دروو',      price: 150, emoji: '👻', text: 'لەناکاو دەرکەوت!',       ring: 'from-slate-400 to-indigo-500' },
+  { id: 'enter_dragon', type: 'entrance', name: 'ئەژدیها',   price: 280, emoji: '🐉', text: 'ئەژدیها هاتە مەیدان!',   ring: 'from-emerald-500 to-teal-700' },
+  { id: 'enter_crown',  type: 'entrance', name: 'ئەفسانە',   price: 380, emoji: '🏆', text: 'ئەفسانەکە گەیشت!',       ring: 'from-fuchsia-500 to-amber-400' },
+  { id: 'enter_kurd',   type: 'entrance', name: 'کوردی',     price: 280, emoji: '☀️', text: 'بە شانازییەوە هات!',    ring: 'from-green-500 via-yellow-400 to-red-500' },
+]
+
 export const CATALOG = [
-  ...AVATARS, ...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS, ...CHAT_BUBBLES,
+  ...AVATARS, ...FRAMES, ...NAME_COLORS, ...TITLES, ...CHEST_SKINS, ...CHAT_BUBBLES, ...ENTRANCES,
   ...BACKGROUNDS.filter((b) => !b.free),
   ...THEMES.filter((th) => !th.free),
 ]
@@ -228,6 +243,11 @@ export function equippedAvatar(equipped) {
 // className ـی فقاعةی چات بەپێی id → string یان null
 export function bubbleClass(id) {
   return getCosmetic(id)?.className || null
+}
+
+// کاریگەری هاتنە ژوورەوەی بەرکراو → کۆمەتیک یان null
+export function getEntrance(id) {
+  return getCosmetic(id) || null
 }
 
 // پاشبنەی بەرکراو → کۆمەتیک (بنەڕەت ئەگەر هیچ نەبوو)

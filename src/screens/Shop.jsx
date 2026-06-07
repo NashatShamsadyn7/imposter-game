@@ -12,7 +12,7 @@ import Avatar from '../components/Avatar'
 import FrameFx from '../components/FrameFx'
 import { levelInfo } from '../lib/achievements'
 import {
-  AVATARS, FRAMES, NAME_COLORS, TITLES, CHEST_SKINS, BACKGROUNDS, CHAT_BUBBLES,
+  AVATARS, FRAMES, NAME_COLORS, TITLES, CHEST_SKINS, BACKGROUNDS, CHAT_BUBBLES, ENTRANCES,
   equippedFrameStyle, equippedNameColor, equippedTitle, equippedAvatar,
 } from '../lib/cosmetics'
 import { useT } from '../lib/i18n'
@@ -24,6 +24,7 @@ const TABS = [
   { id: 'background', label: 'پاشبنە',    items: BACKGROUNDS.filter((b) => !b.free) },
   { id: 'nameColor',  label: 'ڕەنگی ناو', items: NAME_COLORS },
   { id: 'bubble',     label: 'فقاعةی چات', items: CHAT_BUBBLES },
+  { id: 'entrance',   label: 'هاتنەژوورەوە', items: ENTRANCES },
   { id: 'title',      label: 'ناونیشان',  items: TITLES },
   { id: 'chestSkin',  label: 'سندووق',    items: CHEST_SKINS },
 ]
@@ -65,6 +66,13 @@ function Swatch({ item }) {
       <span className={`inline-block rounded-2xl rounded-br-sm px-3 py-1.5 text-xs font-bold ${item.className}`}>
         سڵاو 👋
       </span>
+    )
+  }
+  if (item.type === 'entrance') {
+    return (
+      <div className={`flex items-center gap-1.5 rounded-xl bg-gradient-to-r ${item.ring} px-2.5 py-1.5 text-white shadow-card`}>
+        <span className="text-lg">{item.emoji}</span>
+      </div>
     )
   }
   if (item.type === 'title') {

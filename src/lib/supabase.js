@@ -815,6 +815,27 @@ export function joinReactionChannel(roomId, onReaction) {
   }
 }
 
+// ═══════════════ کاریگەری هاتنە ژوورەوە (Entrance) ═══════════════
+// broadcast ـی ڕاستەوخۆ — کاتێک یاریزان دێتە ژوورەوە، بانەرێک بۆ هەمووان
+export function joinEntranceChannel(roomId, onEntrance) {
+  if (!supabase || !roomId) return { announce: () => {}, close: () => {} }
+  const channel = supabase.channel(`entrance:${roomId}`, {
+    config: { broadcast: { self: true } },
+  })
+  channel
+    .on('broadcast', { event: 'entrance' }, ({ payload }) => onEntrance?.(payload))
+    .subscribe()
+  return {
+    announce: (entranceId, name) =>
+      channel.send({
+        type: 'broadcast',
+        event: 'entrance',
+        payload: { entranceId, name, id: Math.random().toString(36).slice(2) },
+      }),
+    close: () => supabase.removeChannel(channel),
+  }
+}
+
 // ═══════════════ هاوڕێیان ═══════════════
 // دۆزینەوەی پرۆفایل بە کۆدی هاوڕێیەتی
 export async function findProfileByCode(code) {

@@ -43,6 +43,7 @@ const VoiceLayer = lazy(() => import('./state/VoiceLayer'))
 import { startMusic, unlockAudio, setSfxEnabled, setMusicEnabled, setRoomActive } from './lib/sound'
 import { useWakeLock } from './lib/useWakeLock'
 import InstallPrompt from './components/InstallPrompt'
+import EntranceLayer from './components/EntranceLayer'
 
 function FullLoader() {
   return (
@@ -95,6 +96,7 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled, onRoomActiveChange 
   return (
     <>
       {screen}
+      <EntranceLayer />
       <Suspense fallback={null}>
         <VoiceLayer
           roomId={room.id}
