@@ -365,3 +365,48 @@ input[type='number']::-webkit-outer-spin-button {
 @media (prefers-reduced-motion: reduce) {
   .cos-shimmer, .cos-pulse, .cos-spin, .cos-spin-rev { animation: none; }
 }
+
+/* ───── مۆبایل: ڕێگری لە زووم کردنی iOS لە کاتی فۆکەسی خانەکان ─────
+   iOS Safari زووم دەکات ئەگەر font-size < 16px بێت. لە مۆبایلدا
+   هەموو خانە و textareaکان لانیکەم ١٦px دەکەین. */
+@media (max-width: 640px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* ───── شاشەی دەستپێک (Splash) — پێش بارکردنی React ─────
+   لە index.html ـدا دەردەکەوێت و دوای مаунتی React لادەبردرێت. */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: #0b0f1c;
+  transition: opacity 0.4s ease;
+}
+#splash.hide { opacity: 0; pointer-events: none; }
+#splash .splash-logo {
+  width: 96px; height: 96px;
+  animation: splash-pop 0.5s ease both;
+}
+#splash .splash-spin {
+  width: 30px; height: 30px;
+  border: 3px solid rgba(45, 224, 200, 0.25);
+  border-top-color: rgb(45, 224, 200);
+  border-radius: 50%;
+  animation: splash-rot 0.8s linear infinite;
+}
+@keyframes splash-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes splash-rot { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  #splash .splash-logo, #splash .splash-spin { animation: none; }
+}

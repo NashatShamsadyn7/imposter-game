@@ -9,6 +9,17 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>
 )
 
+// لابردنی شاشەی دەستپێک دوای بارکردنی React (بە لابردنی نەرم/fade)
+requestAnimationFrame(() => {
+  const splash = document.getElementById('splash')
+  if (!splash) return
+  // کەمێک بهێڵەرەوە تاکو fade دیار بێت، پاشان لایببە
+  setTimeout(() => {
+    splash.classList.add('hide')
+    setTimeout(() => splash.remove(), 450)
+  }, 300)
+})
+
 // تۆمارکردنی Service Worker بۆ دامەزراندن و کارکردن بەبێ ئینتەرنێت (PWA)
 // + بارکردنەوەی خۆکار کاتێک وەشانێکی نوێ چالاک دەبێت (بۆ ئەوەی کۆدی کۆن نەمێنێتەوە)
 if ('serviceWorker' in navigator) {

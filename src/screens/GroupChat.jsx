@@ -269,6 +269,10 @@ export default function GroupChat({ group, onBack, onLeft }) {
           onChange={(e) => setText(e.target.value)}
           placeholder={t('نامەیەک بنووسە…')}
           maxLength={500}
+          enterKeyHint="send"
+          inputMode="text"
+          autoComplete="off"
+          autoCapitalize="sentences"
           className="min-w-0 flex-1 rounded-2xl border border-ink/10 bg-ink/5 px-4 py-3 text-ink placeholder:text-ink/30 outline-none focus:border-crew/60"
         />
         <button

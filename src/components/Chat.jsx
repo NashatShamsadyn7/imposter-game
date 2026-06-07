@@ -26,6 +26,10 @@ export default function Chat({ disabled = false, className = '' }) {
   const [showQuick, setShowQuick] = useState(false)
   const [showGif, setShowGif] = useState(false)
   const endRef = useRef(null)
+  const inputRef = useRef(null)
+
+  // خوارەوەخستن بۆ دواهەمین نامە (بۆ کاتێک کیبۆرد دەکرێتەوە)
+  const scrollToEnd = () => endRef.current?.scrollIntoView({ block: 'end' })
 
   // نامەکانی کەسە بلۆککراوەکان نیشان نادرێن
   const visibleMessages = messages.filter((m) => !isBlocked?.(m.user_id))
@@ -40,6 +44,8 @@ export default function Chat({ disabled = false, className = '' }) {
     sendMessage(text)
     sfx.tap()
     setText('')
+    // کیبۆرد کراوە بهێڵەرەوە بۆ نووسینی خێرای دواتر (مۆبایل)
+    inputRef.current?.focus()
   }
 
   // ناردنی خێرا (ئیمۆجی یان دەستەواژە)
@@ -172,11 +178,18 @@ export default function Chat({ disabled = false, className = '' }) {
           </button>
         )}
         <input
+          ref={inputRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          onFocus={() => setTimeout(scrollToEnd, 300)}
           placeholder={disabled ? t('ناتوانیت چات بکەیت') : t('نامەیەک بنووسە…')}
           disabled={disabled}
           maxLength={300}
+          enterKeyHint="send"
+          inputMode="text"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="sentences"
           className="min-w-0 flex-1 rounded-xl border border-ink/10 bg-ink/5 px-3 py-2 text-ink placeholder:text-ink/30 outline-none focus:border-crew/60 disabled:opacity-50"
         />
         <button
