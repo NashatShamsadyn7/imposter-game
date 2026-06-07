@@ -1,8 +1,8 @@
 -- ═══════════════════════════════════════════════════════════
 --  لیستی ژوورە کراوەکان (Open Rooms) — بۆ بەشداربوونی ئاسان
---  • تەنها ژووری ڕاستەقینە (لانیکەم یەک یاریزانی مرۆیی، نەک بۆت)
+--  • تەنها ژووری ڕاستەقینە (لانیکەم یەک یاریزانی مرۆیی چالاک)
 --  • تەنها ژووری لۆبیی نا-داخراو
---  • تەنها ژوورانی ٣٠ خولەکی ڕابردوو (دواتر لە لیست دەردەچن)
+--  • ژوور دەخرێت ئەگەر هیچ یاریزانێک ٥ خولەک پەیوەست نەبووبێت (last_seen)
 --  ژمارەی پیشاندراو = یاریزانە ڕاستەقینەکان (بۆتەکان ناژمێردرێن).
 --
 --  جێبەجێکردن: supabase db push  یان لە SQL Editor ـدا ڕایبکێشە.
@@ -29,23 +29,38 @@ as $$
     left join public.room_players hp on hp.room_id = r.id and hp.user_id = r.host_id
     where r.status = 'lobby'
       and coalesce(r.locked, false) = false
-      and r.created_at > now() - interval '30 minutes'   -- ٣٠ خولەک
+      -- لانیکەم یەک یاریزانی ڕاستەقینەی چالاک لە ٥ خولەکی ڕابردوو
+      and exists (
+        select 1 from public.room_players rp
+        where rp.room_id = r.id
+          and coalesce(rp.is_bot, false) = false
+          and rp.last_seen > now() - interval '5 minutes'
+      )
   ) t
-  where t.player_count between 1 and 9                    -- لانیکەم یەک یاریزانی ڕاستەقینە
+  where t.player_count between 1 and 9
   order by t.created_at desc
   limit p_limit;
 $$;
 
 grant execute on function public.list_open_rooms(int) to authenticated;
 
--- ───── داخستنی ژوورە کۆنەکان — ژووری لۆبی کە لە ٣٠ خولەک کۆنترن ─────
--- (room_players/messages/votes بە cascade دەسڕێنەوە)
+-- ───── داخستنی ژوورە بێچالاکەکان ─────
+-- ژووری لۆبی دەسڕێتەوە ئەگەر کۆنتر لە ٥ خولەک بێت و هیچ یاریزانێکی
+-- ڕاستەقینەی چالاکی لە ٥ خولەکی ڕابردوودا نەبووبێت (room_players/messages
+-- /votes بە cascade دەسڕێنەوە). ژووری نوێ (< ٥ خولەک) پارێزراوە.
 create or replace function public.close_stale_rooms()
 returns void
 language sql security definer
 as $$
-  delete from public.rooms
-  where status = 'lobby' and created_at < now() - interval '30 minutes';
+  delete from public.rooms r
+  where r.status = 'lobby'
+    and r.created_at < now() - interval '5 minutes'
+    and not exists (
+      select 1 from public.room_players rp
+      where rp.room_id = r.id
+        and coalesce(rp.is_bot, false) = false
+        and rp.last_seen > now() - interval '5 minutes'
+    );
 $$;
 
 grant execute on function public.close_stale_rooms() to authenticated;
