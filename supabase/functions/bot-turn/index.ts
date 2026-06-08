@@ -92,6 +92,7 @@ Deno.serve(async (req) => {
     const {
       action, role, word, category, lang = 'ku',
       clues = [], candidates = [], impostorCount = 1, botName = 'Bot', round = 1,
+      wordPool = [],
     } = body
 
     const lname = langName(lang)
@@ -105,16 +106,20 @@ Deno.serve(async (req) => {
       let system: string
 
       if (isImpostor) {
-        // مخادع زۆر زیرەک: بەبێ نیشاندانی بیرکردنەوە — ناوەکی وشە نهێنییەکە
-        // تەخمین دەکات و ئاماژەیەکی گونجاو دەدات. تەنها یەک وشە دەردەکات.
+        // مخادع زۆر زیرەک: لیستی وشەکانی هاوپۆڵی پێدەدرێت → وشە نهێنییەکە
+        // بە وردی لە ئاماژەکانەوە دەخوێنێتەوە، پاشان ئاماژەیەکی تەواو دەدات.
+        const poolText = Array.isArray(wordPool) && wordPool.length
+          ? `\nThe secret word is EXACTLY ONE of these ${wordPool.length} words from the category:\n${wordPool.join(' · ')}\n`
+          : ''
         system =
 `You are "${botName}", the IMPOSTOR in a Spyfall-style word game. Category: ${category || 'unknown'}. You do NOT know the secret word.
 Other players' one-word clues (all describe the SAME hidden word):
 ${clueText}
-
-Silently deduce the single most likely secret word, then give ONE clue a real insider would say for it:
-- Specific enough to look like you know it, yet safe if your guess is slightly wrong.
-- Must fit the category, must NOT duplicate any clue above, must NOT be a random/generic filler.
+${poolText}
+Silently and rigorously deduce the SINGLE most likely secret word${poolText ? ' from that list' : ''} using the clues (match every clue, eliminate words that contradict any clue). Then give ONE clue a genuine insider for that exact word would naturally say:
+- Specific and on-point for your deduced word so you sound like an expert.
+- Safe: still believable if your deduction is off by a little.
+- Must fit the category, must NOT duplicate any clue above, must NOT be generic filler.
 Reply with ONLY that single clue word in ${lname}. No quotes, no English, no explanation.`
       } else {
         system =

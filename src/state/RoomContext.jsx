@@ -475,11 +475,14 @@ export function RoomProvider({ children }) {
       const botRole = botRolesRef.current[bot.user_id] || 'crew'
       const activeCount = players.filter((p) => !p.is_spectator).length || 1
       const totalClues = messages.filter((m) => m.kind === 'chat' || m.kind === 'clue').length
+      const cat = resolveCategory(room.category_id)
       const res = await apiBotTurn({
         action: 'describe',
         role: botRole,
         word: botRole === 'impostor' ? null : room.secret_word_ku,
-        category: resolveCategory(room.category_id)?.name,
+        category: cat?.name,
+        // المخادع ياخذ قائمة كلمات المجموعة → يستنتج الكلمة السرية بدقة (ذكاء عالٍ)
+        wordPool: botRole === 'impostor' ? (cat?.words || []).map((w) => w.ku).filter(Boolean) : undefined,
         lang,
         clues,
         round: Math.floor(totalClues / activeCount) + 1,
