@@ -427,7 +427,7 @@ export default function WordsAdmin({ onBack }) {
       {/* ───── مۆداڵی دەستکاری/زیادکردنی وشە ───── */}
       {editing && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" onClick={() => setEditing(null)}>
-          <div className="w-full max-w-md rounded-t-3xl border border-line bg-surface p-5 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+          <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-line bg-surface p-5 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-black text-ink">{editing._new ? 'وشەی نوێ' : 'دەستکاری وشە'}</h2>
               <button onClick={() => setEditing(null)} className="text-muted hover:text-ink"><X className="h-5 w-5" /></button>
@@ -472,7 +472,7 @@ export default function WordsAdmin({ onBack }) {
       {/* ───── مۆداڵی هاوپۆڵی نوێ ───── */}
       {newCat && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" onClick={() => setNewCat(null)}>
-          <div className="w-full max-w-md rounded-t-3xl border border-line bg-surface p-5 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+          <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-line bg-surface p-5 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-black text-ink">هاوپۆڵی نوێ</h2>
               <button onClick={() => setNewCat(null)} className="text-muted hover:text-ink"><X className="h-5 w-5" /></button>
