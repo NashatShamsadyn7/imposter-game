@@ -550,6 +550,21 @@ export async function amIAdmin() {
 
 // هێنانی بانکی وشە بۆ یاری — تەنها هاوپۆڵ/وشەی چالاک
 // ئەگەر خشتەکان نەبوون (migration جێبەجێ نەکراوە) → null دەگەڕێنێتەوە
+// هێنانی هەموو ڕیزەکانی وشە بە پەڕەپەڕە (Supabase سنووری ١٠٠٠ ڕیزی هەیە بۆ هەر داواکارییەک)
+async function fetchAllWordItems({ onlyEnabled = false } = {}) {
+  const PAGE = 1000
+  let all = []
+  for (let from = 0; ; from += PAGE) {
+    let q = supabase.from('word_items').select('*').order('sort', { ascending: true })
+    if (onlyEnabled) q = q.eq('enabled', true)
+    const { data, error } = await q.range(from, from + PAGE - 1)
+    if (error) throw error
+    all = all.concat(data || [])
+    if (!data || data.length < PAGE) break
+  }
+  return all
+}
+
 export async function fetchWordBank() {
   if (!supabase) return null
   const { data: categories, error: e1 } = await supabase
@@ -559,13 +574,12 @@ export async function fetchWordBank() {
     .order('sort', { ascending: true })
   if (e1) return null
   if (!categories || !categories.length) return { categories: [], items: [] }
-  const { data: items, error: e2 } = await supabase
-    .from('word_items')
-    .select('*')
-    .eq('enabled', true)
-    .order('sort', { ascending: true })
-  if (e2) return null
-  return { categories, items: items || [] }
+  try {
+    const items = await fetchAllWordItems({ onlyEnabled: true })
+    return { categories, items }
+  } catch {
+    return null
+  }
 }
 
 // هێنانی هەموو بانک بۆ بەڕێوەبەر (چالاک + ناچالاک)
@@ -575,11 +589,8 @@ export async function adminFetchWordBank() {
     .from('word_categories')
     .select('*')
     .order('sort', { ascending: true })
-  const { data: items } = await supabase
-    .from('word_items')
-    .select('*')
-    .order('sort', { ascending: true })
-  return { categories: categories || [], items: items || [] }
+  const items = await fetchAllWordItems()
+  return { categories: categories || [], items }
 }
 
 // زیادکردن/نوێکردنەوەی هاوپۆڵ
