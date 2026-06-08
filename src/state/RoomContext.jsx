@@ -378,9 +378,13 @@ export function RoomProvider({ children }) {
         const randomPicks = () =>
           [...candidates].sort(() => Math.random() - 0.5).slice(0, room.impostor_count).map((c) => c.id)
         ;(async () => {
+          const botRole = botRolesRef.current[bot.user_id] || 'crew'
           const res = await apiBotTurn({
             action: 'vote',
-            role: botRolesRef.current[bot.user_id] || 'crew',
+            role: botRole,
+            // طاقم وقت التصويت يعرف الكلمة → يحكم على بقية التلميحات بذكاء
+            word: botRole === 'impostor' ? null : room.secret_word_ku,
+            category: resolveCategory(room.category_id)?.name,
             lang,
             clues,
             candidates,
@@ -391,7 +395,7 @@ export function RoomProvider({ children }) {
           apiCastBotVotes(roomId, bot.user_id, picks).catch(() => {})
         })()
       })
-  }, [isHost, room?.status, room?.impostor_count, players, messages, roomId])
+  }, [isHost, room?.status, room?.impostor_count, room?.secret_word_ku, room?.category_id, players, messages, roomId, resolveCategory])
 
   // ───── دەستپێکردنی یاری (خانەخوێ) ─────
   const startGame = useCallback(async () => {
@@ -469,6 +473,8 @@ export function RoomProvider({ children }) {
         .slice(-12)
         .map((m) => ({ name: m.display_name, text: m.content }))
       const botRole = botRolesRef.current[bot.user_id] || 'crew'
+      const activeCount = players.filter((p) => !p.is_spectator).length || 1
+      const totalClues = messages.filter((m) => m.kind === 'chat' || m.kind === 'clue').length
       const res = await apiBotTurn({
         action: 'describe',
         role: botRole,
@@ -476,6 +482,7 @@ export function RoomProvider({ children }) {
         category: resolveCategory(room.category_id)?.name,
         lang,
         clues,
+        round: Math.floor(totalClues / activeCount) + 1,
         botName: bot.display_name,
       })
       if (res?.text) {
