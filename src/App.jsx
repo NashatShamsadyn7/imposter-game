@@ -264,8 +264,12 @@ function Shell({ ui }) {
       <NotificationProvider>
         <FriendsProvider>
           <ProfileViewerProvider>
-            {/* md:pr-16 شوێن بۆ شریتی باریک · pb-16 شوێن بۆ شریتی خوارەوەی مۆبایل */}
-            <div className={showSidebar ? 'md:pr-16 pb-16 md:pb-0' : ''}>
+            {/* md:pr-16 شوێن بۆ شریتی باریک · pb-16 شوێن بۆ شریتی خوارەوەی مۆبایل
+                pt safe-area: بۆ ئەوەی سەرپەڕە/دوگمەی گەڕانەوە نەچێتە ژێر Dynamic Island ـی ئایفۆن */}
+            <div
+              className={showSidebar ? 'md:pr-16 pb-16 md:pb-0' : ''}
+              style={{ paddingTop: 'env(safe-area-inset-top)' }}
+            >
               <ErrorBoundary onReset={toMenu}>
                 <Suspense fallback={<FullLoader />}>
                   {/* گواستنەوەی نەرم لە نێوان شاشەکان — بە گۆڕینی view نوێ دەبێتەوە */}
