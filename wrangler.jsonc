@@ -1,0 +1,14 @@
+{
+  // ═══════════════════════════════════════════════════════════
+  //  Cloudflare Workers — هۆستکردنی ماڵپەڕی ستاتیک (Vite SPA)
+  //  دۆخی static assets: تەنها پەڕگەکانی dist بڵاودەکاتەوە، بێ Worker script.
+  //  SPA routing: هەموو URL ـێک بۆ index.html دەگەڕێتەوە.
+  //  بڵاوکردنەوە: npx wrangler deploy  (دوای npm run build)
+  // ═══════════════════════════════════════════════════════════
+  "name": "imposter",
+  "compatibility_date": "2025-01-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
