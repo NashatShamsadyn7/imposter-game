@@ -643,6 +643,18 @@ export async function adminBulkImport(categories, items) {
   }
 }
 
+// جێگرتنەوەی تەواوی بانک: هەموو هاوپۆڵ و وشە کۆنەکان دەسڕێتەوە و
+// لە نوێوە لە بانکی ناوبنکە (words.js) هاوردە دەکرێت — بۆ نوێکردنەوەی
+// تەواوی بانک پاش گۆڕینی words.js (بەبێ دووبارەبوونەوە).
+export async function adminReplaceBank(categories, items) {
+  need()
+  const { error: dw } = await supabase.from('word_items').delete().not('id', 'is', null)
+  if (dw) throw dw
+  const { error: dc } = await supabase.from('word_categories').delete().not('id', 'is', null)
+  if (dc) throw dc
+  await adminBulkImport(categories, items)
+}
+
 // بارکردنی وێنەی وشە بۆ Storage و گەڕاندنەوەی URL ـی گشتی
 export async function uploadWordImage(userId, file) {
   need()

@@ -38,7 +38,10 @@ export default function LocalResults() {
 
       <Panel className="mb-5 text-center">
         <p className="mb-1 text-xs text-muted">{t('وشەی نهێنی')} ({game.category.name})</p>
-        <p className="mb-4 text-2xl font-black text-ink">{game.secretWord.ku}</p>
+        <p className="mb-1 text-2xl font-black text-ink">{game.secretWord.ku}</p>
+        {game.secretWord.ar && (
+          <p className="mb-4 text-sm font-medium text-muted" dir="rtl">{game.secretWord.ar}</p>
+        )}
         <div className="flex justify-center">
           <WordImage imageUrl={game.secretWord.image_url} englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={200} />
         </div>

@@ -112,7 +112,10 @@ export default function Results() {
       {/* وشەی نهێنی */}
       <Panel className="mb-5 text-center">
         <p className="mb-1 text-xs text-ink/50">{t('وشەی نهێنی')} ({category?.name})</p>
-        <p className="mb-4 text-2xl font-black text-ink">{room.secret_word_ku}</p>
+        <p className="mb-1 text-2xl font-black text-ink">{room.secret_word_ku}</p>
+        {findWord(room.secret_word_ku)?.ar && (
+          <p className="mb-4 text-sm font-medium text-ink/60" dir="rtl">{findWord(room.secret_word_ku).ar}</p>
+        )}
         <div className="flex justify-center">
           <WordImage imageUrl={findWord(room.secret_word_ku)?.image_url} englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={200} />
         </div>

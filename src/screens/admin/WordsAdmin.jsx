@@ -16,7 +16,7 @@ import { Button, Panel } from '../../components/ui'
 import WordImage from '../../components/WordImage'
 import {
   adminFetchWordBank, adminInsertWord, adminUpdateWord, adminDeleteWord,
-  adminUpsertCategory, adminDeleteCategory, adminBulkImport,
+  adminUpsertCategory, adminDeleteCategory, adminBulkImport, adminReplaceBank,
   adminPendingSections, approveSection, rejectSection, adminFetchCategoryItems,
 } from '../../lib/supabase'
 
@@ -127,13 +127,13 @@ export default function WordsAdmin({ onBack }) {
     setBusy(true)
     try {
       const cats = STATIC_CATEGORIES.map((c, i) => ({
-        id: c.id, name_ku: c.name, name_ar: '', icon: c.icon, sort: i, enabled: true,
+        id: c.id, name_ku: c.name, name_ar: c.name_ar || '', icon: c.icon, sort: i, enabled: true,
       }))
       const items = []
       STATIC_CATEGORIES.forEach((c) => {
         c.words.forEach((w, i) => {
           items.push({
-            category_id: c.id, ku: w.ku, ar: '', en: w.en || '',
+            category_id: c.id, ku: w.ku, ar: w.ar || '', en: w.en || '',
             emoji: w.emoji || '', image_url: '', sort: i, enabled: true,
           })
         })
@@ -144,6 +144,35 @@ export default function WordsAdmin({ onBack }) {
       notify({ title: `هاوردەکرا: ${cats.length} هاوپۆڵ، ${items.length} وشە`, type: 'success' })
     } catch (e) {
       notify({ title: 'هەڵە لە هاوردەکردن', body: e?.message || String(e), type: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // ───── جێگرتنەوەی تەواوی بانک بە بانکی نوێی ناوبنکە ─────
+  // هەموو وشە کۆنەکان دەسڕێتەوە و وشە نوێیەکانی words.js دادەنرێن.
+  const handleReplace = async () => {
+    if (!window.confirm('ئاگاداری: هەموو هاوپۆڵ و وشە کۆنەکان دەسڕێنەوە و بانکی نوێ (وشە جیهانییەکان بە کوردی/عەرەبی) جێیان دەگرێتەوە. بەردەوام دەبیت؟')) return
+    setBusy(true)
+    try {
+      const cats = STATIC_CATEGORIES.map((c, i) => ({
+        id: c.id, name_ku: c.name, name_ar: c.name_ar || '', icon: c.icon, sort: i, enabled: true,
+      }))
+      const items = []
+      STATIC_CATEGORIES.forEach((c) => {
+        c.words.forEach((w, i) => {
+          items.push({
+            category_id: c.id, ku: w.ku, ar: w.ar || '', en: w.en || '',
+            emoji: w.emoji || '', image_url: '', sort: i, enabled: true,
+          })
+        })
+      })
+      await adminReplaceBank(cats, items)
+      await load()
+      await reloadGameBank()
+      notify({ title: `نوێکرایەوە: ${cats.length} هاوپۆڵ، ${items.length} وشە`, type: 'success' })
+    } catch (e) {
+      notify({ title: 'هەڵە لە نوێکردنەوە', body: e?.message || String(e), type: 'error' })
     } finally {
       setBusy(false)
     }
@@ -260,6 +289,18 @@ export default function WordsAdmin({ onBack }) {
         </Panel>
       ) : (
         <>
+          {/* نوێکردنەوەی بانک بە بانکی نوێی ناوبنکە (جێگرتنەوەی هەمووی) */}
+          <Panel className="mb-4 border-crew/30 !p-3">
+            <p className="mb-2 text-sm font-bold text-ink">نوێکردنەوەی بانک</p>
+            <p className="mb-3 text-xs text-muted">
+              بانکی کۆن دەسڕێتەوە و وشە جیهانییە نوێیەکان (کوردی + عەرەبی) جێیان دەگرنەوە.
+            </p>
+            <Button variant="ghost" className="w-full" onClick={handleReplace} disabled={busy}>
+              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
+              جێگرتنەوەی بانک بە نوێ
+            </Button>
+          </Panel>
+
           {/* پێشنیارە چاوەڕوانەکان */}
           {pending.length > 0 && (
             <Panel className="mb-4 border-crew/40 !p-3">

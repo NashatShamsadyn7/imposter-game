@@ -90,7 +90,10 @@ export default function LocalReveal() {
               <p className="mb-4 text-xl font-bold text-ink">{t('وشەی تۆ نزیکە — بەڵام لەوانەیە جیاواز بێت!')}</p>
               <Panel className="mx-auto mb-5 max-w-xs border-impostor/40">
                 <p className="mb-2 text-xs text-muted">{t('وشەی تۆ')}</p>
-                <h2 className="mb-3 text-3xl font-black text-impostor">{game.decoyWord.ku}</h2>
+                <h2 className="mb-1 text-3xl font-black text-impostor">{game.decoyWord.ku}</h2>
+                {game.decoyWord.ar && (
+                  <p className="mb-3 text-base font-medium text-muted" dir="rtl">{game.decoyWord.ar}</p>
+                )}
                 <div className="flex justify-center">
                   <WordImage imageUrl={game.decoyWord.image_url} englishPrompt={game.decoyWord.en} emoji={game.decoyWord.emoji} size={150} />
                 </div>
@@ -133,7 +136,10 @@ export default function LocalReveal() {
           <span className="text-sm font-bold">{t('دەستەی کەشتی')}</span>
         </div>
         <p className="mb-1 text-xs text-muted">{t('هاوپۆل:')} {game.category.name}</p>
-        <h1 className="mb-4 text-4xl font-black text-ink neon-text">{game.secretWord.ku}</h1>
+        <h1 className="mb-1 text-4xl font-black text-ink neon-text">{game.secretWord.ku}</h1>
+        {game.secretWord.ar && (
+          <p className="mb-4 text-lg font-medium text-muted" dir="rtl">{game.secretWord.ar}</p>
+        )}
         <div className="mb-5 flex justify-center">
           <WordImage imageUrl={game.secretWord.image_url} englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={210} />
         </div>

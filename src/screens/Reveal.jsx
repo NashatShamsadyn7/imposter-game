@@ -118,7 +118,10 @@ export default function Reveal() {
               <p className="mb-3 text-lg font-bold text-ink">{t('وشەی تۆ نزیکە — بەڵام لەوانەیە جیاواز بێت!')}</p>
               <Panel className="mb-6 border-impostor/40">
                 <p className="mb-2 text-xs text-ink/50">{t('وشەی تۆ')}</p>
-                <h2 className="mb-3 text-3xl font-black text-impostor">{room.decoy_word_ku}</h2>
+                <h2 className="mb-1 text-3xl font-black text-impostor">{room.decoy_word_ku}</h2>
+                {findWord(room.decoy_word_ku)?.ar && (
+                  <p className="mb-3 text-base font-medium text-ink/60" dir="rtl">{findWord(room.decoy_word_ku).ar}</p>
+                )}
                 <div className="flex justify-center">
                   <WordImage imageUrl={findWord(room.decoy_word_ku)?.image_url} englishPrompt={room.decoy_word_en} emoji={findWord(room.decoy_word_ku)?.emoji} size={160} />
                 </div>
@@ -169,7 +172,10 @@ export default function Reveal() {
             </div>
           )}
           <p className="mb-1 text-xs text-ink/50">هاوپۆل: {category?.name}</p>
-          <h1 className="mb-4 text-4xl font-black text-ink neon-text">{room.secret_word_ku}</h1>
+          <h1 className="mb-1 text-4xl font-black text-ink neon-text">{room.secret_word_ku}</h1>
+          {findWord(room.secret_word_ku)?.ar && (
+            <p className="mb-4 text-lg font-medium text-ink/60" dir="rtl">{findWord(room.secret_word_ku).ar}</p>
+          )}
 
           <div className="mb-4 flex justify-center">
             <WordImage imageUrl={findWord(room.secret_word_ku)?.image_url} englishPrompt={room.secret_word_en} emoji={findWord(room.secret_word_ku)?.emoji} size={220} />
