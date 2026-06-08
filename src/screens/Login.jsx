@@ -1,8 +1,10 @@
-import { Rocket, LogIn, AlertTriangle, ChevronRight, Skull, ShieldCheck, Mic, Users, ShoppingBag, Lock } from 'lucide-react'
+import { Rocket, LogIn, AlertTriangle, ChevronRight, Skull, ShieldCheck, Mic, Users, ShoppingBag, Lock, ExternalLink, Copy } from 'lucide-react'
+import { useState } from 'react'
 import { useAuth } from '../state/AuthContext'
 import { signInWithGoogle } from '../lib/supabase'
 import { Button, Panel } from '../components/ui'
 import { useT } from '../lib/i18n'
+import { isEmbeddedBrowser, isAndroid, openInExternalBrowser } from '../lib/browser'
 
 const FEATURES = [
   { icon: Mic, label: 'دەنگ' },
@@ -13,6 +15,16 @@ const FEATURES = [
 export default function Login({ onExit }) {
   const { isSupabaseEnabled } = useAuth()
   const t = useT()
+  const embedded = isEmbeddedBrowser()
+  const [copied, setCopied] = useState(false)
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch { /* noop */ }
+  }
 
   return (
     <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center overflow-hidden px-5 py-10 text-center">
@@ -53,6 +65,30 @@ export default function Login({ onExit }) {
         </div>
 
         {isSupabaseEnabled ? (
+          embedded ? (
+            // ─ وێبگەڕی ناو-ئەپ: Google و تەختەکلیل کار ناکەن — ڕێنمایی بکە ─
+            <Panel className="border-amber-400/50 text-right">
+              <div className="mb-3 flex items-center justify-center gap-2 text-amber-500">
+                <AlertTriangle className="h-5 w-5" />
+                <h2 className="font-bold">{t('بیکەرەوە لە وێبگەڕەکەت')}</h2>
+              </div>
+              <p className="mb-4 text-sm leading-relaxed text-ink/70">
+                {t('ئێستا ئەپەکە لەناو ئەپێکی تردا (وەک Instagram/Facebook) کراوەتەوە. چوونەژوورەوە بە Google و تەختەکلیل لێرە کار ناکەن. تکایە لە Chrome یان Safari بیکەرەوە.')}
+              </p>
+              {isAndroid() ? (
+                <Button onClick={openInExternalBrowser} className="mb-2 w-full">
+                  <ExternalLink className="h-5 w-5" /> {t('کردنەوە لە Chrome')}
+                </Button>
+              ) : (
+                <p className="mb-3 text-xs leading-relaxed text-muted">
+                  {t('لە iPhone: لە گۆشەی سەرەوە دوگمەی ⋯ یان «Open in Safari» لێبدە.')}
+                </p>
+              )}
+              <Button variant="ghost" onClick={copyLink} className="w-full">
+                <Copy className="h-4 w-4" /> {copied ? t('کۆپیکرا ✓') : t('کۆپیکردنی بەستەر')}
+              </Button>
+            </Panel>
+          ) : (
           <Panel className="panel-glow">
             <p className="text-ink/70 mb-5 text-sm leading-relaxed">
               {t('بۆ یاریکردن پێویستە بچیتە ژوورەوە. ئەمە وێنەی پرۆفایل و کۆکردنەوەی خاڵەکانت پاشەکەوت دەکات.')}
@@ -65,6 +101,7 @@ export default function Login({ onExit }) {
               <Lock className="h-3 w-3" /> {t('پارێزراو بە Google — بێ وشەی نهێنی')}
             </p>
           </Panel>
+          )
         ) : (
           <Panel className="border-impostor/40 text-right">
             <div className="mb-3 flex items-center gap-2 text-impostor">
