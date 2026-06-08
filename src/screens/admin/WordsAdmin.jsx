@@ -5,6 +5,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import {
   ChevronRight, Search, Plus, Pencil, Trash2, Save, X, Download, Loader2,
   ShieldAlert, FolderPlus, EyeOff, Sparkles, Check, ChevronDown,
@@ -425,7 +426,7 @@ export default function WordsAdmin({ onBack }) {
       )}
 
       {/* ───── مۆداڵی دەستکاری/زیادکردنی وشە ───── */}
-      {editing && (
+      {editing && createPortal((
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" onClick={() => setEditing(null)}>
           <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-line bg-surface p-5 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
@@ -467,10 +468,10 @@ export default function WordsAdmin({ onBack }) {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
 
       {/* ───── مۆداڵی هاوپۆڵی نوێ ───── */}
-      {newCat && (
+      {newCat && createPortal((
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4" onClick={() => setNewCat(null)}>
           <div className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-line bg-surface p-5 sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
@@ -491,7 +492,7 @@ export default function WordsAdmin({ onBack }) {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </div>
   )
 }
