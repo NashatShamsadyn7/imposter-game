@@ -71,6 +71,19 @@ function cleanWord(s: string): string {
   return (s || '').split(/[\n،,]/)[0].replace(/["'`.!?:؛()]/g, '').trim().split(/\s+/).slice(0, 2).join(' ').slice(0, 40)
 }
 
+// هەڵبژاردنی باشترین وشە لە وەڵامی LLM بۆ ئاماژە:
+// ١) ئەگەر JSON ـی {"clue":...} هەبوو  ٢) دوایین وشەی بە پیتی عەرەبی/کوردی
+//  ٣) دوایین وشە. بەمە ڕێگری لە گەڕانەوەی دەقی بیرکردنەوەی ئینگلیزی دەکەین.
+function extractClue(raw: string): string {
+  const j = lastJson(raw) as { clue?: string } | null
+  if (j?.clue) return cleanWord(j.clue)
+  // وشەکانی بە نووسینی عەرەبی (کوردی سۆرانی + عەرەبی)
+  const arabicTokens = raw.match(/[؀-ۿݐ-ݿ]+/g)
+  if (arabicTokens && arabicTokens.length) return cleanWord(arabicTokens[arabicTokens.length - 1])
+  const words = raw.replace(/[{}[\]"':,]/g, ' ').trim().split(/\s+/).filter(Boolean)
+  return cleanWord(words[words.length - 1] || raw)
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   try {
@@ -92,44 +105,32 @@ Deno.serve(async (req) => {
       let system: string
 
       if (isImpostor) {
-        // مخادع زۆر زیرەک: یەکەم وشە نهێنییەکە تەخمین دەکات، پاشان ئاماژەیەکی
-        // گونجاو دەدات کە تێکەڵ دەبێت و گومانی لەسەر دروست ناکات.
+        // مخادع زۆر زیرەک: بەبێ نیشاندانی بیرکردنەوە — ناوەکی وشە نهێنییەکە
+        // تەخمین دەکات و ئاماژەیەکی گونجاو دەدات. تەنها یەک وشە دەردەکات.
         system =
-`You are "${botName}", the IMPOSTOR in a Spyfall-style word game. You do NOT know the secret word (category: ${category || 'unknown'}).
-The other players gave these one-word clues (each clue secretly describes the SAME hidden word):
+`You are "${botName}", the IMPOSTOR in a Spyfall-style word game. Category: ${category || 'unknown'}. You do NOT know the secret word.
+Other players' one-word clues (all describe the SAME hidden word):
 ${clueText}
 
-Think like a genius (IQ 150+). Reason step by step PRIVATELY:
-1) From the clues, infer the 1-3 MOST LIKELY secret words and pick the single best guess.
-2) Decide a clue word that a real insider for that guess would plausibly say.
-3) Make it SAFE: specific enough to look knowledgeable, but generic enough that it still fits if your guess is wrong. Must NOT duplicate an existing clue, must NOT reveal you're guessing, must NOT be off-topic for the category.
-4) If very few clues exist, stay a bit broad to avoid contradiction.
-
-Output STRICT JSON on the last line: {"guess":"<your inferred word in English>","clue":"<ONE clue word in ${lname}>"}`
+Silently deduce the single most likely secret word, then give ONE clue a real insider would say for it:
+- Specific enough to look like you know it, yet safe if your guess is slightly wrong.
+- Must fit the category, must NOT duplicate any clue above, must NOT be a random/generic filler.
+Reply with ONLY that single clue word in ${lname}. No quotes, no English, no explanation.`
       } else {
         system =
 `You are "${botName}", a CREW member in a Spyfall-style word game. The secret word is "${word}" (category: ${category || 'unknown'}). Round ${round}.
-Clues already given by others:
+Clues already given:
 ${clueText}
 
-Think like a genius (IQ 150+). Reason step by step PRIVATELY:
-1) Give ONE clue word that truly relates to "${word}" so other crew recognize you know it.
-2) Do NOT say the word, any part/translation of it, or an instantly obvious giveaway that hands it to the impostor.
-3) Do NOT duplicate clues already used. Pick a DIFFERENT angle (use, place, part, feeling, category cousin).
-4) Early rounds: subtler. Later rounds: a touch more specific to help expose the impostor.
-
-Output STRICT JSON on the last line: {"clue":"<ONE clue word in ${lname}>"}`
+Give ONE clever clue word that clearly relates to "${word}" so other crew know you're real, but:
+- Never say the word, a part of it, its translation, or a dead-giveaway that hands it to the impostor.
+- Do NOT repeat any clue above — pick a fresh angle (its use, where it's found, a part, a feeling, a close cousin).
+- Round ${round}: ${round <= 1 ? 'be a little subtle' : 'be a bit more specific to help catch the impostor'}.
+Reply with ONLY that single clue word in ${lname}. No quotes, no English, no explanation.`
       }
 
-      const raw = await chat(system, 'Reason briefly, then output the JSON.', 400, isImpostor ? 0.7 : 0.6)
-      const parsed = lastJson(raw) as { clue?: string } | null
-      let textVal = parsed?.clue ? cleanWord(parsed.clue) : ''
-      if (!textVal) {
-        // fallback: دوایین وشەی واتادار لە دەقەکە
-        const words = raw.replace(/[{}[\]"':,]/g, ' ').trim().split(/\s+/).filter(Boolean)
-        textVal = cleanWord(words[words.length - 1] || raw)
-      }
-      return json({ text: textVal })
+      const raw = await chat(system, 'Your one clue word:', 32, isImpostor ? 0.7 : 0.55)
+      return json({ text: extractClue(raw) })
     }
 
     // ═════════════ دەنگدان (vote) ═════════════
@@ -152,11 +153,8 @@ ${clueText}
 Candidates:
 ${numbered}
 
-Goal: SURVIVE and deflect suspicion. Reason step by step PRIVATELY:
-1) You must vote for someone OTHER than yourself.
-2) Prefer a CREW member who looks suspicious or gave a weak/vague clue, so the group follows your vote.
-3) Pick exactly ${impostorCount} candidate number(s).
-Output STRICT JSON on the last line: {"votes":[<numbers>]}`
+Goal: SURVIVE and deflect suspicion. Vote for someone OTHER than yourself — prefer a crew member who looks suspicious or gave a weak/vague clue so the group follows you. Pick exactly ${impostorCount} candidate number(s).
+Think in at most 2 short sentences, then output STRICT JSON on the last line: {"votes":[<numbers>]}`
       } else {
         // طاقم زیرەک: کلمەکە دەزانێت → ئاماژەی هەر کەسێک بەراورد دەکات لەگەڵ کلمەکە.
         system =
@@ -168,16 +166,13 @@ ${clueText}
 Candidates:
 ${numbered}
 
-Think like a genius (IQ 150+). Reason step by step PRIVATELY:
-1) For EACH candidate, judge how well their clue fits "${word}": a true insider's clue is specific and clearly related; an impostor's clue is broad/safe, fits many words, or is slightly off.
-2) Ignore your own clue. Rank candidates from most-suspicious to least.
-3) Pick exactly the ${impostorCount} MOST suspicious candidate number(s).
-Output STRICT JSON on the last line: {"votes":[<numbers>]}`
+Judge each candidate's clue against "${word}": an insider's clue is specific and clearly related; an impostor's clue is broad/safe, fits many words, or is slightly off. Ignore your own clue, then pick exactly the ${impostorCount} MOST suspicious candidate number(s).
+Think in at most 2 short sentences, then output STRICT JSON on the last line: {"votes":[<numbers>]}`
       }
 
       let picks: number[] = []
       try {
-        const raw = await chat(system, 'Reason briefly, then output the JSON.', 450, 0.2)
+        const raw = await chat(system, 'Reason briefly, then output the JSON.', 300, 0.2)
         const parsed = lastJson(raw)
         if (Array.isArray(parsed)) picks = parsed as number[]
         else if (parsed && Array.isArray((parsed as { votes?: number[] }).votes)) picks = (parsed as { votes: number[] }).votes
