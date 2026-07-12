@@ -353,6 +353,13 @@ export default function WordsAdmin({ onBack }) {
             <Button variant="ghost" className="mt-2 w-full" onClick={() => importInputRef.current?.click()} disabled={busy}>
               <Upload className="h-5 w-5" /> بارکردنی فایلی بانکی JSON
             </Button>
+            <a
+              href="/word-bank-kurdish-2250.json"
+              download="word-bank-kurdish-2250.json"
+              className="btn-press mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface2 px-4 py-2.5 text-sm font-bold text-crew"
+            >
+              <Download className="h-5 w-5" /> داگرتنی فایلی تەواو (٢٢٥٠ وشە)
+            </a>
           </Panel>
 
           {/* پێشنیارە چاوەڕوانەکان */}
