@@ -15,11 +15,13 @@ const MAX_PLAYERS = 40
 const STORAGE_KEY = 'imposter:local:v1'
 
 const DEFAULT_SETTINGS = {
+  gameType: 'imposter', // imposter | bomb
   categoryId: STATIC_CATEGORIES[0].id,
   impostorCount: 1,
   discussionSeconds: 60,
   multiplier: 1,
   mode: 'classic', // classic | undercover
+  bombSeconds: 35,
 }
 
 function makeId() {
@@ -85,6 +87,25 @@ export function LocalProvider({ children }) {
 
   // ───── دەستپێکردن ─────
   const startGame = useCallback(() => {
+    if (settings.gameType === 'bomb') {
+      const category = resolveCategory(settings.categoryId)
+      const startIndex = Math.floor(Math.random() * players.length)
+      // ژمارەی چرکەکان هەر جار کەمێک دەگۆڕێت بۆ ئەوەی بۆمبەکە پێشبینی نەکرێت.
+      const bombSeconds = Math.max(15, settings.bombSeconds + Math.floor(Math.random() * 13) - 6)
+      setGame({
+        type: 'bomb',
+        players: players.map((p) => ({ id: p.id, name: p.name })),
+        category,
+        currentIndex: startIndex,
+        streak: 0,
+        bombSeconds,
+        round: 1,
+        lastPoints: 0,
+      })
+      setPhase('bomb')
+      return
+    }
+
     const category = resolveCategory(settings.categoryId)
     const word = pickRandomWord(category, game?.secretWord?.ku)
     // دۆخی «متخفّی»: ساختەکار وشەیەکی نزیک وەردەگرێت
@@ -108,6 +129,59 @@ export function LocalProvider({ children }) {
     })
     setPhase('reveal')
   }, [players, settings, game, resolveCategory, pickRandomWord, pickDecoyWord])
+
+  // ───── بۆمبەی وشە: هەر وەڵامێکی سەرکەوتوو → خاڵ + نۆرەی دواتر ─────
+  const scoreBombTurn = useCallback(() => {
+    setGame((g) => {
+      if (!g || g.type !== 'bomb') return g
+      const player = g.players[g.currentIndex]
+      const points = 4 + Math.min(g.streak, 6)
+      setScores((prev) => ({ ...prev, [player.id]: (prev[player.id] || 0) + points }))
+      return {
+        ...g,
+        currentIndex: (g.currentIndex + 1) % g.players.length,
+        streak: g.streak + 1,
+        lastPoints: points,
+      }
+    })
+  }, [])
+
+  // کە بۆمبەکە تەقی → ئەوەی لە دەستیەتی خاڵی ئەم خولە وەرناگرێت؛
+  // ئەوانی تر بۆنوسی مانەوە وەردەگرن.
+  const finishBombRound = useCallback(() => {
+    setGame((g) => {
+      if (!g || g.type !== 'bomb') return g
+      const lostPlayer = g.players[g.currentIndex]
+      setScores((prev) => {
+        const next = { ...prev }
+        g.players.forEach((player) => {
+          if (player.id !== lostPlayer.id) next[player.id] = (next[player.id] || 0) + 5
+        })
+        return next
+      })
+      setPhase('bomb-results')
+      return { ...g, lostPlayerId: lostPlayer.id }
+    })
+  }, [])
+
+  const nextBombRound = useCallback(() => {
+    setGame((g) => {
+      if (!g || g.type !== 'bomb') return g
+      const category = resolveCategory(settings.categoryId)
+      const bombSeconds = Math.max(15, settings.bombSeconds + Math.floor(Math.random() * 13) - 6)
+      setPhase('bomb')
+      return {
+        ...g,
+        category,
+        currentIndex: (g.currentIndex + 1) % g.players.length,
+        streak: 0,
+        bombSeconds,
+        round: g.round + 1,
+        lastPoints: 0,
+        lostPlayerId: null,
+      }
+    })
+  }, [resolveCategory, settings.categoryId, settings.bombSeconds])
 
   const nextReveal = useCallback(() => {
     setGame((g) => {
@@ -182,6 +256,9 @@ export function LocalProvider({ children }) {
     nextReveal,
     goToVoting,
     finishGame,
+    scoreBombTurn,
+    finishBombRound,
+    nextBombRound,
     playAgain,
     resetScores,
   }
