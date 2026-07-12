@@ -15,7 +15,8 @@ import {
 } from '../data/words'
 import { fetchWordBank, amIAdmin } from '../lib/supabase'
 
-const CACHE_KEY = 'imposter:wordbank:v1'
+// v2 = بانکی هەڵبژێردراوی نوێ. کۆنی کاش ناکرێت بخاتە ناو یارییەکەوە.
+const CACHE_KEY = 'imposter:wordbank:v2'
 
 const WordsContext = createContext(null)
 

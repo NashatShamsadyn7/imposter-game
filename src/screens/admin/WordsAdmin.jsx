@@ -4,11 +4,11 @@
 //  گۆڕانکارییەکان یەکسەر لە بنکەداتا پاشەکەوت دەکرێن و بۆ یاری دەردەکەون.
 // ═══════════════════════════════════════════════════════════
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   ChevronRight, Search, Plus, Pencil, Trash2, Save, X, Download, Loader2,
-  ShieldAlert, FolderPlus, EyeOff, Sparkles, Check, ChevronDown,
+  ShieldAlert, FolderPlus, EyeOff, Sparkles, Check, ChevronDown, Upload,
 } from 'lucide-react'
 import { useWords } from '../../state/WordsContext'
 import { useNotify } from '../../state/NotificationContext'
@@ -52,6 +52,7 @@ export default function WordsAdmin({ onBack }) {
   const [pending, setPending] = useState([])   // پێشنیارە چاوەڕوانەکان
   const [expanded, setExpanded] = useState(null) // idی پێشنیاری کراوە
   const [expandedItems, setExpandedItems] = useState([])
+  const importInputRef = useRef(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -179,6 +180,54 @@ export default function WordsAdmin({ onBack }) {
     }
   }
 
+  // ───── ڕێگەی مۆبایل: هاوردەکردنی فایلی JSON ـی بانک ─────
+  // فۆرمات: { categories: [...], items: [...] }. هەر وێنەیەک image_url ـی خۆی هەیە.
+  const handleFileImport = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    try {
+      const parsed = JSON.parse(await file.text())
+      const rawCategories = Array.isArray(parsed.categories) ? parsed.categories : []
+      const rawItems = Array.isArray(parsed.items) ? parsed.items : []
+      if (!rawCategories.length || !rawItems.length) throw new Error('فایلەکە categories و items ـی بەتاڵە')
+      if (rawItems.length > 10000) throw new Error('ژمارەی وشەکان زۆرە (زۆرترین ١٠٬٠٠٠)')
+
+      const categoryIds = new Set()
+      const categories = rawCategories.map((c, index) => {
+        const id = String(c.id || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '_')
+        if (!id || !String(c.name_ku || '').trim() || categoryIds.has(id)) throw new Error('یەکێک لە هاوپۆڵەکان ناسنامە یان ناوی دروستی نییە')
+        categoryIds.add(id)
+        return {
+          id, name_ku: String(c.name_ku).trim(), name_ar: String(c.name_ar || '').trim(),
+          name_en: String(c.name_en || '').trim(), icon: String(c.icon || '🗂️').trim(),
+          sort: Number.isFinite(c.sort) ? c.sort : index, enabled: c.enabled !== false,
+        }
+      })
+      const items = rawItems.map((w, index) => {
+        const category_id = String(w.category_id || '').trim().toLowerCase()
+        if (!categoryIds.has(category_id) || !String(w.ku || '').trim()) throw new Error(`وشەی ژمارە ${index + 1} دروست نییە`)
+        return {
+          category_id, ku: String(w.ku).trim(), ar: String(w.ar || '').trim(), en: String(w.en || '').trim(),
+          emoji: String(w.emoji || '').trim(), image_url: String(w.image_url || '').trim(),
+          sort: Number.isFinite(w.sort) ? w.sort : index, enabled: w.enabled !== false,
+        }
+      })
+      if (!window.confirm(`بانکی ئێستا بسڕدرێتەوە و «${file.name}» جێی بگرێتەوە؟\n${categories.length} هاوپۆڵ · ${items.length} وشە`)) return
+
+      setBusy(true)
+      await adminReplaceBank(categories, items)
+      await load()
+      await reloadGameBank()
+      notify({ title: `بانک نوێکرایەوە: ${categories.length} هاوپۆڵ، ${items.length} وشە`, type: 'success' })
+    } catch (e) {
+      notify({ title: 'فایلی بانک نەهاتەژوورەوە', body: e?.message || 'فۆرماتی JSON دروست نییە', type: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
   // ───── پاشەکەوتی وشە ─────
   const saveWord = async () => {
     const w = editing
@@ -294,11 +343,15 @@ export default function WordsAdmin({ onBack }) {
           <Panel className="mb-4 border-crew/30 !p-3">
             <p className="mb-2 text-sm font-bold text-ink">نوێکردنەوەی بانک</p>
             <p className="mb-3 text-xs text-muted">
-              بانکی کۆن دەسڕێتەوە و وشە جیهانییە نوێیەکان (کوردی + عەرەبی) جێیان دەگرنەوە.
+              بۆ بانکەی گەورە، فایلی JSON بەکاربهێنە. هەر وشەیەک کوردی + عەرەبی + وێنەی خۆی هەیە.
             </p>
             <Button variant="ghost" className="w-full" onClick={handleReplace} disabled={busy}>
               {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-              جێگرتنەوەی بانک بە نوێ
+              جێگرتنەوە بە بانکی بچووک (١٨٠ وشە)
+            </Button>
+            <input ref={importInputRef} type="file" accept="application/json,.json" className="hidden" onChange={handleFileImport} />
+            <Button variant="ghost" className="mt-2 w-full" onClick={() => importInputRef.current?.click()} disabled={busy}>
+              <Upload className="h-5 w-5" /> بارکردنی فایلی بانکی JSON
             </Button>
           </Panel>
 

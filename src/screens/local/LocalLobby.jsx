@@ -146,18 +146,26 @@ export default function LocalLobby({ onExit }) {
             <Tag className="h-4 w-4 text-crew" />
             <span className="text-sm font-bold text-ink">{t('هاوپۆلی وشە')}</span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {[RANDOM_CATEGORY, ...CATEGORIES].map((c) => (
               <button
                 key={c.id}
                 onClick={() => { sfx.tap(); updateSettings({ categoryId: c.id }) }}
-                className={`btn-press rounded-xl border px-2 py-2 text-xs font-medium ${
+                className={`btn-press flex min-h-20 items-center gap-3 rounded-2xl border px-3 py-3 text-right ${
+                  c.id === 'random' ? 'col-span-2' : ''
+                } ${
                   settings.categoryId === c.id
                     ? c.id === 'random' ? 'border-impostor bg-impostor/12 text-impostor' : 'border-crew bg-crew/12 text-crew'
-                    : 'border-line bg-surface2 text-muted'
+                    : 'border-line bg-surface2 text-ink/80'
                 }`}
               >
-                <span className="ml-1">{c.icon}</span>{c.name}
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/5 text-2xl">{c.icon}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-black leading-tight">{c.name}</span>
+                  <span className="mt-1 block text-[11px] opacity-70">
+                    {c.id === 'random' ? 'هەر جار هەڵبژاردنێکی نوێ' : `${c.words.length} وشەی هەڵبژێردراو`}
+                  </span>
+                </span>
               </button>
             ))}
           </div>
