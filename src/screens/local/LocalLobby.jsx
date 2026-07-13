@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import {
   Plus, Trash2, Users, Play, Skull, Clock, Sparkles, Tag,
-  ChevronUp, ChevronDown, ChevronRight, HelpCircle, Trophy, RotateCcw, VenetianMask, Bomb, Zap,
+  ChevronUp, ChevronDown, ChevronRight, HelpCircle, Trophy, RotateCcw, VenetianMask,
 } from 'lucide-react'
 import { useLocal } from '../../state/LocalContext'
 import { RANDOM_CATEGORY } from '../../data/words'
@@ -23,8 +23,7 @@ export default function LocalLobby({ onExit }) {
   const [showSuggest, setShowSuggest] = useState(false)
 
   const maxImpostors = Math.max(1, Math.floor((players.length - 1) / 2))
-  const isBomb = settings.gameType === 'bomb'
-  const canStart = isBomb ? players.length >= 2 : players.length >= 3 && settings.impostorCount < players.length
+  const canStart = players.length >= 3 && settings.impostorCount < players.length
 
   const handleAdd = () => {
     if (players.length >= MAX_PLAYERS) return
@@ -90,32 +89,6 @@ export default function LocalLobby({ onExit }) {
           </div>
         </Panel>
       )}
-
-      {/* دوو یاری لەسەر هەمان مۆبایل */}
-      <Panel className="mb-5 !p-4">
-        <div className="mb-3 flex items-center gap-2">
-          <Zap className="h-5 w-5 text-crew" />
-          <h2 className="font-bold text-ink">یاری هەڵبژێرە</h2>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => { sfx.tap(); updateSettings({ gameType: 'imposter' }) }}
-            className={`btn-press rounded-2xl border p-3 text-right ${!isBomb ? 'border-impostor bg-impostor/10 text-impostor' : 'border-line bg-surface2 text-muted'}`}
-          >
-            <Skull className="mb-2 h-6 w-6" />
-            <p className="font-black">ساختەکار</p>
-            <p className="mt-1 text-[11px] leading-tight opacity-75">بدۆزەرەوە کێ وشەکەی نازانێت</p>
-          </button>
-          <button
-            onClick={() => { sfx.tap(); updateSettings({ gameType: 'bomb' }) }}
-            className={`btn-press rounded-2xl border p-3 text-right ${isBomb ? 'border-amber-500 bg-amber-400/10 text-amber-600' : 'border-line bg-surface2 text-muted'}`}
-          >
-            <Bomb className="mb-2 h-6 w-6" />
-            <p className="font-black">بۆمبەی وشە</p>
-            <p className="mt-1 text-[11px] leading-tight opacity-75">وشە بڵێ، کرتە بکە، مۆبایل بگەیەنەوە</p>
-          </button>
-        </div>
-      </Panel>
 
       {/* یاریزانان */}
       <Panel className="mb-5 !p-4">
@@ -205,8 +178,8 @@ export default function LocalLobby({ onExit }) {
           </button>
         </div>
 
-        {/* دۆخی یاریی ساختەکار */}
-        {!isBomb && <div>
+        {/* دۆخی یاری */}
+        <div>
           <div className="mb-2 flex items-center gap-2">
             <VenetianMask className="h-4 w-4 text-crew" />
             <span className="text-sm font-bold text-ink">{t('دۆخی یاری')}</span>
@@ -231,10 +204,10 @@ export default function LocalLobby({ onExit }) {
               )
             })}
           </div>
-        </div>}
+        </div>
 
         {/* ساختەکار */}
-        {!isBomb && <div>
+        <div>
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Skull className="h-4 w-4 text-impostor" />
@@ -256,10 +229,10 @@ export default function LocalLobby({ onExit }) {
               )
             })}
           </div>
-        </div>}
+        </div>
 
         {/* کات */}
-        {!isBomb && <div>
+        <div>
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-crew" />
@@ -275,10 +248,10 @@ export default function LocalLobby({ onExit }) {
             onChange={(e) => updateSettings({ discussionSeconds: Number(e.target.value) })}
             className="w-full accent-crew"
           />
-        </div>}
+        </div>
 
         {/* Multiplier */}
-        {!isBomb && <div>
+        <div>
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-crew" />
@@ -297,32 +270,14 @@ export default function LocalLobby({ onExit }) {
               >×{val}</button>
             ))}
           </div>
-        </div>}
-
-        {/* کاتی بۆمبە */}
-        {isBomb && <div>
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bomb className="h-4 w-4 text-amber-500" />
-              <span className="text-sm font-bold text-ink">کاتی بۆمبە</span>
-            </div>
-            <span className="font-black text-amber-500">{settings.bombSeconds} چرکە</span>
-          </div>
-          <input
-            type="range" min="20" max="60" step="5"
-            value={settings.bombSeconds}
-            onChange={(e) => updateSettings({ bombSeconds: Number(e.target.value) })}
-            className="w-full accent-amber-500"
-          />
-          <p className="mt-1 text-xs text-muted">کاتەکە هەر خولێک کەمێک دەگۆڕێت، بۆیە کەس نازانێت کەی دەترێقێت.</p>
-        </div>}
+        </div>
       </Panel>
 
-      <Button onClick={startGame} disabled={!canStart} variant={isBomb ? 'primary' : 'danger'} className="w-full !py-4 !text-lg">
-        {isBomb ? <Bomb className="h-6 w-6" /> : <Play className="h-6 w-6" />}
-        {isBomb ? 'دەستپێکردنی بۆمبەی وشە' : t('دەستپێکردنی یاری')}
+      <Button onClick={startGame} disabled={!canStart} variant="danger" className="w-full !py-4 !text-lg">
+        <Play className="h-6 w-6" />
+        {t('دەستپێکردنی یاری')}
       </Button>
-      {!canStart && <p className="mt-3 text-center text-sm text-muted">{isBomb ? 'پێویستە بەلایەنی کەم ٢ یاریزان هەبن' : t('پێویستە بەلایەنی کەم ٣ یاریزان هەبن')}</p>}
+      {!canStart && <p className="mt-3 text-center text-sm text-muted">{t('پێویستە بەلایەنی کەم ٣ یاریزان هەبن')}</p>}
     </div>
   )
 }

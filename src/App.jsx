@@ -36,8 +36,7 @@ const LocalReveal = lazy(() => import('./screens/local/LocalReveal'))
 const LocalDiscussion = lazy(() => import('./screens/local/LocalDiscussion'))
 const LocalVoting = lazy(() => import('./screens/local/LocalVoting'))
 const LocalResults = lazy(() => import('./screens/local/LocalResults'))
-const BombGame = lazy(() => import('./screens/local/BombGame'))
-const BombResults = lazy(() => import('./screens/local/BombResults'))
+const FootballMarket = lazy(() => import('./screens/FootballMarket'))
 const Shop = lazy(() => import('./screens/Shop'))
 const WordsAdmin = lazy(() => import('./screens/admin/WordsAdmin'))
 const ModerationAdmin = lazy(() => import('./screens/admin/ModerationAdmin'))
@@ -117,8 +116,6 @@ function OnlineRoomRouter({ onExit, joinCode, onJoinHandled, onRoomActiveChange 
 function LocalRouter({ onExit }) {
   const { phase } = useLocal()
   switch (phase) {
-    case 'bomb': return <BombGame />
-    case 'bomb-results': return <BombResults />
     case 'reveal': return <LocalReveal />
     case 'discussion': return <LocalDiscussion />
     case 'voting': return <LocalVoting />
@@ -211,6 +208,9 @@ function Shell({ ui }) {
         </LocalProvider>
       )
       break
+    case 'football':
+      inner = <FootballMarket onBack={toMenu} />
+      break
     case 'settings':
       inner = <SettingsScreen ui={ui} onBack={toMenu} onOpenAdmin={() => setView('admin')} onOpenModeration={() => setView('moderation')} />
       break
@@ -246,6 +246,7 @@ function Shell({ ui }) {
         <MainMenu
           onOnline={() => setView('online')}
           onLocal={() => setView('local')}
+          onFootball={() => setView('football')}
           onSettings={() => setView('settings')}
           onAchievements={() => setView('achievements')}
           onStats={() => setView('stats')}
