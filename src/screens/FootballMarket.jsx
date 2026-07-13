@@ -7,7 +7,7 @@ import { Button, Panel } from '../components/ui'
 import { sfx } from '../lib/sound'
 
 const BUDGETS = [50, 100, 200, 350, 500]
-const defaultManagers = ['مدرب ١', 'مدرب ٢', 'مدرب ٣', 'مدرب ٤']
+const defaultManagers = ['مدرب ١', 'مدرب ٢', 'مدرب ٣', 'مدرب ٤'].map((name, index) => ({ id: `manager-${index + 1}`, name }))
 
 function PlayerCard({ player }) {
   if (!player) return null
@@ -78,16 +78,16 @@ export default function FootballMarket({ onBack }) {
   const addManager = () => {
     const name = newManager.trim()
     if (!name || managers.length >= 8) return
-    setManagers((items) => [...items, name])
+    setManagers((items) => [...items, { id: `manager-${Date.now()}-${items.length}`, name }])
     setNewManager('')
   }
 
   const startMarket = () => {
-    const names = managers.map((name) => name.trim()).filter(Boolean)
-    if (names.length < 2) return
+    const activeManagers = managers.map((manager) => ({ ...manager, name: manager.name.trim() })).filter((manager) => manager.name)
+    if (activeManagers.length < 2) return
     const budget = budgetChoice === 'random' ? BUDGETS[Math.floor(Math.random() * BUDGETS.length)] : Number(budgetChoice)
-    setTeams(names.map((name, index) => ({ id: `manager-${index}`, name: `نادی ${name}`, manager: name, budget, players: [] })))
-    setDeck(shuffle(buildDraftPool(names.length, squadSize)))
+    setTeams(activeManagers.map((manager) => ({ id: manager.id, name: `نادی ${manager.name}`, manager: manager.name, budget, players: [] })))
+    setDeck(shuffle(buildDraftPool(activeManagers.length, squadSize)))
     setRound(0)
     setBids({})
     setAuctionResult(null)
@@ -153,7 +153,7 @@ export default function FootballMarket({ onBack }) {
     <div className="mx-auto max-w-md px-4 py-6 pb-24">
       <header className="mb-6 flex items-center justify-between"><button onClick={onBack} className="btn-press flex items-center gap-1 rounded-xl bg-surface px-3 py-2 text-sm text-muted shadow-card"><ArrowRight className="h-4 w-4" /> گەڕانەوە</button><div className="text-center"><h1 className="text-xl font-black text-ink">مزادی ئەستێرەکان</h1><p className="text-xs text-muted">بازاڕ + کاسی جیهانی</p></div><Landmark className="h-7 w-7 text-amber-500" /></header>
       <Panel className="mb-4 border-amber-400/30 !p-4"><p className="text-center text-sm font-bold text-ink">{PLAYER_COUNT.toLocaleString()} یاریزان · {LEAGUES.length} لیگ · {LEAGUES.reduce((total, league) => total + league.teams.length, 0)} یانە</p><div className="mt-3 flex flex-wrap justify-center gap-1.5">{LEAGUES.map((league) => <span key={league.id} className="rounded-full bg-ink/5 px-2 py-1 text-xs text-muted">{league.icon} {league.name_ku}</span>)}</div></Panel>
-      <Panel className="mb-4 !p-4"><div className="mb-3 flex items-center gap-2"><Users className="h-5 w-5 text-crew" /><h2 className="font-bold text-ink">مدیرەکان ({managers.length}/8)</h2></div><div className="space-y-2">{managers.map((name, index) => <div key={`${name}-${index}`} className="flex items-center gap-2 rounded-xl bg-surface2 px-3 py-2"><span className="w-5 text-center text-xs font-black text-muted">{index + 1}</span><input value={name} onChange={(event) => setManagers((items) => items.map((item, i) => i === index ? event.target.value : item))} className="min-w-0 flex-1 bg-transparent font-bold text-ink outline-none" maxLength={18} /><button onClick={() => setManagers((items) => items.filter((_, i) => i !== index))} disabled={managers.length <= 2} className="p-1 text-impostor disabled:opacity-30"><X className="h-4 w-4" /></button></div>)}</div><div className="mt-3 flex gap-2"><input value={newManager} onChange={(event) => setNewManager(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && addManager()} placeholder="ناوی مدیر" maxLength={18} className="min-w-0 flex-1 rounded-xl border border-line bg-surface2 px-3 py-2 text-ink outline-none" /><Button onClick={addManager} disabled={managers.length >= 8} className="!px-3"><Plus className="h-5 w-5" /></Button></div></Panel>
+      <Panel className="mb-4 !p-4"><div className="mb-3 flex items-center gap-2"><Users className="h-5 w-5 text-crew" /><h2 className="font-bold text-ink">مدیرەکان ({managers.length}/8)</h2></div><div className="space-y-2">{managers.map((manager, index) => <div key={manager.id} className="flex items-center gap-2 rounded-xl bg-surface2 px-3 py-2"><span className="w-5 text-center text-xs font-black text-muted">{index + 1}</span><input value={manager.name} onChange={(event) => setManagers((items) => items.map((item) => item.id === manager.id ? { ...item, name: event.target.value } : item))} className="min-w-0 flex-1 bg-transparent font-bold text-ink outline-none" maxLength={18} /><button onClick={() => setManagers((items) => items.filter((item) => item.id !== manager.id))} disabled={managers.length <= 2} className="p-1 text-impostor disabled:opacity-30"><X className="h-4 w-4" /></button></div>)}</div><div className="mt-3 flex gap-2"><input value={newManager} onChange={(event) => setNewManager(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && addManager()} placeholder="ناوی مدیر" maxLength={18} className="min-w-0 flex-1 rounded-xl border border-line bg-surface2 px-3 py-2 text-ink outline-none" /><Button onClick={addManager} disabled={managers.length >= 8} className="!px-3"><Plus className="h-5 w-5" /></Button></div></Panel>
       <Panel className="mb-5 space-y-5 !p-4"><div><p className="mb-2 font-bold text-ink">شێوازی تیم</p><div className="grid grid-cols-2 gap-2">{[5, 11].map((count) => <button key={count} onClick={() => setSquadSize(count)} className={`btn-press rounded-2xl border p-3 text-right ${squadSize === count ? 'border-crew bg-crew/12 text-crew' : 'border-line bg-surface2 text-muted'}`}><p className="text-lg font-black">{count} یاریزان</p><p className="text-xs opacity-75">{count === 5 ? 'خێرا و خۆش' : 'تیمی تەواو'}</p></button>)}</div></div><div><p className="mb-2 flex items-center gap-2 font-bold text-ink"><BadgeDollarSign className="h-4 w-4 text-amber-500" /> بودجەی هەمووان</p><div className="flex flex-wrap gap-2">{['random', ...BUDGETS].map((value) => <button key={value} onClick={() => setBudgetChoice(value)} className={`btn-press rounded-xl px-3 py-2 text-sm font-black ${budgetChoice === value ? 'bg-amber-400 text-amber-950' : 'bg-surface2 text-muted'}`}>{value === 'random' ? '🎲 هەڕەمەکی' : formatMoney(value)}</button>)}</div></div></Panel>
       <Button onClick={startMarket} disabled={managers.length < 2} className="w-full !py-4 !text-lg"><Landmark className="h-6 w-6" /> دەستپێکردنی مزاد</Button>
     </div>
