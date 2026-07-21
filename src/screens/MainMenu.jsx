@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, MessagesSquare, Coins, BarChart3, HelpCircle, Landmark } from 'lucide-react'
+import { Rocket, Wifi, Smartphone, Settings as SettingsIcon, LogOut, Star, ChevronLeft, Trophy, MessagesSquare, Coins, BarChart3, HelpCircle, Search } from 'lucide-react'
 import { useAuth } from '../state/AuthContext'
 import { useFriends } from '../state/FriendsContext'
 import { useEconomy } from '../state/EconomyContext'
@@ -14,7 +14,7 @@ import { useT } from '../lib/i18n'
 import { sfx, unlockAudio } from '../lib/sound'
 
 // مێنیوی سەرەکی دوای چوونەژوورەوە
-export default function MainMenu({ onOnline, onLocal, onFootball, onSettings, onAchievements, onStats, onLeaderboard, onProfile, onFriends, onGroups, onShop }) {
+export default function MainMenu({ onOnline, onLocal, onGuess, onSettings, onAchievements, onStats, onLeaderboard, onProfile, onFriends, onGroups, onShop }) {
   const { profile, signOut } = useAuth()
   const { totalUnread, incoming } = useFriends()
   const { coins, equipped } = useEconomy()
@@ -147,15 +147,15 @@ export default function MainMenu({ onOnline, onLocal, onFootball, onSettings, on
           </Panel>
         </button>
 
-        {/* مزادی ئەستێرەکان — یارییەکی جیاوازی تۆپی پێ بۆ یەک ئامێر */}
-        <button onClick={() => go(onFootball)} className="btn-press block w-full text-right">
+        {/* خمّن اللاعب — لعبة تخمين لاعبين حقيقيين */}
+        <button onClick={() => go(onGuess)} className="btn-press block w-full text-right">
           <Panel className="flex items-center gap-4 !border-amber-400/30 !p-4 transition hover:border-amber-400">
             <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-amber-400/15 text-amber-500">
-              <Landmark className="h-7 w-7" />
+              <Search className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="text-lg font-black text-ink">مزادی ئەستێرەکان</p>
-              <p className="text-sm text-muted">بازاڕی یاریزانان + کاسی جیهانیی یانەکان</p>
+              <p className="text-lg font-black text-ink">خمّن اللاعب ⚽</p>
+              <p className="text-sm text-muted">تلميحات عن لاعب حقيقي — خمّنه بأقل تلميحات</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
           </Panel>

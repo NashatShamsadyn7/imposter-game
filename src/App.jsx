@@ -36,7 +36,7 @@ const LocalReveal = lazy(() => import('./screens/local/LocalReveal'))
 const LocalDiscussion = lazy(() => import('./screens/local/LocalDiscussion'))
 const LocalVoting = lazy(() => import('./screens/local/LocalVoting'))
 const LocalResults = lazy(() => import('./screens/local/LocalResults'))
-const FootballMarket = lazy(() => import('./screens/FootballMarket'))
+const GuessPlayer = lazy(() => import('./screens/GuessPlayer'))
 const Shop = lazy(() => import('./screens/Shop'))
 const WordsAdmin = lazy(() => import('./screens/admin/WordsAdmin'))
 const ModerationAdmin = lazy(() => import('./screens/admin/ModerationAdmin'))
@@ -208,8 +208,8 @@ function Shell({ ui }) {
         </LocalProvider>
       )
       break
-    case 'football':
-      inner = <FootballMarket onBack={toMenu} />
+    case 'guess':
+      inner = <GuessPlayer onBack={toMenu} />
       break
     case 'settings':
       inner = <SettingsScreen ui={ui} onBack={toMenu} onOpenAdmin={() => setView('admin')} onOpenModeration={() => setView('moderation')} />
@@ -246,7 +246,7 @@ function Shell({ ui }) {
         <MainMenu
           onOnline={() => setView('online')}
           onLocal={() => setView('local')}
-          onFootball={() => setView('football')}
+          onGuess={() => setView('guess')}
           onSettings={() => setView('settings')}
           onAchievements={() => setView('achievements')}
           onStats={() => setView('stats')}

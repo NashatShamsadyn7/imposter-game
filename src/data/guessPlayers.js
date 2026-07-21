@@ -1,0 +1,152 @@
+// ═══════════════════════════════════════════════════════════
+// خمّن اللاعب — قاعدة بيانات لاعبين حقيقيين
+// club = النادي الأشهر للاعب (قد يتغيّر بالانتقالات — عدّله بسهولة).
+// pos: GK حارس · DEF مدافع · MID وسط · FWD مهاجم
+// STARS = نجوم حاليون · LEGENDS = أساطير اعتزلوا
+// ═══════════════════════════════════════════════════════════
+
+export const POSITIONS = {
+  GK: 'حارس مرمى',
+  DEF: 'مدافع',
+  MID: 'خط وسط',
+  FWD: 'مهاجم',
+}
+
+// ── نجوم حاليون ────────────────────────────────────────────
+const STARS = [
+  { name: 'ليونيل ميسي', latin: 'Messi', country: 'الأرجنتين', flag: '🇦🇷', pos: 'FWD', club: 'إنتر ميامي', number: 10, hint: 'فاز بالكرة الذهبية 8 مرات' },
+  { name: 'كريستيانو رونالدو', latin: 'Ronaldo', country: 'البرتغال', flag: '🇵🇹', pos: 'FWD', club: 'النصر', number: 7, hint: 'أكثر لاعب تسجيلًا في تاريخ كرة القدم' },
+  { name: 'نيمار', latin: 'Neymar', country: 'البرازيل', flag: '🇧🇷', pos: 'FWD', club: 'سانتوس', number: 10, hint: 'انتقل بأغلى صفقة في التاريخ 2017' },
+  { name: 'كيليان مبابي', latin: 'Mbappé', country: 'فرنسا', flag: '🇫🇷', pos: 'FWD', club: 'ريال مدريد', number: 9, hint: 'بطل كأس العالم 2018 وهو مراهق' },
+  { name: 'إيرلينغ هالاند', latin: 'Haaland', country: 'النرويج', flag: '🇳🇴', pos: 'FWD', club: 'مانشستر سيتي', number: 9, hint: 'آلة تسجيل نرويجية ضخمة البنية' },
+  { name: 'فينيسيوس جونيور', latin: 'Vinícius', country: 'البرازيل', flag: '🇧🇷', pos: 'FWD', club: 'ريال مدريد', number: 7, hint: 'جناح أيسر سريع صُنع في فلامنغو' },
+  { name: 'جود بيلينغهام', latin: 'Bellingham', country: 'إنجلترا', flag: '🏴', pos: 'MID', club: 'ريال مدريد', number: 5, hint: 'إنجليزي شاب لمع في دورتموند' },
+  { name: 'كيفن دي بروين', latin: 'De Bruyne', country: 'بلجيكا', flag: '🇧🇪', pos: 'MID', club: 'مانشستر سيتي', number: 17, hint: 'ملك التمريرات الحاسمة البلجيكي' },
+  { name: 'محمد صلاح', latin: 'Salah', country: 'مصر', flag: '🇪🇬', pos: 'FWD', club: 'ليفربول', number: 11, hint: 'الفرعون المصري نجم ليفربول' },
+  { name: 'هاري كين', latin: 'Kane', country: 'إنجلترا', flag: '🏴', pos: 'FWD', club: 'بايرن ميونخ', number: 9, hint: 'هدّاف إنجلترا التاريخي وقائدها' },
+  { name: 'روبرت ليفاندوفسكي', latin: 'Lewandowski', country: 'بولندا', flag: '🇵🇱', pos: 'FWD', club: 'برشلونة', number: 9, hint: 'بولندي سجّل 5 أهداف في 9 دقائق' },
+  { name: 'لوكا مودريتش', latin: 'Modrić', country: 'كرواتيا', flag: '🇭🇷', pos: 'MID', club: 'ريال مدريد', number: 10, hint: 'كسر احتكار الثنائي للكرة الذهبية 2018' },
+  { name: 'كريم بنزيمة', latin: 'Benzema', country: 'فرنسا', flag: '🇫🇷', pos: 'FWD', club: 'الاتحاد', number: 9, hint: 'فرنسي فاز بالكرة الذهبية 2022' },
+  { name: 'أنطوان غريزمان', latin: 'Griezmann', country: 'فرنسا', flag: '🇫🇷', pos: 'FWD', club: 'أتلتيكو مدريد', number: 7, hint: 'نجم أتلتيكو وبطل العالم 2018' },
+  { name: 'سون هيونغ-مين', latin: 'Son', country: 'كوريا الجنوبية', flag: '🇰🇷', pos: 'FWD', club: 'توتنهام', number: 7, hint: 'قائد كوريا الجنوبية' },
+  { name: 'فيرجيل فان دايك', latin: 'Van Dijk', country: 'هولندا', flag: '🇳🇱', pos: 'DEF', club: 'ليفربول', number: 4, hint: 'قائد هولندا وجدار ليفربول' },
+  { name: 'أليسون بيكر', latin: 'Alisson', country: 'البرازيل', flag: '🇧🇷', pos: 'GK', club: 'ليفربول', number: 1, hint: 'حارس البرازيل وليفربول' },
+  { name: 'تيبو كورتوا', latin: 'Courtois', country: 'بلجيكا', flag: '🇧🇪', pos: 'GK', club: 'ريال مدريد', number: 1, hint: 'حارس عملاق كان رجل نهائي 2022' },
+  { name: 'رودري', latin: 'Rodri', country: 'إسبانيا', flag: '🇪🇸', pos: 'MID', club: 'مانشستر سيتي', number: 16, hint: 'فاز بالكرة الذهبية 2024' },
+  { name: 'بوكايو ساكا', latin: 'Saka', country: 'إنجلترا', flag: '🏴', pos: 'FWD', club: 'أرسنال', number: 7, hint: 'جناح أرسنال الإنجليزي الشاب' },
+  { name: 'فيل فودين', latin: 'Foden', country: 'إنجلترا', flag: '🏴', pos: 'MID', club: 'مانشستر سيتي', number: 47, hint: 'صناعة أكاديمية مانشستر سيتي' },
+  { name: 'مارتن أوديغارد', latin: 'Ødegaard', country: 'النرويج', flag: '🇳🇴', pos: 'MID', club: 'أرسنال', number: 8, hint: 'قائد أرسنال النرويجي' },
+  { name: 'يوشوا كيميش', latin: 'Kimmich', country: 'ألمانيا', flag: '🇩🇪', pos: 'MID', club: 'بايرن ميونخ', number: 6, hint: 'ألماني يلعب ارتكاز وظهير أيمن' },
+  { name: 'بيدري', latin: 'Pedri', country: 'إسبانيا', flag: '🇪🇸', pos: 'MID', club: 'برشلونة', number: 8, hint: 'موهبة وسط برشلونة' },
+  { name: 'غافي', latin: 'Gavi', country: 'إسبانيا', flag: '🇪🇸', pos: 'MID', club: 'برشلونة', number: 6, hint: 'شاب شرس في وسط برشلونة' },
+  { name: 'لامين يامال', latin: 'Yamal', country: 'إسبانيا', flag: '🇪🇸', pos: 'FWD', club: 'برشلونة', number: 19, hint: 'ظاهرة برشلونة الأصغر سنًّا' },
+  { name: 'برونو فيرنانديز', latin: 'B. Fernandes', country: 'البرتغال', flag: '🇵🇹', pos: 'MID', club: 'مانشستر يونايتد', number: 8, hint: 'قائد يونايتد البرتغالي' },
+  { name: 'فيكتور أوسيمين', latin: 'Osimhen', country: 'نيجيريا', flag: '🇳🇬', pos: 'FWD', club: 'نابولي', number: 9, hint: 'مهاجم نيجيري بقناع أسود' },
+  { name: 'لاوتارو مارتينيز', latin: 'Lautaro', country: 'الأرجنتين', flag: '🇦🇷', pos: 'FWD', club: 'إنتر ميلان', number: 10, hint: 'قائد إنتر وثور الأرجنتين' },
+  { name: 'باولو ديبالا', latin: 'Dybala', country: 'الأرجنتين', flag: '🇦🇷', pos: 'FWD', club: 'روما', number: 21, hint: 'أرجنتيني صاحب احتفال القناع' },
+  { name: 'أشرف حكيمي', latin: 'Hakimi', country: 'المغرب', flag: '🇲🇦', pos: 'DEF', club: 'باريس سان جيرمان', number: 2, hint: 'ظهير أيمن مغربي صاروخي' },
+  { name: 'ساديو ماني', latin: 'Mané', country: 'السنغال', flag: '🇸🇳', pos: 'FWD', club: 'النصر', number: 10, hint: 'نجم السنغال ورفيق صلاح سابقًا' },
+  { name: 'رياض محرز', latin: 'Mahrez', country: 'الجزائر', flag: '🇩🇿', pos: 'FWD', club: 'الأهلي', number: 7, hint: 'جناح جزائري صاحب القدم اليسرى' },
+  { name: 'كاسيميرو', latin: 'Casemiro', country: 'البرازيل', flag: '🇧🇷', pos: 'MID', club: 'مانشستر يونايتد', number: 18, hint: 'ارتكاز برازيلي صلب' },
+  { name: 'ماركينيوس', latin: 'Marquinhos', country: 'البرازيل', flag: '🇧🇷', pos: 'DEF', club: 'باريس سان جيرمان', number: 5, hint: 'قائد باريس المدافع البرازيلي' },
+  { name: 'رافائيل لياو', latin: 'Leão', country: 'البرتغال', flag: '🇵🇹', pos: 'FWD', club: 'ميلان', number: 10, hint: 'جناح ميلان البرتغالي السريع' },
+  { name: 'برناردو سيلفا', latin: 'B. Silva', country: 'البرتغال', flag: '🇵🇹', pos: 'MID', club: 'مانشستر سيتي', number: 20, hint: 'برتغالي صغير الحجم كبير المهارة' },
+  { name: 'روبن دياز', latin: 'Rúben Dias', country: 'البرتغال', flag: '🇵🇹', pos: 'DEF', club: 'مانشستر سيتي', number: 3, hint: 'قلب دفاع السيتي البرتغالي' },
+  { name: 'مانويل نوير', latin: 'Neuer', country: 'ألمانيا', flag: '🇩🇪', pos: 'GK', club: 'بايرن ميونخ', number: 1, hint: 'رائد الحارس المكنسة' },
+  { name: 'مارك أندريه تير شتيغن', latin: 'Ter Stegen', country: 'ألمانيا', flag: '🇩🇪', pos: 'GK', club: 'برشلونة', number: 1, hint: 'حارس برشلونة الألماني' },
+  { name: 'إيدرسون', latin: 'Ederson', country: 'البرازيل', flag: '🇧🇷', pos: 'GK', club: 'مانشستر سيتي', number: 31, hint: 'حارس بأقدام صانع ألعاب' },
+  { name: 'سيرجيو راموس', latin: 'Ramos', country: 'إسبانيا', flag: '🇪🇸', pos: 'DEF', club: 'ريال مدريد', number: 4, hint: 'صاحب رأسية نهائي 2014' },
+  { name: 'أنطونيو روديغر', latin: 'Rüdiger', country: 'ألمانيا', flag: '🇩🇪', pos: 'DEF', club: 'ريال مدريد', number: 22, hint: 'مدافع ألماني شرس' },
+  { name: 'إيدير ميليتاو', latin: 'Militão', country: 'البرازيل', flag: '🇧🇷', pos: 'DEF', club: 'ريال مدريد', number: 3, hint: 'قلب دفاع ريال مدريد البرازيلي' },
+  { name: 'فيدي فالفيردي', latin: 'Valverde', country: 'أوروغواي', flag: '🇺🇾', pos: 'MID', club: 'ريال مدريد', number: 15, hint: 'محرك وسط ريال مدريد الأوروغوياني' },
+  { name: 'أوريلين تشواميني', latin: 'Tchouaméni', country: 'فرنسا', flag: '🇫🇷', pos: 'MID', club: 'ريال مدريد', number: 14, hint: 'ارتكاز فرنسي طويل' },
+  { name: 'إدواردو كامافينغا', latin: 'Camavinga', country: 'فرنسا', flag: '🇫🇷', pos: 'MID', club: 'ريال مدريد', number: 6, hint: 'وسط فرنسي شاب مرن' },
+  { name: 'رودريغو', latin: 'Rodrygo', country: 'البرازيل', flag: '🇧🇷', pos: 'FWD', club: 'ريال مدريد', number: 11, hint: 'جناح ريال مدريد البرازيلي' },
+  { name: 'تيو هيرنانديز', latin: 'T. Hernández', country: 'فرنسا', flag: '🇫🇷', pos: 'DEF', club: 'ميلان', number: 19, hint: 'ظهير أيسر فرنسي هجومي' },
+  { name: 'نيكولو باريلا', latin: 'Barella', country: 'إيطاليا', flag: '🇮🇹', pos: 'MID', club: 'إنتر ميلان', number: 23, hint: 'محرك وسط إنتر الإيطالي' },
+  { name: 'يامال موسيالا', latin: 'Musiala', country: 'ألمانيا', flag: '🇩🇪', pos: 'MID', club: 'بايرن ميونخ', number: 42, hint: 'موهبة بايرن المراوغة' },
+  { name: 'فلوريان فيرتز', latin: 'Wirtz', country: 'ألمانيا', flag: '🇩🇪', pos: 'MID', club: 'باير ليفركوزن', number: 10, hint: 'صانع ألعاب ألماني صاعد' },
+  { name: 'كول بالمر', latin: 'Palmer', country: 'إنجلترا', flag: '🏴', pos: 'MID', club: 'تشيلسي', number: 20, hint: 'نجم تشيلسي بارد الأعصاب' },
+  { name: 'داروين نونيز', latin: 'Núñez', country: 'أوروغواي', flag: '🇺🇾', pos: 'FWD', club: 'ليفربول', number: 9, hint: 'مهاجم أوروغوياني قوي ومتهور' },
+  { name: 'ألكسندر إيساك', latin: 'Isak', country: 'السويد', flag: '🇸🇪', pos: 'FWD', club: 'نيوكاسل', number: 14, hint: 'مهاجم سويدي أنيق' },
+  { name: 'رافينيا', latin: 'Raphinha', country: 'البرازيل', flag: '🇧🇷', pos: 'FWD', club: 'برشلونة', number: 11, hint: 'جناح برشلونة البرازيلي' },
+  { name: 'فرينكي دي يونغ', latin: 'De Jong', country: 'هولندا', flag: '🇳🇱', pos: 'MID', club: 'برشلونة', number: 21, hint: 'وسط هولندي أنيق بالكرة' },
+  { name: 'ألفونسو ديفيز', latin: 'Davies', country: 'كندا', flag: '🇨🇦', pos: 'DEF', club: 'بايرن ميونخ', number: 19, hint: 'ظهير أيسر كندي صاروخي' },
+  { name: 'ماركوس راشفورد', latin: 'Rashford', country: 'إنجلترا', flag: '🏴', pos: 'FWD', club: 'مانشستر يونايتد', number: 10, hint: 'مهاجم يونايتد الإنجليزي السريع' },
+  { name: 'غابرييل جيزوس', latin: 'G. Jesus', country: 'البرازيل', flag: '🇧🇷', pos: 'FWD', club: 'أرسنال', number: 9, hint: 'مهاجم أرسنال البرازيلي' },
+  { name: 'ديكلان رايس', latin: 'Rice', country: 'إنجلترا', flag: '🏴', pos: 'MID', club: 'أرسنال', number: 41, hint: 'ارتكاز أرسنال الإنجليزي' },
+  { name: 'برونو غيماريش', latin: 'B. Guimarães', country: 'البرازيل', flag: '🇧🇷', pos: 'MID', club: 'نيوكاسل', number: 39, hint: 'محرك وسط نيوكاسل البرازيلي' },
+  { name: 'إميليانو مارتينيز', latin: 'E. Martínez', country: 'الأرجنتين', flag: '🇦🇷', pos: 'GK', club: 'أستون فيلا', number: 23, hint: 'حارس الأرجنتين بطل مونديال 2022' },
+  { name: 'جانلويجي دوناروما', latin: 'Donnarumma', country: 'إيطاليا', flag: '🇮🇹', pos: 'GK', club: 'باريس سان جيرمان', number: 99, hint: 'حارس إيطاليا العملاق الشاب' },
+  { name: 'نيكو ويليامز', latin: 'N. Williams', country: 'إسبانيا', flag: '🇪🇸', pos: 'FWD', club: 'أتلتيك بلباو', number: 10, hint: 'جناح إسبانيا السريع' },
+  { name: 'نغولو كانتي', latin: 'Kanté', country: 'فرنسا', flag: '🇫🇷', pos: 'MID', club: 'تشيلسي', number: 7, hint: 'عامل نظافة الوسط الفرنسي الدؤوب' },
+  { name: 'لويس سواريز', latin: 'Suárez', country: 'أوروغواي', flag: '🇺🇾', pos: 'FWD', club: 'برشلونة', number: 9, hint: 'مهاجم أوروغواي صاحب العضّات الشهيرة' },
+  { name: 'أنخيل دي ماريا', latin: 'Di María', country: 'الأرجنتين', flag: '🇦🇷', pos: 'FWD', club: 'بنفيكا', number: 11, hint: 'صاحب أهداف نهائيات الأرجنتين' },
+  { name: 'بول بوغبا', latin: 'Pogba', country: 'فرنسا', flag: '🇫🇷', pos: 'MID', club: 'يوفنتوس', number: 6, hint: 'وسط فرنسي بطل العالم 2018' },
+]
+
+// ── أساطير اعتزلوا ─────────────────────────────────────────
+const LEGENDS = [
+  { name: 'بيليه', latin: 'Pelé', country: 'البرازيل', flag: '🇧🇷', pos: 'FWD', club: 'سانتوس', number: 10, hint: 'بطل العالم ثلاث مرات مع البرازيل' },
+  { name: 'دييغو مارادونا', latin: 'Maradona', country: 'الأرجنتين', flag: '🇦🇷', pos: 'MID', club: 'نابولي', number: 10, hint: 'صاحب هدف "يد الله" 1986' },
+  { name: 'زين الدين زيدان', latin: 'Zidane', country: 'فرنسا', flag: '🇫🇷', pos: 'MID', club: 'ريال مدريد', number: 5, hint: 'رأسية نهائي 2006 الشهيرة' },
+  { name: 'رونالدينيو', latin: 'Ronaldinho', country: 'البرازيل', flag: '🇧🇷', pos: 'MID', club: 'برشلونة', number: 10, hint: 'ساحر صفّق له جمهور ريال مدريد' },
+  { name: 'رونالدو الظاهرة', latin: 'R. Nazário', country: 'البرازيل', flag: '🇧🇷', pos: 'FWD', club: 'ريال مدريد', number: 9, hint: 'الظاهرة، هدّاف مونديال 2002' },
+  { name: 'ديفيد بيكهام', latin: 'Beckham', country: 'إنجلترا', flag: '🏴', pos: 'MID', club: 'مانشستر يونايتد', number: 7, hint: 'ملك الركلات الحرة الإنجليزي' },
+  { name: 'أندريس إنييستا', latin: 'Iniesta', country: 'إسبانيا', flag: '🇪🇸', pos: 'MID', club: 'برشلونة', number: 8, hint: 'صاحب هدف نهائي مونديال 2010' },
+  { name: 'تشافي هيرنانديز', latin: 'Xavi', country: 'إسبانيا', flag: '🇪🇸', pos: 'MID', club: 'برشلونة', number: 6, hint: 'عقل التيكي تاكا الإسباني' },
+  { name: 'ستيفن جيرارد', latin: 'Gerrard', country: 'إنجلترا', flag: '🏴', pos: 'MID', club: 'ليفربول', number: 8, hint: 'قائد ريمونتادا إسطنبول 2005' },
+  { name: 'كاكا', latin: 'Kaká', country: 'البرازيل', flag: '🇧🇷', pos: 'MID', club: 'ميلان', number: 22, hint: 'آخر برازيلي فاز بالكرة الذهبية' },
+  { name: 'أليساندرو دل بييرو', latin: 'Del Piero', country: 'إيطاليا', flag: '🇮🇹', pos: 'FWD', club: 'يوفنتوس', number: 10, hint: 'أيقونة يوفنتوس التاريخية' },
+  { name: 'فرانشيسكو توتي', latin: 'Totti', country: 'إيطاليا', flag: '🇮🇹', pos: 'FWD', club: 'روما', number: 10, hint: 'أمير روما الذي لم يغادرها' },
+  { name: 'جانلويجي بوفون', latin: 'Buffon', country: 'إيطاليا', flag: '🇮🇹', pos: 'GK', club: 'يوفنتوس', number: 1, hint: 'حارس لعب حتى الأربعينيات' },
+  { name: 'إيكر كاسياس', latin: 'Casillas', country: 'إسبانيا', flag: '🇪🇸', pos: 'GK', club: 'ريال مدريد', number: 1, hint: 'قائد إسبانيا بطلة العالم 2010' },
+  { name: 'باولو مالديني', latin: 'Maldini', country: 'إيطاليا', flag: '🇮🇹', pos: 'DEF', club: 'ميلان', number: 3, hint: 'أسطورة الدفاع الوفيّ لميلان' },
+  { name: 'كارليس بويول', latin: 'Puyol', country: 'إسبانيا', flag: '🇪🇸', pos: 'DEF', club: 'برشلونة', number: 5, hint: 'قائد برشلونة صاحب الشعر المجعّد' },
+  { name: 'تييري هنري', latin: 'Henry', country: 'فرنسا', flag: '🇫🇷', pos: 'FWD', club: 'أرسنال', number: 14, hint: 'هدّاف أرسنال التاريخي الفرنسي' },
+  { name: 'ديدييه دروغبا', latin: 'Drogba', country: 'ساحل العاج', flag: '🇨🇮', pos: 'FWD', club: 'تشيلسي', number: 11, hint: 'بطل تشيلسي لدوري الأبطال 2012' },
+  { name: "صامويل إيتو", latin: "Eto'o", country: 'الكاميرون', flag: '🇨🇲', pos: 'FWD', club: 'برشلونة', number: 9, hint: 'هدّاف الكاميرون الأشهر' },
+  { name: 'زلاتان إبراهيموفيتش', latin: 'Ibrahimović', country: 'السويد', flag: '🇸🇪', pos: 'FWD', club: 'ميلان', number: 11, hint: 'سويدي شهير بثقته وضرباته البهلوانية' },
+  { name: 'أندريا بيرلو', latin: 'Pirlo', country: 'إيطاليا', flag: '🇮🇹', pos: 'MID', club: 'يوفنتوس', number: 21, hint: 'المايسترو صانع الألعاب الإيطالي' },
+  { name: 'كافو', latin: 'Cafu', country: 'البرازيل', flag: '🇧🇷', pos: 'DEF', club: 'ميلان', number: 2, hint: 'ظهير أيمن رفع كأس العالم 2002' },
+  { name: 'روبرتو كارلوس', latin: 'R. Carlos', country: 'البرازيل', flag: '🇧🇷', pos: 'DEF', club: 'ريال مدريد', number: 3, hint: 'ظهير أيسر بأقوى ركلة حرة' },
+  { name: 'سيرجيو أغويرو', latin: 'Agüero', country: 'الأرجنتين', flag: '🇦🇷', pos: 'FWD', club: 'مانشستر سيتي', number: 10, hint: 'هدف "9346" الذي توّج السيتي 2012' },
+  { name: 'إدينسون كافاني', latin: 'Cavani', country: 'أوروغواي', flag: '🇺🇾', pos: 'FWD', club: 'باريس سان جيرمان', number: 9, hint: 'المدفعجي، هدّاف باريس التاريخي' },
+  { name: 'توني كروس', latin: 'Kroos', country: 'ألمانيا', flag: '🇩🇪', pos: 'MID', club: 'ريال مدريد', number: 8, hint: 'ألماني دقيق التمرير اعتزل 2024' },
+  { name: 'فرانك لامبارد', latin: 'Lampard', country: 'إنجلترا', flag: '🏴', pos: 'MID', club: 'تشيلسي', number: 8, hint: 'هدّاف تشيلسي التاريخي من الوسط' },
+  { name: 'واين روني', latin: 'Rooney', country: 'إنجلترا', flag: '🏴', pos: 'FWD', club: 'مانشستر يونايتد', number: 10, hint: 'هدّاف يونايتد وإنجلترا التاريخي' },
+  { name: 'رايان غيغز', latin: 'Giggs', country: 'ويلز', flag: '🏴', pos: 'MID', club: 'مانشستر يونايتد', number: 11, hint: 'ويلزي قضى كل مسيرته في يونايتد' },
+  { name: 'فابيو كانافارو', latin: 'Cannavaro', country: 'إيطاليا', flag: '🇮🇹', pos: 'DEF', club: 'ريال مدريد', number: 5, hint: 'مدافع فاز بالكرة الذهبية 2006' },
+  { name: 'أليساندرو نيستا', latin: 'Nesta', country: 'إيطاليا', flag: '🇮🇹', pos: 'DEF', club: 'ميلان', number: 13, hint: 'من أرقى المدافعين الإيطاليين' },
+  { name: 'فيليب لام', latin: 'Lahm', country: 'ألمانيا', flag: '🇩🇪', pos: 'DEF', club: 'بايرن ميونخ', number: 21, hint: 'قائد ألمانيا بطلة العالم 2014' },
+  { name: 'باستيان شفاينشتايغر', latin: 'Schweinsteiger', country: 'ألمانيا', flag: '🇩🇪', pos: 'MID', club: 'بايرن ميونخ', number: 31, hint: 'محارب وسط ألمانيا 2014' },
+  { name: 'ميروسلاف كلوزه', latin: 'Klose', country: 'ألمانيا', flag: '🇩🇪', pos: 'FWD', club: 'بايرن ميونخ', number: 11, hint: 'أكثر لاعب تسجيلًا في كؤوس العالم' },
+  { name: 'راؤول غونزاليس', latin: 'Raúl', country: 'إسبانيا', flag: '🇪🇸', pos: 'FWD', club: 'ريال مدريد', number: 7, hint: 'أيقونة ريال مدريد صاحب القميص 7' },
+  { name: 'فيرناندو توريس', latin: 'Torres', country: 'إسبانيا', flag: '🇪🇸', pos: 'FWD', club: 'ليفربول', number: 9, hint: '"El Niño" هدّاف نهائي يورو 2008' },
+  { name: 'دافيد فيا', latin: 'Villa', country: 'إسبانيا', flag: '🇪🇸', pos: 'FWD', club: 'برشلونة', number: 7, hint: 'هدّاف إسبانيا التاريخي' },
+  { name: 'فرانك ريبيري', latin: 'Ribéry', country: 'فرنسا', flag: '🇫🇷', pos: 'FWD', club: 'بايرن ميونخ', number: 7, hint: 'جناح بايرن الفرنسي الموهوب' },
+  { name: 'أريين روبن', latin: 'Robben', country: 'هولندا', flag: '🇳🇱', pos: 'FWD', club: 'بايرن ميونخ', number: 10, hint: 'يقطع من اليمين ويسدد باليسار' },
+  { name: 'فيسلي شنايدر', latin: 'Sneijder', country: 'هولندا', flag: '🇳🇱', pos: 'MID', club: 'إنتر ميلان', number: 10, hint: 'صانع ثلاثية إنتر 2010' },
+  { name: 'ريو فرديناند', latin: 'Ferdinand', country: 'إنجلترا', flag: '🏴', pos: 'DEF', club: 'مانشستر يونايتد', number: 5, hint: 'قلب دفاع يونايتد الأنيق' },
+  { name: 'جون تيري', latin: 'Terry', country: 'إنجلترا', flag: '🏴', pos: 'DEF', club: 'تشيلسي', number: 26, hint: 'قائد تشيلسي وجدار دفاعه' },
+  { name: 'أندريه شيفتشينكو', latin: 'Shevchenko', country: 'أوكرانيا', flag: '🇺🇦', pos: 'FWD', club: 'ميلان', number: 7, hint: 'هدّاف أوكرانيا وكرة ذهبية 2004' },
+  { name: 'لويس فيغو', latin: 'Figo', country: 'البرتغال', flag: '🇵🇹', pos: 'MID', club: 'ريال مدريد', number: 10, hint: 'انتقل من برشلونة لريال مدريد بضجّة' },
+]
+
+export const CATEGORIES = [
+  { id: 'mix', label: '🎲 خليط', desc: 'أساطير + نجوم' },
+  { id: 'star', label: '⭐ نجوم حاليون', desc: 'لاعبو اليوم' },
+  { id: 'legend', label: '👑 أساطير', desc: 'نجوم زمان' },
+]
+
+export const PLAYERS = [
+  ...STARS.map((p) => ({ ...p, era: 'star' })),
+  ...LEGENDS.map((p) => ({ ...p, era: 'legend' })),
+]
+
+export function playersByCategory(category) {
+  if (category === 'mix' || !category) return PLAYERS
+  return PLAYERS.filter((p) => p.era === category)
+}
+
+export const PLAYER_COUNT = PLAYERS.length
