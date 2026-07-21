@@ -15,14 +15,24 @@ function shuffle(list) {
   return items
 }
 
-// تلميحات اللاعب من الأعم إلى الأخص
+// تلميحات متنوّعة وعشوائية: نختار 3 تلميحات مختلفة كل جولة (تتغيّر أنواعها
+// وترتيبها) + التلميح الخاص دائمًا في النهاية (الأكثر كشفًا).
+// هكذا لا تظهر الجنسية في كل مرة، وقد يظهر بدلها "لاعب اعتزل" أو "لعب سابقًا في ...".
 export function buildClues(player) {
-  return [
-    { icon: '🧭', label: 'المركز والجنسية', value: `${POSITIONS[player.pos]} · من ${player.country}` },
-    { icon: '👕', label: 'النادي الأشهر', value: player.club },
+  const era = player.era === 'legend' ? 'لاعب سابق (اعتزل)' : 'لا يزال يلعب حاليًا'
+  const pool = [
+    { icon: '🧭', label: 'المركز', value: POSITIONS[player.pos] },
+    { icon: '🌍', label: 'الجنسية', value: player.country },
+    { icon: '⏳', label: 'الحقبة', value: era },
+    { icon: '👕', label: 'ناديه الأشهر', value: player.club },
     { icon: '#️⃣', label: 'رقم القميص', value: `${player.number}` },
-    { icon: '💡', label: 'تلميح خاص', value: player.hint },
   ]
+  if (player.former && player.former.length) {
+    const club = player.former[Math.floor(Math.random() * player.former.length)]
+    pool.push({ icon: '🔙', label: 'نادٍ سابق', value: `لعب سابقًا في ${club}` })
+  }
+  const varied = shuffle(pool).slice(0, TOTAL_CLUES - 1)
+  return [...varied, { icon: '💡', label: 'تلميح خاص', value: player.hint }]
 }
 
 export const DIFFICULTIES = [
