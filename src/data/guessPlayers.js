@@ -5,6 +5,8 @@
 // pos: GK پارێزەری گۆڵ · DEF بەرگری · MID ناوەڕاست · FWD هێرشبەر
 // ═══════════════════════════════════════════════════════════
 
+import { EXTRA_COUNTRIES, EXTRA_CLUBS, MORE } from './guessPlayersMore'
+
 export function pick(obj, lang = 'ku') {
   if (obj == null) return ''
   if (typeof obj === 'string') return obj
@@ -224,9 +226,14 @@ export const CATEGORIES = [
   { id: 'legend', label: { ku: '👑 ئەفسانەکان', ar: '👑 أساطير' }, desc: { ku: 'ئەستێرەی جاران', ar: 'نجوم زمان' } },
 ]
 
+// یاریزانی زیادە + وڵات/یانەی نوێ (بۆ گەیشتن بە ٣٠٠)
+Object.assign(COUNTRIES, EXTRA_COUNTRIES)
+Object.assign(CLUBS, EXTRA_CLUBS)
+
 export const PLAYERS = [
   ...STARS.map((p) => ({ ...p, era: 'star' })),
   ...LEGENDS.map((p) => ({ ...p, era: 'legend' })),
+  ...MORE,
 ]
 
 export function playersByCategory(category) {

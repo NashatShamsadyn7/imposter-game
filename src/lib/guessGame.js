@@ -46,14 +46,19 @@ export function buildClues(player, lang = 'ku') {
     { icon: '🌍', label: pick(LABELS.country, lang), value: countryLabel(player.c, lang) },
     { icon: '⏳', label: pick(LABELS.era, lang), value: pick(ERA_TEXT[player.era], lang) },
     { icon: '👕', label: pick(LABELS.club, lang), value: clubLabel(player.club, lang) },
-    { icon: '#️⃣', label: pick(LABELS.number, lang), value: `${player.num}` },
   ]
+  if (player.num != null) {
+    pool.push({ icon: '#️⃣', label: pick(LABELS.number, lang), value: `${player.num}` })
+  }
   if (player.former && player.former.length) {
     const club = player.former[Math.floor(Math.random() * player.former.length)]
     pool.push({ icon: '📜', label: pick(LABELS.former, lang), value: pick(FORMER_PREFIX, lang) + clubLabel(club, lang) })
   }
+  // ئاماژەی تایبەت ئارەزوومەندانەیە؛ ئەگەر نەبوو، ٤ ئاماژەی جۆراوجۆر بەکاردێت.
+  const special = pick(player.h, lang)
+  if (!special) return shuffle(pool).slice(0, TOTAL_CLUES)
   const varied = shuffle(pool).slice(0, TOTAL_CLUES - 1)
-  return [...varied, { icon: '💡', label: pick(LABELS.special, lang), value: pick(player.h, lang) }]
+  return [...varied, { icon: '💡', label: pick(LABELS.special, lang), value: special }]
 }
 
 function dedupe(list) {
