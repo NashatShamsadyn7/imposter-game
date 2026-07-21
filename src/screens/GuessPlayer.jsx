@@ -3,7 +3,7 @@ import { ArrowRight, Check, Crown, Eye, Flame, HelpCircle, Minus, Plus, RotateCc
 import { Button, Panel } from '../components/ui'
 import Confetti from '../components/Confetti'
 import { CATEGORIES } from '../data/guessPlayers'
-import { nextRound, scoreFor, fiftyTargets, loadBest, saveBest, TOTAL_CLUES, ROUND_TIME } from '../lib/guessGame'
+import { nextRound, scoreFor, fiftyTargets, loadBest, saveBest, TOTAL_CLUES, ROUND_TIME, DIFFICULTIES } from '../lib/guessGame'
 import { sfx } from '../lib/sound'
 import { haptic } from '../lib/haptics'
 
@@ -168,6 +168,7 @@ export default function GuessPlayer({ onBack }) {
   const [phase, setPhase] = useState('menu') // menu | setup | handoff | play | results
   const [mode, setMode] = useState('single')
   const [category, setCategory] = useState('mix')
+  const [difficulty, setDifficulty] = useState('medium')
   const [timerOn, setTimerOn] = useState(false)
 
   // مشترك
@@ -189,7 +190,7 @@ export default function GuessPlayer({ onBack }) {
   const [turnIndex, setTurnIndex] = useState(0)
 
   const drawRound = (recentList) => {
-    const rd = nextRound(recentList, category)
+    const rd = nextRound(recentList, category, difficulty)
     setRoundData(rd)
     setRoundKey((k) => k + 1)
     return rd
@@ -276,6 +277,19 @@ export default function GuessPlayer({ onBack }) {
               className={`btn-press rounded-2xl border p-3 text-center ${category === c.id ? 'border-crew bg-crew/12 text-crew' : 'border-line bg-surface2 text-muted'}`}>
               <p className="text-sm font-black">{c.label}</p>
               <p className="mt-0.5 text-[10px] opacity-75">{c.desc}</p>
+            </button>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel className="mb-4 !p-4">
+        <p className="mb-3 font-bold text-ink">مستوى الصعوبة</p>
+        <div className="grid grid-cols-3 gap-2">
+          {DIFFICULTIES.map((d) => (
+            <button key={d.id} onClick={() => setDifficulty(d.id)}
+              className={`btn-press rounded-2xl border p-3 text-center ${difficulty === d.id ? 'border-crew bg-crew/12 text-crew' : 'border-line bg-surface2 text-muted'}`}>
+              <p className="text-sm font-black">{d.label}</p>
+              <p className="mt-0.5 text-[10px] opacity-75">{d.desc}</p>
             </button>
           ))}
         </div>
@@ -398,7 +412,7 @@ export default function GuessPlayer({ onBack }) {
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-4 py-6 pb-24">
       <header className="mb-4 flex items-center justify-between">
         <button onClick={backToMenu} className="btn-press flex items-center gap-1 rounded-xl bg-surface px-3 py-2 text-sm text-muted shadow-card"><ArrowRight className="h-4 w-4" /> خروج</button>
-        <div className="text-center"><h1 className="text-lg font-black text-ink">خمّن اللاعب</h1><p className="text-[11px] text-muted">{CATEGORIES.find((c) => c.id === category)?.label}</p></div>
+        <div className="text-center"><h1 className="text-lg font-black text-ink">خمّن اللاعب</h1><p className="text-[11px] text-muted">{CATEGORIES.find((c) => c.id === category)?.label} · {DIFFICULTIES.find((d) => d.id === difficulty)?.label}</p></div>
         {mode === 'single'
           ? <div className="flex gap-0.5">{Array.from({ length: LIVES }, (_, i) => <span key={i}>{i < lives ? '❤️' : '🤍'}</span>)}</div>
           : <div className="w-16 text-left text-xs font-black text-crew">{groupPlayer?.name}</div>}

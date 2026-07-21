@@ -25,16 +25,40 @@ export function buildClues(player) {
   ]
 }
 
-// جولة جديدة: لاعب + 4 خيارات ضمن الفئة المختارة (يفضّل نفس المركز)
-export function nextRound(recentNames = [], category = 'mix') {
+export const DIFFICULTIES = [
+  { id: 'easy', label: '🟢 سهل', desc: '٤ خيارات مختلفة' },
+  { id: 'medium', label: '🟡 متوسط', desc: '٤ خيارات متقاربة' },
+  { id: 'hard', label: '🔴 صعب', desc: '٦ خيارات من نفس البلد' },
+]
+
+function dedupe(list) {
+  const seen = new Set()
+  return list.filter((p) => (seen.has(p.name) ? false : seen.add(p.name)))
+}
+
+// جولة جديدة: لاعب + خيارات حسب الصعوبة
+// easy: بدائل عشوائية (يسهل استبعادها بالجنسية)
+// medium: بدائل من نفس المركز
+// hard: ٦ بدائل من نفس الجنسية والمركز (تلميح الجنسية لا يفيد)
+export function nextRound(recentNames = [], category = 'mix', difficulty = 'medium') {
   const catPlayers = playersByCategory(category)
   const fresh = catPlayers.filter((p) => !recentNames.includes(p.name))
   const pool = fresh.length >= 8 ? fresh : catPlayers
   const answer = pool[Math.floor(Math.random() * pool.length)]
 
-  const samePos = shuffle(catPlayers.filter((p) => p.name !== answer.name && p.pos === answer.pos))
-  const others = shuffle(catPlayers.filter((p) => p.name !== answer.name && p.pos !== answer.pos))
-  const decoys = [...samePos, ...others].slice(0, 3)
+  const others = catPlayers.filter((p) => p.name !== answer.name)
+  const sameNatPos = shuffle(others.filter((p) => p.country === answer.country && p.pos === answer.pos))
+  const sameNat = shuffle(others.filter((p) => p.country === answer.country))
+  const samePos = shuffle(others.filter((p) => p.pos === answer.pos))
+  const rest = shuffle(others)
+
+  const choiceCount = difficulty === 'hard' ? 6 : 4
+  let ranked
+  if (difficulty === 'hard') ranked = dedupe([...sameNatPos, ...sameNat, ...samePos, ...rest])
+  else if (difficulty === 'medium') ranked = dedupe([...samePos, ...rest])
+  else ranked = rest // سهل: عشوائي تمامًا
+
+  const decoys = ranked.slice(0, choiceCount - 1)
   const choices = shuffle([answer, ...decoys])
 
   return { answer, choices, clues: buildClues(answer) }
