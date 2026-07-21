@@ -147,15 +147,15 @@ export default function MainMenu({ onOnline, onLocal, onGuess, onSettings, onAch
           </Panel>
         </button>
 
-        {/* خمّن اللاعب — لعبة تخمين لاعبين حقيقيين */}
+        {/* بدۆزەرەوە یاریزان — یاری خەمڵاندنی یاریزانی ڕاستەقینە */}
         <button onClick={() => go(onGuess)} className="btn-press block w-full text-right">
           <Panel className="flex items-center gap-4 !border-amber-400/30 !p-4 transition hover:border-amber-400">
             <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-amber-400/15 text-amber-500">
               <Search className="h-7 w-7" />
             </div>
             <div className="flex-1">
-              <p className="text-lg font-black text-ink">خمّن اللاعب ⚽</p>
-              <p className="text-sm text-muted">تلميحات عن لاعب حقيقي — خمّنه بأقل تلميحات</p>
+              <p className="text-lg font-black text-ink">{t('بدۆزەرەوە یاریزان')} ⚽</p>
+              <p className="text-sm text-muted">{t('یاریزانی ڕاستەقینە — بە کەمترین ئاماژە بیدۆزەرەوە')}</p>
             </div>
             <ChevronLeft className="h-5 w-5 text-muted" />
           </Panel>
