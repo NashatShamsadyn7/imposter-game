@@ -8,6 +8,10 @@ dist-ssr
 # graphify knowledge-graph artifacts (regenerable)
 graphify-out
 
+# Generated word-bank files (regenerate with npm run bank / npm run images)
+public/word-bank-local.json
+public/word-bank-static.json
+
 # Stitch design mockups (reference only, large binaries)
 stitch.zip
 stitch_extracted

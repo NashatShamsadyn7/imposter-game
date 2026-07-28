@@ -1,33 +1,60 @@
 import { useEffect, useState, useRef } from 'react'
-import { Loader2 } from 'lucide-react'
-import { getWordImageUrl } from '../lib/images'
+import { loadLqipMap, lqipFor, resolveImageUrl } from '../lib/images'
 
-// وێنەی وشە — یەکەم بەستەری ڕاستەوخۆ (imageUrl)، ئەگەر نەبوو وێنەی AI،
-// ئەگەر هیچیان نەگەیشت ئیمۆجی پیشان دەدات
+// وێنەی وشە
+//  ١) LQIP (وێنۆچکەی خاوێن) یەکسەر وەک پاشبنە — بێ داواکاری، بێ چاوەڕوانی
+//  ٢) وێنەی ڕەسەن لەسەری دەنیشێت کاتێک گەیشت
+//  ٣) ئەگەر هیچیان نەبوو، ئیمۆجی
 export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, className = '' }) {
   const [status, setStatus] = useState('loading') // loading | loaded | error
   const [url, setUrl] = useState(null)
+  const [lqip, setLqip] = useState(null)
   const timeoutRef = useRef(null)
 
   useEffect(() => {
+    let alive = true
     setStatus('loading')
-    // بەستەری ڕاستەوخۆ پێشینەی هەیە بەسەر وێنەی AI
-    setUrl(imageUrl || getWordImageUrl(englishPrompt, { width: 400, height: 400 }))
+    setUrl(null)
+    setLqip(null)
+
+    // داوای وێنە بە قەبارەی ڕاستەقینەی پیشاندان بکە (بۆ ٢x، بەڵام هەرگیز زیاتر لە ٤٠٠).
+    // تەنها کاریگەری لەسەر پاشەکشەی Pollinations هەیە — وێنە ناوخۆییەکان قەبارەیەکیان هەیە.
+    const target = Math.min(400, Math.max(96, Math.ceil((size * 2) / 32) * 32))
+
+    // چاوەڕێی پێڕستی وێنە ناوخۆییەکان دەکەین (فایلێکی بچووکی کاشکراو)
+    // تاکو ڕاستەوخۆ بەستەری خێرا هەڵبژێرین و داواکاری بەفیڕۆ نەدەین.
+    loadLqipMap().then(() => {
+      if (!alive) return
+      const next = resolveImageUrl({ imageUrl, englishPrompt, width: target })
+      setUrl(next)
+      setLqip(lqipFor(next))
+    })
+
     // ئەگەر لە ٨ چرکەدا نەگەیشت، ئیمۆجی پیشان بدە
     clearTimeout(timeoutRef.current)
     timeoutRef.current = setTimeout(() => {
       setStatus((s) => (s === 'loaded' ? s : 'error'))
     }, 8000)
-    return () => clearTimeout(timeoutRef.current)
-  }, [imageUrl, englishPrompt])
+    return () => { alive = false; clearTimeout(timeoutRef.current) }
+  }, [imageUrl, englishPrompt, size])
 
-  const showEmoji = status !== 'loaded'
+  const showEmoji = status !== 'loaded' && !lqip
 
   return (
     <div
       className={`relative overflow-hidden rounded-2xl border border-line bg-surface2 ${className}`}
       style={{ width: size, height: size }}
     >
+      {/* LQIP — پاشبنەی خاوێن، بێ هیچ داواکارییەکی تۆڕ */}
+      {lqip && status !== 'loaded' && (
+        <img
+          src={lqip}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-lg"
+        />
+      )}
+
       {/* ئیمۆجی وەک پاشبنە/جێگرەوە */}
       {showEmoji && emoji && (
         <div
@@ -38,20 +65,18 @@ export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, 
         </div>
       )}
 
-      {status === 'loading' && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-crew">
-          <Loader2 className="h-5 w-5 animate-spin" />
-        </div>
-      )}
-
       {url && (
         <img
           src={url}
           alt=""
+          width={size}
+          height={size}
           loading="eager"
+          decoding="async"
+          fetchpriority={size >= 120 ? 'high' : 'auto'}
           onLoad={() => setStatus('loaded')}
           onError={() => setStatus('error')}
-          className={`h-full w-full object-cover transition-opacity duration-500 ${
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
             status === 'loaded' ? 'opacity-100' : 'opacity-0'
           }`}
         />

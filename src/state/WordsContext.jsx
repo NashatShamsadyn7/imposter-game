@@ -14,6 +14,7 @@ import {
   pickDecoyWord,
 } from '../data/words'
 import { fetchWordBank, amIAdmin } from '../lib/supabase'
+import { loadLqipMap } from '../lib/images'
 
 // v2 = بانکی هەڵبژێردراوی نوێ. کۆنی کاش ناکرێت بخاتە ناو یارییەکەوە.
 const CACHE_KEY = 'imposter:wordbank:v2'
@@ -84,6 +85,9 @@ export function WordsProvider({ children }) {
   }, [])
 
   useEffect(() => { reload() }, [reload])
+
+  // نەخشەی LQIP لە سەرەتاوە دابگرە — تاکو یەکەم وێنە یەکسەر پاشبنەی هەبێت
+  useEffect(() => { loadLqipMap() }, [])
 
   // بەڕێوەبەر؟
   useEffect(() => {

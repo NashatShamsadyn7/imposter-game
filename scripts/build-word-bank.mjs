@@ -1,21 +1,23 @@
-import { execFileSync } from 'node:child_process'
-import { mkdirSync, writeFileSync } from 'node:fs'
+// ═══════════════════════════════════════════════════════════
+//  دروستکردنی فایلی بانکی وشە لە بانکی ناوبنکەوە (src/data/words.js)
+//
+//  دەرئەنجام: public/word-bank-static.json — ئامادەیە بۆ «بارکردنی
+//  فایلی بانکی JSON» لە پەڕەی بەڕێوەبردنی وشەدا.
+//
+//  بەکارهێنان: node scripts/build-word-bank.mjs
+//
+//  تێبینی: بەستەری وێنە ئاراستەی Pollinations دەکات. دوای کارپێکردنی
+//  scripts/fetch-word-images.mjs بەستەرەکان دەبنە ناوخۆیی (/w/*.webp).
+// ═══════════════════════════════════════════════════════════
+
+import { mkdirSync, existsSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import vm from 'node:vm'
+import { pathToFileURL } from 'node:url'
 
-const source = execFileSync('git', ['show', 'HEAD:src/data/words.js'], { encoding: 'utf8' })
-const categoryNames = {
-  animals: 'الحيوانات', food: 'الطعام والمشروبات', produce: 'الفواكه والخضار',
-  body: 'جسم الإنسان', clothes: 'الملابس', home: 'أدوات المنزل', kitchen: 'المطبخ',
-  transport: 'المواصلات', nature: 'الطبيعة', sports: 'الرياضة والألعاب', professions: 'المهن',
-  tech: 'التكنولوجيا', tools: 'الأدوات والعدّة', music: 'الموسيقى والفنون', places: 'الأماكن والدول',
-}
+const { CATEGORIES } = await import(pathToFileURL(resolve('src/data/words.js')).href)
 
-// نقرأ المصدر السابق المحفوظ في Git حتى يبقى هذا المولّد قابلاً للإعادة،
-// ثم نضيف رابط صورة ثابتاً لكل كلمة (ولا يعتمد على مولّد الصور داخل المتصفح).
-const executable = `${source.slice(0, source.indexOf('const CATEGORY_NAME_AR'))}\n;globalThis.__categories = ALL_CATEGORIES;`
-const context = {}
-vm.runInNewContext(executable, context)
+const STYLE_SUFFIX =
+  ', realistic photography, high quality, highly detailed, no text, no words, no letters'
 
 function hashString(value) {
   let hash = 0
@@ -26,42 +28,52 @@ function hashString(value) {
   return Math.abs(hash)
 }
 
+const slugFor = (en) =>
+  `${en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)}-${hashString(en) % 100000}`
+
+// ئەگەر وێنەکە پێشتر داگیرابێت، بەستەری ناوخۆیی بەکاردەهێنین (خێراتر)
 function imageUrl(prompt) {
   if (!prompt) return ''
-  const suffix = ', realistic photography, high quality, highly detailed, no text, no words, no letters'
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(`${prompt}${suffix}`)}?width=400&height=400&nologo=true&seed=${hashString(prompt) % 100000}`
+  const local = `/w/${slugFor(prompt)}.webp`
+  if (existsSync(resolve(`public${local}`))) return local
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + STYLE_SUFFIX)}?width=400&height=400&nologo=true&seed=${hashString(prompt) % 100000}`
 }
 
-const categories = context.__categories.map((category, sort) => ({
+const categories = CATEGORIES.map((category, sort) => ({
   id: category.id,
   name_ku: category.name,
-  name_ar: categoryNames[category.id] || '',
+  name_ar: category.name_ar || '',
   icon: category.icon,
   sort,
   enabled: true,
 }))
 
-const items = context.__categories.flatMap((category) => category.words.map((word, sort) => ({
-  category_id: category.id,
-  ku: word.ku,
-  ar: word.ar || '',
-  en: word.en || '',
-  emoji: word.emoji || '',
-  image_url: imageUrl(word.en || ''),
-  sort,
-  enabled: true,
-})))
+const items = CATEGORIES.flatMap((category) =>
+  category.words.map((word, sort) => ({
+    category_id: category.id,
+    ku: word.ku,
+    ar: word.ar || '',
+    en: word.en || '',
+    emoji: word.emoji || '',
+    image_url: imageUrl(word.en || ''),
+    sort,
+    enabled: true,
+  }))
+)
 
+const localCount = items.filter((item) => item.image_url.startsWith('/w/')).length
 const bank = {
-  version: 1,
+  version: 2,
   language: 'ku-Arab',
   generated_at: new Date().toISOString(),
-  description: '۲۲۵۰ وشەی کوردی بە وەرگێڕانی عەرەبیی سروشتی و بەستەری وێنەی تایبەت بۆ هەر وشەیەک.',
+  description: `${items.length} وشە لە بانکی ناوبنکەوە، بە کوردی و عەرەبی و وێنە.`,
   categories,
   items,
 }
 
-const output = resolve('public/word-bank-kurdish-2250.json')
+const output = resolve('public/word-bank-static.json')
 mkdirSync(dirname(output), { recursive: true })
 writeFileSync(output, `${JSON.stringify(bank, null, 2)}\n`, 'utf8')
-console.log(`Created ${output}: ${categories.length} categories, ${items.length} words, ${items.filter((item) => item.image_url).length} image URLs.`)
+console.log(
+  `دروستکرا ${output}\n  ${categories.length} هاوپۆڵ · ${items.length} وشە · ${localCount} وێنەی ناوخۆیی · ${items.length - localCount} لەسەر Pollinations`
+)

@@ -7,6 +7,7 @@ import { CATEGORIES as STATIC_CATEGORIES } from '../data/words'
 import { useWords } from './WordsContext'
 import { resolveGame } from '../lib/scoring'
 import { sfx } from '../lib/sound'
+import { preloadWordImages } from '../lib/images'
 
 const LocalContext = createContext(null)
 export const useLocal = () => useContext(LocalContext)
@@ -92,6 +93,9 @@ export function LocalProvider({ children }) {
     const ids = players.map((p) => p.id)
     const shuffled = [...ids].sort(() => Math.random() - 0.5)
     const impostorIds = new Set(shuffled.slice(0, settings.impostorCount))
+
+    // وێنەکان پێشوەخت دابگرە — تاکو شاشەی پیشاندان چاوەڕوانی نەکات
+    preloadWordImages([word, decoy])
 
     setGame({
       players: players.map((p) => ({

@@ -2,7 +2,10 @@
 //  Service Worker — بۆ تواناکردنی دامەزراندن (PWA) و کارکردن بەبێ ئینتەرنێت
 // ═══════════════════════════════════════════════════════════
 
-const CACHE = 'imposter-v10'
+const CACHE = 'imposter-v11'
+// کاشی وێنەی وشەکان — جیاکراوەتەوە تاکو لەگەڵ نوێکردنەوەی ئەپ نەسڕدرێتەوە.
+// وێنەکان بە hash ناونراون (/w/cat-98262.webp) — هەرگیز ناگۆڕێن، بۆیە cache-first.
+const IMG_CACHE = 'imposter-words-v1'
 const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/manifest.webmanifest', '/apple-touch-icon.png']
 
 self.addEventListener('install', (event) => {
@@ -18,7 +21,7 @@ self.addEventListener('message', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k !== CACHE && k !== IMG_CACHE).map((k) => caches.delete(k)))
     )
   )
   self.clients.claim()
@@ -64,8 +67,30 @@ self.addEventListener('notificationclick', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event
-  // تەنها داواکاری GET ـی هەمان ڕەگەزە (origin) کاش دەکەین
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return
+  if (request.method !== 'GET') return
+
+  const url = new URL(request.url)
+
+  // ───── وێنەی وشەکان: cache-first ─────
+  // ناوەکان بە hash ـن و هەرگیز ناگۆڕێن، بۆیە ئەگەر لە کاشدا بوو
+  // ڕاستەوخۆ لە دیسکەوە دەیدەین (~٣ms) و هیچ داواکارییەکی تۆڕ ناکەین.
+  if (url.origin === self.location.origin && url.pathname.startsWith('/w/')) {
+    event.respondWith(
+      caches.open(IMG_CACHE).then((cache) =>
+        cache.match(request).then((hit) => {
+          if (hit) return hit
+          return fetch(request).then((res) => {
+            if (res && res.status === 200) cache.put(request, res.clone())
+            return res
+          })
+        })
+      )
+    )
+    return
+  }
+
+  // تەنها داواکاری هەمان ڕەگەزە (origin) کاش دەکەین
+  if (url.origin !== self.location.origin) return
 
   // گەشتکردن (navigation): سەرەتا تۆڕ، ئەگەر سەرکەوتوو نەبوو لە کاش
   if (request.mode === 'navigate') {
