@@ -17,15 +17,14 @@ export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, 
     setUrl(null)
     setLqip(null)
 
-    // داوای وێنە بە قەبارەی ڕاستەقینەی پیشاندان بکە (بۆ ٢x، بەڵام هەرگیز زیاتر لە ٤٠٠).
-    // تەنها کاریگەری لەسەر پاشەکشەی Pollinations هەیە — وێنە ناوخۆییەکان قەبارەیەکیان هەیە.
-    const target = Math.min(400, Math.max(96, Math.ceil((size * 2) / 32) * 32))
-
+    // تێبینی: قەبارەی داواکراو بە ئەنقەست هەمیشە ٤٠٠ ـە. Pollinations بۆ هەر
+    // قەبارەیەکی جیاواز وێنەیەکی نوێ دروست دەکات (٢٥–٥٠ چرکە)، بۆیە قەبارەی
+    // جۆراوجۆر کاشەکەی پارچەپارچە دەکات لە جیاتی خێراکردنی.
     // چاوەڕێی پێڕستی وێنە ناوخۆییەکان دەکەین (فایلێکی بچووکی کاشکراو)
     // تاکو ڕاستەوخۆ بەستەری خێرا هەڵبژێرین و داواکاری بەفیڕۆ نەدەین.
     loadLqipMap().then(() => {
       if (!alive) return
-      const next = resolveImageUrl({ imageUrl, englishPrompt, width: target })
+      const next = resolveImageUrl({ imageUrl, englishPrompt })
       setUrl(next)
       setLqip(lqipFor(next))
     })
@@ -36,7 +35,7 @@ export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, 
       setStatus((s) => (s === 'loaded' ? s : 'error'))
     }, 8000)
     return () => { alive = false; clearTimeout(timeoutRef.current) }
-  }, [imageUrl, englishPrompt, size])
+  }, [imageUrl, englishPrompt])
 
   const showEmoji = status !== 'loaded' && !lqip
 
