@@ -7,6 +7,8 @@ import { useT } from '../../lib/i18n'
 import { sfx, playGameStart } from '../../lib/sound'
 
 const REVEAL_SECONDS = 10
+// ژمارەی لێدان لەسەر وێنە/نیشانە بۆ کردنەوەی گلیچی نهێنی
+const GLITCH_TAPS = 5
 
 export default function LocalReveal() {
   const { game, nextReveal } = useLocal()
@@ -15,6 +17,9 @@ export default function LocalReveal() {
   const [shownIndex, setShownIndex] = useState(game.revealIndex)
   const [countdown, setCountdown] = useState(REVEAL_SECONDS)
   const timerRef = useRef(null)
+  // ───── گلیچی نهێنی: ٥ جار لێدان لە وێنە/نیشانە → وشەی ڕاستەقینە بۆ ساختەکار ─────
+  const [glitchTaps, setGlitchTaps] = useState(0)
+  const [glitchOpen, setGlitchOpen] = useState(false)
 
   // ڕێکخستنی دۆخ کاتێک یاریزان دەگۆڕێت — هاوکات لەگەڵ ڕێندەرکردن، نەک لە useEffect.
   // بەمە پەردەی ڕۆڵ (سووری ساختەکار) بۆ ساتێکیش دەرناکەوێت پێش ناوی یاریزانی دواتر،
@@ -22,6 +27,8 @@ export default function LocalReveal() {
   if (shownIndex !== game.revealIndex) {
     setShownIndex(game.revealIndex)
     setFlipped(false)
+    setGlitchTaps(0)
+    setGlitchOpen(false)
   }
 
   // دەنگی دەستپێکردنی یاری — یەک جار لە سەرەتای یاری
@@ -54,6 +61,19 @@ export default function LocalReveal() {
     else sfx.reveal()
   }
 
+  // لێدانی نهێنی — تەنها بۆ ساختەکار کار دەکات، بەبێ هیچ ئاماژەیەکی ئاشکرا
+  const handleGlitchTap = () => {
+    if (glitchOpen) return
+    const next = glitchTaps + 1
+    setGlitchTaps(next)
+    if (next >= GLITCH_TAPS) {
+      setGlitchOpen(true)
+      sfx.reveal()
+    } else {
+      sfx.tap()
+    }
+  }
+
   // پەردەی گواستنەوەی ئامێر
   if (!flipped) {
     return (
@@ -81,9 +101,15 @@ export default function LocalReveal() {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 py-8 text-center">
         <div className="w-full animate-scale-in">
-          <div className="animate-pulse-glow-red mb-5 inline-flex rounded-full border-2 border-impostor bg-impostor/12 p-6">
+          <button
+            key={glitchTaps}
+            type="button"
+            onClick={handleGlitchTap}
+            aria-label={t('ساختەکار')}
+            className={`animate-pulse-glow-red mb-5 inline-flex rounded-full border-2 border-impostor bg-impostor/12 p-6 ${glitchTaps > 0 && !glitchOpen ? 'animate-shake' : ''}`}
+          >
             <Skull className="h-16 w-16 text-impostor" />
-          </div>
+          </button>
           <h1 className="mb-2 text-4xl font-black text-impostor">{t('ساختەکار')}</h1>
           {isUndercover ? (
             <>
@@ -95,13 +121,32 @@ export default function LocalReveal() {
                   <p className="mb-3 text-base font-medium text-muted" dir="rtl">{game.decoyWord.ar}</p>
                 )}
                 <div className="flex justify-center">
-                  <WordImage imageUrl={game.decoyWord.image_url} englishPrompt={game.decoyWord.en} emoji={game.decoyWord.emoji} size={150} />
+                  <button type="button" onClick={handleGlitchTap} className="btn-press">
+                    <WordImage imageUrl={game.decoyWord.image_url} englishPrompt={game.decoyWord.en} emoji={game.decoyWord.emoji} size={150} />
+                  </button>
                 </div>
               </Panel>
             </>
           ) : (
             <p className="mb-5 text-xl font-bold text-ink">{t('تۆ وشەکە نازانیت!')}</p>
           )}
+          {/* گلیچی نهێنی — وشەی ڕاستەقینەی دەستەی کەشتی */}
+          {glitchOpen && (
+            <Panel className="mx-auto mb-5 max-w-xs animate-scale-in border-crew/50">
+              <p className="mb-2 flex items-center justify-center gap-2 text-xs text-crew">
+                <Eye className="h-4 w-4" /> {t('گلیچ — وشەی ڕاستەقینە')}
+              </p>
+              <h2 className="mb-1 text-3xl font-black text-crew neon-text">{game.secretWord.ku}</h2>
+              {game.secretWord.ar && (
+                <p className="mb-3 text-base font-medium text-muted" dir="rtl">{game.secretWord.ar}</p>
+              )}
+              <div className="mb-2 flex justify-center">
+                <WordImage imageUrl={game.secretWord.image_url} englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={150} />
+              </div>
+              <p className="text-xs text-muted">{t('ئەمە نهێنی خۆت بێت!')}</p>
+            </Panel>
+          )}
+
           <Panel className="mx-auto mb-6 max-w-xs">
             {allies.length > 0 ? (
               <>
