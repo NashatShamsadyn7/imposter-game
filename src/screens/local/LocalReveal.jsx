@@ -8,7 +8,7 @@ import { sfx, playGameStart } from '../../lib/sound'
 
 const REVEAL_SECONDS = 10
 // ژمارەی لێدان لەسەر وێنە/نیشانە بۆ کردنەوەی گلیچی نهێنی
-const GLITCH_TAPS = 5
+const GLITCH_TAPS = 8
 
 export default function LocalReveal() {
   const { game, nextReveal } = useLocal()
