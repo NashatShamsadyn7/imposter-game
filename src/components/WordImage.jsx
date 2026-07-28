@@ -1,41 +1,46 @@
-import { useEffect, useState, useRef } from 'react'
-import { backupImageUrl, loadLqipMap, lqipFor, resolveImageUrl } from '../lib/images'
+import { useEffect, useMemo, useState, useRef } from 'react'
+import { imageUrlChain, loadLqipMap, lqipFor } from '../lib/images'
 
 // وێنەی وشە
-//  ١) LQIP (وێنۆچکەی خاوێن) یەکسەر وەک پاشبنە — بێ داواکاری، بێ چاوەڕوانی
+//  ١) LQIP (وێنۆچکەی خاوێن) وەک پاشبنە — بێ داواکاری، ڕێگر نییە
 //  ٢) وێنەی ڕەسەن لەسەری دەنیشێت کاتێک گەیشت
-//  ٣) ئەگەر هیچیان نەبوو، ئیمۆجی
+//  ٣) ئەگەر سەرچاوەیەک نەگەیشت، خۆی دەچێتە سەرچاوەی دواتری زنجیرەکە
+//  ٤) ئەگەر هیچیان نەبوو، ئیمۆجی
 export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, className = '' }) {
   const [status, setStatus] = useState('loading') // loading | loaded | error
-  const [url, setUrl] = useState(null)
+  const [step, setStep] = useState(0)
   const [lqip, setLqip] = useState(null)
   const timeoutRef = useRef(null)
 
+  // زنجیرەی بەستەرەکان: ناوخۆیی → پاڵپشتی Supabase → بنکەداتا → دروستکراو
+  const chain = useMemo(
+    () => imageUrlChain({ imageUrl, englishPrompt }),
+    [imageUrl, englishPrompt]
+  )
+  const url = chain[step] || null
+
+  // دۆخ ڕێسێت دەکەینەوە کاتێک وشەکە دەگۆڕێت — هاوکات لەگەڵ ڕێندەرکردن
+  const [lastChain, setLastChain] = useState(chain)
+  if (lastChain !== chain) {
+    setLastChain(chain)
+    setStep(0)
+    setStatus('loading')
+    setLqip(lqipFor(chain[0]))
+  }
+
   useEffect(() => {
     let alive = true
-    setStatus('loading')
-    setUrl(null)
-    setLqip(null)
-
-    // تێبینی: قەبارەی داواکراو بە ئەنقەست هەمیشە ٤٠٠ ـە. Pollinations بۆ هەر
-    // قەبارەیەکی جیاواز وێنەیەکی نوێ دروست دەکات (٢٥–٥٠ چرکە)، بۆیە قەبارەی
-    // جۆراوجۆر کاشەکەی پارچەپارچە دەکات لە جیاتی خێراکردنی.
-    // چاوەڕێی پێڕستی وێنە ناوخۆییەکان دەکەین (فایلێکی بچووکی کاشکراو)
-    // تاکو ڕاستەوخۆ بەستەری خێرا هەڵبژێرین و داواکاری بەفیڕۆ نەدەین.
-    loadLqipMap().then(() => {
-      if (!alive) return
-      const next = resolveImageUrl({ imageUrl, englishPrompt })
-      setUrl(next)
-      setLqip(lqipFor(next))
-    })
-
-    // ئەگەر لە ٨ چرکەدا نەگەیشت، ئیمۆجی پیشان بدە
+    // نەخشەی LQIP لە پاشبنەدا دادەگیرێت — پیشاندانی وێنە ڕانەدەگرێت
+    if (!lqipFor(chain[0])) {
+      loadLqipMap().then(() => { if (alive) setLqip(lqipFor(chain[0])) })
+    }
+    // ئەگەر لە ٨ چرکەدا هیچ نەگەیشت، ئیمۆجی پیشان بدە
     clearTimeout(timeoutRef.current)
     timeoutRef.current = setTimeout(() => {
       setStatus((s) => (s === 'loaded' ? s : 'error'))
     }, 8000)
     return () => { alive = false; clearTimeout(timeoutRef.current) }
-  }, [imageUrl, englishPrompt])
+  }, [chain])
 
   const showEmoji = status !== 'loaded' && !lqip
 
@@ -66,6 +71,7 @@ export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, 
 
       {url && (
         <img
+          key={url}
           src={url}
           alt=""
           width={size}
@@ -75,9 +81,8 @@ export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, 
           fetchpriority={size >= 120 ? 'high' : 'auto'}
           onLoad={() => setStatus('loaded')}
           onError={() => {
-            // وێنەی ناوخۆیی نەگەیشت — هەوڵی نوسخەی Supabase بدە پێش ئیمۆجی
-            const backup = backupImageUrl(url)
-            if (backup) setUrl(backup)
+            // ئەم سەرچاوەیە نەگەیشت — بڕۆ بۆ ئەوەی دواتر
+            if (step + 1 < chain.length) setStep(step + 1)
             else setStatus('error')
           }}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${

@@ -60,15 +60,20 @@ export function backupImageUrl(url) {
   return `${SUPABASE_URL}/storage/v1/object/public/word-images/bank/${slug}.webp`
 }
 
-// بەستەری کۆتایی بۆ وشەیەک.
-//  ئەگەر وێنەکەی ناوخۆییمان هەبێت → /w/*.webp (خێرا، لەسەر CDN)
-//  ئەگەرنا → بەستەرەکەی بنکەداتا، یان Pollinations وەک دواهەمین چارە.
-// بەمە پێویست ناکات بەستەرەکانی ناو بنکەداتا بگۆڕین.
-export function resolveImageUrl({ imageUrl, englishPrompt, width = 400 } = {}) {
+// زنجیرەی بەستەرەکان بۆ وشەیەک، بە ڕیزی خێرایی.
+// وێنەی ناوخۆیی ٩٩٫٩٪ی بانکەکە دادەپۆشێت، بۆیە یەکسەر دەستی پێدەکەین و
+// چاوەڕێی هیچ پێڕستێک ناکەین — ئەگەر نەبوو، WordImage خۆی دەچێتە خانەی دواتر.
+export function imageUrlChain({ imageUrl, englishPrompt, width = 400 } = {}) {
   const slug = slugForPrompt(englishPrompt)
-  if (slug && lqipMap && lqipMap[slug]) return `/w/${slug}.webp`
-  if (imageUrl) return imageUrl
-  return getWordImageUrl(englishPrompt, { width, height: width })
+  const chain = []
+  if (slug) {
+    chain.push(`/w/${slug}.webp`)                                        // Cloudflare Pages
+    if (SUPABASE_URL) chain.push(backupImageUrl(`/w/${slug}.webp`))      // پاڵپشتی Supabase
+  }
+  if (imageUrl) chain.push(imageUrl)                                     // بەستەری بنکەداتا
+  const generated = getWordImageUrl(englishPrompt, { width, height: width })
+  if (generated) chain.push(generated)                                   // دواهەمین چارە
+  return chain.filter(Boolean)
 }
 
 // داگرتنی نەخشەی LQIP (~٢٧٠KB، یەک جار بۆ هەموو ژیانی ئەپ)
@@ -99,14 +104,12 @@ const preloaded = new Set()
 // وێنەی وشەیەک پێشوەخت دادەگرێت (بێدەنگ — هەڵە پشتگوێ دەخرێت)
 export function preloadWordImage(word) {
   if (!word) return
-  loadLqipMap().then(() => {
-    const url = resolveImageUrl({ imageUrl: word.image_url, englishPrompt: word.en })
-    if (!url || preloaded.has(url)) return
-    preloaded.add(url)
-    const img = new Image()
-    img.decoding = 'async'
-    img.src = url
-  })
+  const url = imageUrlChain({ imageUrl: word.image_url, englishPrompt: word.en })[0]
+  if (!url || preloaded.has(url)) return
+  preloaded.add(url)
+  const img = new Image()
+  img.decoding = 'async'
+  img.src = url
 }
 
 // وێنەی چەند وشەیەک پێشوەخت دادەگرێت
