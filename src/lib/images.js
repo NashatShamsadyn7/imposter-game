@@ -51,6 +51,15 @@ export function slugForPrompt(en) {
   return `${base}-${hashString(en) % 100000}`
 }
 
+// وێنەکان لە دوو شوێن پاشەکەوت کراون: Cloudflare Pages (خێرا، باندویدی
+// بێ سنوور) و Supabase Storage (پاڵپشت). ئەمە بەستەری پاڵپشت دروست دەکات.
+const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL || ''
+export function backupImageUrl(url) {
+  const slug = slugFromUrl(url)
+  if (!slug || !SUPABASE_URL) return null
+  return `${SUPABASE_URL}/storage/v1/object/public/word-images/bank/${slug}.webp`
+}
+
 // بەستەری کۆتایی بۆ وشەیەک.
 //  ئەگەر وێنەکەی ناوخۆییمان هەبێت → /w/*.webp (خێرا، لەسەر CDN)
 //  ئەگەرنا → بەستەرەکەی بنکەداتا، یان Pollinations وەک دواهەمین چارە.

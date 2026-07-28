@@ -37,7 +37,9 @@ const LQIP_SIZE = 16
 const TITLES_PER_REQUEST = 50   // سنووری ویکیپیدیا بۆ هەر داواکارییەک
 const TIMEOUT_MS = 30000
 const MAX_BYTES = 12 * 1024 * 1024
-const UA = 'imposter-game/1.0 (word bank image fetcher)'
+// سیاسەتی User-Agent ـی Wikimedia داوای ناوێکی ڕوون و ڕێگای پەیوەندی دەکات.
+// بەبێ ئەوە داواکارییەکان کپ دەکرێن (429) تەنانەت بە خێرایی نزم.
+const UA = 'ImposterGame/1.0 (https://iosbb.pages.dev; nashatgameryt17@gmail.com) node-fetch'
 
 const args = process.argv.slice(2)
 const flag = (name) => args.includes(name)
@@ -193,9 +195,10 @@ async function findOnOpenverse(query) {
 // ───────────────────────────────────────────────
 //  داگرتن و گۆڕین
 // ───────────────────────────────────────────────
-// داگرتنی وێنە لە Wikimedia ـیش دەبێت ڕێکخراو بێت — بەبێ ئەوە دوای
-// چەند دەیەیەک داواکاری 429 دەداتەوە. ~٥ وێنە لە چرکەیەکدا سەلامەتە.
-const paceDownload = makePacer(350)
+// upload.wikimedia.org لەم IP ـەوە بە توندی کپ دەکرێت (429) تەنانەت بە
+// یەک داواکاری لە چرکەیەکدا. بۆیە درێژە بە هەوڵدانەوە نادەین — یەکسەر
+// دەگەڕێینەوە بۆ Openverse، کە وێنەکانی لەسەر Flickr ـن و کپ ناکرێن.
+const paceDownload = makePacer(value('--gap', 250))
 
 async function fetchOnce(url) {
   const controller = new AbortController()
@@ -213,15 +216,15 @@ async function fetchOnce(url) {
   }
 }
 
-async function download(url) {
+async function download(url, { retries = 2 } = {}) {
   let lastError
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
     try {
       return await paceDownload(() => fetchOnce(url))
     } catch (error) {
       lastError = error
-      if (!error.rateLimited || attempt === 4) throw error
-      await sleep(2000 * attempt)
+      if (!error.rateLimited || attempt === retries) throw error
+      await sleep(1500)
     }
   }
   throw lastError
@@ -302,15 +305,27 @@ async function worker() {
     const { query, slug, ku } = pending[cursor]
     cursor += 1
     try {
-      const found = sources.get(query) || (await findOnOpenverse(query))
-      if (!found) throw new Error('هیچ وێنەیەک نەدۆزرایەوە')
-
-      let raw
-      try {
-        raw = await download(found.url)
-      } catch (error) {
-        if (found.original && found.original !== found.url) raw = await download(found.original)
-        else throw error
+      // یەکەم هەڵبژاردە: وێنەی ویکیپیدیا (باشترین جۆر). ئەگەر داگرتنەکەی
+      // کپ کرا، بەبێ سووربوون دەگەڕێینەوە بۆ Openverse — چاکتر وایە
+      // وێنەیەکی خراپتر بەدەست بهێنین لە هیچ.
+      let found = sources.get(query)
+      let raw = null
+      if (found) {
+        try {
+          raw = await download(found.url, { retries: 1 })
+        } catch {
+          found = null
+        }
+      }
+      if (!raw) {
+        found = await findOnOpenverse(query)
+        if (!found) throw new Error('هیچ وێنەیەک نەدۆزرایەوە')
+        try {
+          raw = await download(found.url)
+        } catch (error) {
+          if (found.original && found.original !== found.url) raw = await download(found.original)
+          else throw error
+        }
       }
 
       const webp = await sharp(raw)

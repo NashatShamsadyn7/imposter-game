@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { loadLqipMap, lqipFor, resolveImageUrl } from '../lib/images'
+import { backupImageUrl, loadLqipMap, lqipFor, resolveImageUrl } from '../lib/images'
 
 // وێنەی وشە
 //  ١) LQIP (وێنۆچکەی خاوێن) یەکسەر وەک پاشبنە — بێ داواکاری، بێ چاوەڕوانی
@@ -74,7 +74,12 @@ export default function WordImage({ imageUrl, englishPrompt, emoji, size = 220, 
           decoding="async"
           fetchpriority={size >= 120 ? 'high' : 'auto'}
           onLoad={() => setStatus('loaded')}
-          onError={() => setStatus('error')}
+          onError={() => {
+            // وێنەی ناوخۆیی نەگەیشت — هەوڵی نوسخەی Supabase بدە پێش ئیمۆجی
+            const backup = backupImageUrl(url)
+            if (backup) setUrl(backup)
+            else setStatus('error')
+          }}
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
             status === 'loaded' ? 'opacity-100' : 'opacity-0'
           }`}
