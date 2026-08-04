@@ -8,7 +8,41 @@
 | پاکێج | `com.nashat.imposter` |
 | کەمترین وەشان | Android 6 (API 23) |
 | قەبارە | ≈ ٤٧ MB |
-| ئیزنەکان | `VIBRATE` · `WAKE_LOCK` — **هیچ ئیزنی تۆڕ نییە** |
+| ئیزنەکان | `INTERNET` (تەنها پشکنینی وەشان) · `VIBRATE` · `WAKE_LOCK` |
+
+---
+
+## پشکنینی وەشان
+
+تاکە شوێنێکە کە ئەپەکە تۆڕ بەکاردەهێنێت. یارییەکە خۆی — وشە، وێنە،
+فۆنت — تەواو لەناو APK ـەکەدایە.
+
+```
+app-version.json  ← سەرچاوەی تاکە (Gradle + Vite هەردووکیان لێرەوە)
+   ↓
+PortfolioWebsite/imposter-version.json  ← لەسەر iosbb0.web.app
+   { latestVersionCode, minVersionCode, url, notes }
+```
+
+| دۆخ | ئەنجام |
+|---|---|
+| `versionCode < minVersionCode` | شاشەی ڕێگر — ناتوانرێت یاری بکرێت |
+| `versionCode < latestVersionCode` | شریتی بچووک، دەتوانرێت لابدرێت |
+| هاوتا | هیچ |
+| **شکستی پشکنین / بێ ئینتەرنێت** | **یاری بە ئاسایی — هەرگیز ڕێگری ناکرێت** |
+
+> ⚠️ ئەو دوایینە یاسایەکی سەرەکییە. ئەپێکی ئۆفلاین کە بەبێ تۆڕ
+> ناکرێتەوە، هیچ مانایەکی نییە. تاقیکردنەوە بۆ هەر شەش دۆخەکە
+> هەیە (تۆڕ نییە، وەڵامی خراپ، ٥٠٠، …).
+
+### بڵاوکردنەوەی وەشانێکی نوێ
+
+1. `app-version.json` → `versionCode` یەک زیاد بکە
+2. `npm run build:offline && npx cap sync android && ./gradlew assembleRelease`
+3. APK بۆ GitHub Releases
+4. `PortfolioWebsite/imposter-version.json` نوێ بکەرەوە و `firebase deploy`
+   — `minVersionCode` تەنها کاتێک بەرز بکەرەوە کە نوێکردنەوەکە
+   بەڕاستی گرنگ بێت (هەموو ئەوانەی خوارتر ٤٧MB دادەبەزێنن)
 
 ---
 

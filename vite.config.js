@@ -107,7 +107,17 @@ export default defineConfig(({ mode }) => {
   const offline = mode === 'offline'
   const outDir = 'dist-offline'
 
+  // هەمان پەڕگەی Gradle — بەمە وەشانی JS و وەشانی APK هەرگیز
+  // لە یەکتر جیا نابنەوە.
+  const appVersion = JSON.parse(
+    fs.readFileSync(path.resolve(process.cwd(), 'app-version.json'), 'utf8')
+  )
+
   return {
+    define: {
+      __APP_VERSION_CODE__: JSON.stringify(appVersion.versionCode),
+      __APP_VERSION_NAME__: JSON.stringify(appVersion.versionName),
+    },
     plugins: offline
       ? [react(), offlineStubs(), offlineWords(), offlineAssets(outDir)]
       : [react()],

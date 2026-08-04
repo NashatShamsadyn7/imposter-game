@@ -11,6 +11,11 @@ if (keystorePropsFile.exists()) {
     keystoreProps.load(new FileInputStream(keystorePropsFile))
 }
 
+// وەشان لە یەک سەرچاوەوە دێت (app-version.json لە ڕەگی پڕۆژە).
+// Vite هەمان پەڕگە دەخوێنێتەوە — بەمە هەرگیز جیاواز نابن.
+def appVersion = new groovy.json.JsonSlurper()
+        .parseText(rootProject.file("../app-version.json").text)
+
 android {
     namespace "com.nashat.imposter"
     compileSdk rootProject.ext.compileSdkVersion
@@ -18,8 +23,8 @@ android {
         applicationId "com.nashat.imposter"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersion.versionCode
+        versionName appVersion.versionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

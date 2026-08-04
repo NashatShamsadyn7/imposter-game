@@ -9,6 +9,7 @@ import { LANGS, useLang } from '../lib/i18n'
 import { THEMES } from '../lib/cosmetics'
 import { sfx } from '../lib/sound'
 import { haptic } from '../lib/haptics'
+import { VERSION_NAME } from './updateCheck'
 
 const SOCIALS = [
   { label: 'Telegram', icon: Send, url: 'https://t.me/iosbb' },
@@ -19,9 +20,9 @@ const SOCIALS = [
   { label: 'Website', icon: Globe, url: 'https://iosbb0.web.app' },
 ]
 
-// ⚠️ ئەپەکە ئیزنی INTERNET ـی نییە، بۆیە بەستەرێک ناتوانێت لەناو
-//    WebView بکرێتەوە — دەبێت بدرێتە دەستی سیستەم (وێبگەڕ/ئەپی
-//    پەیوەندیدار). Capacitor بە target='_blank' ئەمە دەکات.
+// بەستەر دەبێت لە دەرەوەی ئەپەکە بکرێتەوە (وێبگەڕ/ئەپی پەیوەندیدار)،
+// نەک لەناو WebView ـەکە — ئەپەکە ڕووکاری وێبگەڕی نییە و ناشیبێت
+// بەکارهێنەر لەناو یارییەکەدا ون بێت. Capacitor بە '_blank' ئەمە دەکات.
 function openExternal(url) {
   try {
     window.open(url, '_blank')
@@ -146,11 +147,20 @@ export default function OfflineSettings({ ui, onBack }) {
         <p className="mb-1 flex items-center justify-center gap-2 text-sm font-bold text-crew">
           <WifiOff className="h-4 w-4" /> {t('ئەم ئەپە بەبێ ئینتەرنێت کاردەکات')}
         </p>
-        <p className="text-xs text-muted">{t('هیچ داتایەک نانێردرێت و هیچ هەژمارێک پێویست نییە.')}</p>
+        <p className="text-xs text-muted">{t('وشە و وێنەکان لەناو ئەپەکەدان. هیچ هەژمارێک پێویست نییە.')}</p>
+        <p className="mt-2 border-t border-line pt-2 text-xs text-muted">
+          {t('تەنها لە کاتی کردنەوەدا وەشان پشکنین دەکرێت — ئەگەر ئینتەرنێت نەبوو، هیچ گرفتێک نییە.')}
+        </p>
       </Panel>
 
-      {/* پەیوەندی — بەستەرەکان لە وێبگەڕی ئامێرەکەدا دەکرێنەوە،
-          نەک لەناو ئەپەکە (ئەپەکە ئیزنی ئینتەرنێتی نییە). */}
+      {/* وەشان */}
+      <Panel className="mb-4 !p-3">
+        <div className="flex items-center justify-between px-1">
+          <span className="text-sm text-muted">{t('وەشان')}</span>
+          <b className="font-mono text-sm text-ink">{VERSION_NAME}</b>
+        </div>
+      </Panel>
+
       <Panel className="!p-3">
         <p className="mb-1 px-1 text-center text-sm font-bold text-ink">Nashat Shamsadyn</p>
         <p className="mb-3 px-1 text-center text-xs text-muted">{t('دروستکەری یاری')}</p>

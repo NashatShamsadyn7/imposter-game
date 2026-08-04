@@ -25,6 +25,8 @@ import { LocalProvider, useLocal } from '../state/LocalContext'
 import LanguagePick, { hasPickedLang } from './LanguagePick'
 import OfflineMenu from './OfflineMenu'
 import OfflineSettings from './OfflineSettings'
+import { checkForUpdate } from './updateCheck'
+import { UpdateRequired, UpdateBanner } from './UpdateGate'
 import { setSfxEnabled, unlockAudio, sfx } from '../lib/sound'
 import { setHapticsEnabled, haptic } from '../lib/haptics'
 import { useWakeLock } from '../lib/useWakeLock'
@@ -146,6 +148,16 @@ export default function AppOffline() {
   const [sfxOn, setSfxOn] = useState(() => localStorage.getItem('imposter:sfx') !== 'off')
   const [hapticsOn, setHapticsOn] = useState(() => localStorage.getItem('imposter:haptics') !== 'off')
   const [langPicked, setLangPicked] = useState(hasPickedLang)
+  // پشکنینی وەشان — لە پاشبنەدا، هەرگیز ڕێگر نییە لە کردنەوەی ئەپ
+  const [update, setUpdate] = useState({ state: 'ok' })
+
+  useEffect(() => {
+    let alive = true
+    checkForUpdate().then((u) => {
+      if (alive) setUpdate(u)
+    })
+    return () => { alive = false }
+  }, [])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -182,12 +194,17 @@ export default function AppOffline() {
     <ErrorBoundary>
       <LanguageProvider>
         <Background />
-        {langPicked ? (
-          <WordsProvider>
-            <LocalProvider>
-              <Shell ui={ui} />
-            </LocalProvider>
-          </WordsProvider>
+        {update.state === 'required' ? (
+          <UpdateRequired info={update} />
+        ) : langPicked ? (
+          <>
+            <WordsProvider>
+              <LocalProvider>
+                <Shell ui={ui} />
+              </LocalProvider>
+            </WordsProvider>
+            {update.state === 'optional' && <UpdateBanner info={update} />}
+          </>
         ) : (
           <LanguagePick onDone={() => { sfx.reveal(); setLangPicked(true) }} />
         )}
