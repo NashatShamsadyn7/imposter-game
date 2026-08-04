@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ساختەکار</string>
+    <string name="title_activity_main">ساختەکار</string>
+    <string name="package_name">com.nashat.imposter</string>
+    <string name="custom_url_scheme">com.nashat.imposter</string>
+</resources>

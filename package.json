@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:offline": "vite build --mode offline",
+    "android:sync": "npm run build:offline && cap sync android",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -15,6 +17,10 @@
     "images:upload": "node scripts/upload-word-images.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^7.6.8",
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/cli": "^7.6.8",
+    "@capacitor/core": "^7.6.8",
     "@supabase/supabase-js": "^2.45.4",
     "i18next": "^23.16.4",
     "i18next-browser-languagedetector": "^8.0.0",

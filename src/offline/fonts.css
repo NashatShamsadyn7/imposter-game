@@ -1,0 +1,65 @@
+/* ═══════════════════════════════════════════════════════════
+   فۆنتی ناوخۆیی بۆ ئەپی ئەندرۆید — بەبێ هیچ داواکارییەکی تۆڕ.
+   Vazirmatn (SIL OFL) — هەموو پیتەکانی کوردی سۆرانی و عەرەبی
+   لەخۆدەگرێت، لەگەڵ ژمارە و پیتی لاتینی.
+
+   ڕیزبەندی گرنگە: «latin» یەکەم (بێ unicode-range = هەموو شت)،
+   پاشان «arabic» — چونکە دوایین ڕێسای گونجاو براوەیە.
+   ═══════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-latin-700.woff2') format('woff2');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-latin-900.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+200C-200E,
+                 U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-700.woff2') format('woff2');
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: block;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+200C-200E,
+                 U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-900.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: block;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+08A0-08FF, U+200C-200E,
+                 U+FB50-FDFF, U+FE70-FEFF;
+}
+
+/* NRT لە ئەپدا نییە (تەنها لەسەر وێب لە CDN دێت). ئەمە ڕێگری لە
+   داواکاری شکستخواردوو دەکات و یەکسەر Vazirmatn بەکاردەهێنێت. */
+body,
+.font-nrt {
+  font-family: 'Vazirmatn', Tahoma, sans-serif;
+}

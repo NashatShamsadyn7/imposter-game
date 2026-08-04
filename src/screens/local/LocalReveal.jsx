@@ -41,6 +41,8 @@ export default function LocalReveal() {
   const isUndercover = !!game.decoyWord
   const isLast = game.revealIndex === game.players.length - 1
   const allies = game.players.filter((p) => p.role === 'impostor' && p.id !== player.id)
+  // بۆ گلیچی دەستەی کەشتی — هەموو ساختەکارەکان
+  const impostors = game.players.filter((p) => p.role === 'impostor')
 
   // شاردنەوەی خۆکار بۆ دەستەی کەشتی
   useEffect(() => {
@@ -185,9 +187,36 @@ export default function LocalReveal() {
         {game.secretWord.ar && (
           <p className="mb-4 text-lg font-medium text-muted" dir="rtl">{game.secretWord.ar}</p>
         )}
+        {/* گلیچی نهێنی بۆ دەستەی کەشتی — ٨ جار لێدان لە وێنە،
+            ناوی ساختەکارەکان ئاشکرا دەکات. هەمان ژمارەی لێدان و
+            هەمان دۆخی گلیچی ساختەکار — بەبێ هیچ ئاماژەیەکی ئاشکرا. */}
         <div className="mb-5 flex justify-center">
-          <WordImage imageUrl={game.secretWord.image_url} englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={210} />
+          <button
+            type="button"
+            onClick={handleGlitchTap}
+            aria-label={t('وێنەی وشە')}
+            className={`btn-press ${glitchTaps > 0 && !glitchOpen ? 'animate-shake' : ''}`}
+          >
+            <WordImage imageUrl={game.secretWord.image_url} englishPrompt={game.secretWord.en} emoji={game.secretWord.emoji} size={210} />
+          </button>
         </div>
+
+        {glitchOpen && (
+          <Panel className="mx-auto mb-5 max-w-xs animate-scale-in border-impostor/50">
+            <p className="mb-3 flex items-center justify-center gap-2 text-xs text-impostor">
+              <Skull className="h-4 w-4" /> {t('گلیچ — ساختەکارەکان')}
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {impostors.map((p) => (
+                <span key={p.id} className="rounded-full bg-impostor/12 px-3 py-1 font-bold text-impostor">
+                  {p.name}
+                </span>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-muted">{t('ئەمە نهێنی خۆت بێت!')}</p>
+          </Panel>
+        )}
+
         <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-impostor/12 px-4 py-2 text-impostor">
           <EyeOff className="h-4 w-4" />
           <span className="text-sm font-bold">{t('دەشاردرێتەوە لە')} {countdown} {t('چرکە')}</span>

@@ -49,3 +49,10 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# ───── ئەپی ئەندرۆید ─────
+dist-offline/
+android/keystore.properties
+android/app/*.keystore
+android/app/*.jks
+android/local.properties

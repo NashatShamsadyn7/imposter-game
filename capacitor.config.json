@@ -1,0 +1,13 @@
+{
+  "appId": "com.nashat.imposter",
+  "appName": "ساختەکار",
+  "webDir": "dist-offline",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
